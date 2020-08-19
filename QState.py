@@ -1,10 +1,17 @@
+#   Projektarbeit Literaturrecherge zu Simulationsalgorithmen für Quantencomputing
+#   Author: Lukas Lepper, 19.08.2020
+#   Betreuer: Martin Hardieck
+#   Dateiname: QState.py
+#   Version: 0.2
+
 from getdiracnotation import getdiracnotation
 import numpy as np
 from QuantumSimulation import QuantumSim
 
 
 class QState(QuantumSim):
-    """Klasse für Quantenzustandsvektoren: enthält verschedene Darstellungen und überladenen Operator für Matrix-Vektor-Produkt"""
+    """Klasse für Quantenzustandsvektoren: enthält verschedene Darstellungen und überladenen Operator für
+    Matrix-Vektor-Produkt"""
 
     #   Default-Konstruktor
     def __init__(self, phi_in):
@@ -40,6 +47,7 @@ class QState(QuantumSim):
         return_str = ''
         index = 0
 
+        #   Ausgabe für jeden einzelnen Wert ungleich 0, im Zustandsvektor
         for value in self.phi_vec:
 
             if value != 0. + 0.j:

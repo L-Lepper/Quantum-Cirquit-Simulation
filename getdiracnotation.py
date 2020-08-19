@@ -1,3 +1,8 @@
+#   Projektarbeit Literaturrecherge zu Simulationsalgorithmen für Quantencomputing
+#   Author: Lukas Lepper, 19.08.2020
+#   Betreuer: Martin Hardieck
+#   Dateiname: getdiracnotation.py
+#   Version: 0.2
 
 def getdiracnotation(index, n_qubits):
     """Wandelt Index in Bitmuster um. Benötigt Anzahl der Qubits für führende Nullen"""
@@ -10,8 +15,6 @@ def getdiracnotation(index, n_qubits):
     diracnotation = '|' + (n_qubits - len(str_var)) * '0' + str_var + ')'
 
     return diracnotation
-
-
 
 #               VORGEHENSWEISE 2
 
@@ -50,7 +53,8 @@ def getdiracnotation(index, n_qubits):
 #            index_qubit = 0
 #            while index_qubit < n_qubits:
 #
-#                #   Berechnung der Anzahl der möglichen Zustände aus den verbleibenden Qubits (einschließlich es betrachteten)
+#                #   Berechnung der Anzahl der möglichen Zustände aus den verbleibenden Qubits (einschließlich es
+#                #   betrachteten)
 #                #   Die untere Hälfte hat q_i = 0, die obere Hälfte q_i = 1
 #                if i < (pow(2, n_qubits - index_qubit) // 2):
 #                    state_obj.possible_states[i] = np.char.add(state_obj.possible_states[i], ['0'])
