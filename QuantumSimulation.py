@@ -1,8 +1,8 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 25.08.2020
+#   Author: Lukas Lepper, 14.09.2020
 #   Betreuer: Martin Hardieck
-#   Dateiname: QuantumSimulation.py
-#   Version: 0.3
+#   Dateiname: DDEdge.py
+#   Version: 0.4
 
 
 #   Importiere wie in der main oben beschrieben, alle Klassen auf der untersten Ebene. Durch Objekte in diesen Klassen
@@ -13,6 +13,7 @@ from QState import QState
 from PauliX import PauliX
 from PauliZ import PauliZ
 from HadarmardH import HadamardH
+from Measurement import Measurement
 
 
 class QuantumSimulation(Base):
@@ -90,8 +91,8 @@ class QuantumSimulation(Base):
         gate_in = input('Quantengatter:\t\t').lower()
 
         #   Prüfe gültige Eingabe
-        while (gate_in != 'x') and (gate_in != 'z') and (gate_in != 'h'):
-            print('Ungültige Eingabe. x/X oder z/Z oder h/H erwartet.\n')  # ToDo: M für Messung als Eingabe
+        while (gate_in != 'x') and (gate_in != 'z') and (gate_in != 'h') and (gate_in != 'm'):
+            print('Ungültige Eingabe. x/X oder z/Z oder h/H oder m/M erwartet.\n')
             gate_in = input('Quantengatter:\t\t').lower()
 
         #   Qubit auswählen, auf welches das Gatter ausgeführt wird
@@ -162,6 +163,14 @@ class QuantumSimulation(Base):
                 self.qgate_obj = PauliZ(qubit_to_change)
             elif operation == 'h':
                 self.qgate_obj = HadamardH(qubit_to_change)
+            elif operation == 'm':
+                self.qgate_obj = Measurement(self.qstate_obj.general_matrix, qubit_to_change)
+
+                # Index welches Tupel abgearbeitet wird, wird hcohgezählt
+                i += 1
+
+                break
+
             else:
                 print('Diese Operation (Gatter oder Messung) wurde noch nicht implementiert:', operation)
                 return -1
