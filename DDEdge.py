@@ -21,7 +21,10 @@ class DDEdge(Base):
         print(self.target_node.saved_value_on_node)
 
         str_out = ''
-        for element in self.target_node.list_outgoing_edges:
-            str_out += (element.__str__())
 
-        return str_out
+        if any(self.target_node.list_outgoing_edges):
+            for element in self.target_node.list_outgoing_edges:
+                str_out += (element.__str__())
+            return str_out
+        else:
+            return str_out

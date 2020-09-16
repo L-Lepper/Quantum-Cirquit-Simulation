@@ -13,6 +13,7 @@ class Base:
 
     #   Private Attribute: Zugriff über Funktion / Klassenmethode.
     __nqubits = 0
+    __debug_mode = False
 
     def __init__(self):
         pass
@@ -26,3 +27,17 @@ class Base:
     @staticmethod
     def set_n_qubits(n_qubits):
         Base.__nqubits = n_qubits
+
+    #   Aktiviere Debug-Mode
+    @staticmethod
+    def enable_debug():
+        Base.__debug_mode = True
+
+    #   Deaktiviere Debug-Mode
+    @staticmethod
+    def disable_debug():
+        Base.__debug_mode = False
+    #   get Debug-Mode
+    @staticmethod
+    def get_debug():
+        return Base.__debug_mode

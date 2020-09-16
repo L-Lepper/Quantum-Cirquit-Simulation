@@ -37,20 +37,16 @@ from DecisionDiagram import DecisionDiagram
 from Base import Base
 import numpy as np
 
+Base.enable_debug()
 
 Base.set_n_qubits(3)
 arr = np.array([[5,7,1,0,6,4,5,0],[8,7,2,3,0,1,7,6],[1,0,5,7,3,8,4,0],[2,3,8,7,7,9,3,1],[5,5,5,5,5,7,1,0],[5,5,5,5,8,7,2,3],[5,5,5,5,1,0,5,7],[5,5,5,5,2,3,8,7]])
 #Base.set_n_qubits(4)
 #arr = np.array([0.3082207001, 0.05477225575, 0.1760681686, 0.242899156, 0.3082207001, 0.05477225575, 0.2236067977, 0.3464101615, 0.3082207001, 0.05477225575, 0.2236067977, 0.3464101615, 0.2626785107, 0.2626785107, 0.2626785107, 0.2626785107])
 #Base.set_n_qubits(4)
-#arr = np.array([1, 2, 2, 5, 2, 1, 5, 1, 1, 2, 2, 5, 1, 1, 5, 5])
+#arr = np.array([1, 2, 2, 5, 2, 1, 5, 1, 1, 2, 2, 5, 0, 0, 5, 0])
 #Base.set_n_qubits(2)
-#arr = np.array([1, 2, 1, 2])
+#arr = np.array([1, 0, 0, 0])
+#arr = np.array([0, 0, 0, 0])
 
 obj = DecisionDiagram(arr)
-print('\n\nTest des Aufbaus des Entscheidungsdiagramms. Die jeder Knoten hat 4 Nachfolgekanten, \ndie Knoten werden'
-      'durch die jeweiligen Matrizen dargestellt:\n')
-print(obj.list_of_all_edges[0])
-print('\n\n\nTest der Anzahl an verschiedenen Knoten. Redundante Knoten sind zusammengefasst:\n')
-for x in obj.list_of_all_nodes:
-    print(x.saved_value_on_node)
