@@ -38,6 +38,13 @@ class DecisionDiagram(Base):
 
         super().__init__()
 
+    def set_is_calculated_false(self):
+        for edge in self.list_of_all_edges:
+            edge.is_calculated = False
+        for row in self.list_of_all_nodes:
+            for node in row:
+                node.is_calculated = False
+
     def create_dd(self, matrix_in):
         """
         Funktion baut Entscheidungsdiagramm aus Vektor oder Matrix auf. Knoten speichern Teilmatrizen in
@@ -67,27 +74,28 @@ class DecisionDiagram(Base):
             #   Ausgabe aller elementaren Knoten, durch die Matrix die dort gespeichert ist
             print('\n\n\nTest der Anzahl an verschiedenen Knoten. Redundante Knoten sind zusammengefasst:\n')
             #   print alle Knoten in der 2D Liste
-            for zeile in self.list_of_all_nodes:
-                for element in zeile:
-                    print(element.saved_value_on_node)
+            for row in self.list_of_all_nodes:
+                for node in row:
+                    print(node.saved_value_on_node)
             # ----------
 
         #   Von den Nachfolgeknoten wird der größte Wert auf den Elternknoten übertragen
         self.list_of_all_nodes[0][0].get_max_value_of_target_nodes()
+        self.set_is_calculated_false()
 
             # ----------
             #   Ausgabe der übertragenen Werte
         if Base.get_debug():
             print('\n\n\nTest mit auf Elternknoten übertragenen Werten (Max aus Nachfolgeknoten):\n')
             #   print alle Knoten in der 2D Liste
-            for zeile in self.list_of_all_nodes:
-                for element in zeile:
-                    print(element.saved_value_on_node)
+            for row in self.list_of_all_nodes:
+                for node in row:
+                    print(node.saved_value_on_node)
             # ---------
-            
 
-        #   Kantengewicht
-        #   ...
+        #   Berechne Kantengewichte aller Kanten
+        self.list_of_all_edges[0].calc_edge_weight()
+        self.set_is_calculated_false()
 
 
         #   In der letzten Ebene der Knoten wurden die Einträge der Matrix/Vektor gespeichert, die für die Funktion
@@ -100,16 +108,83 @@ class DecisionDiagram(Base):
         node_one = DDNode(remember_edges, np.array([]))
         node_one.saved_value_on_node = 1
         node_one.level = Base.getnqubits()
+
+        for edge in remember_edges:
+            edge.target_node = node_one
         self.list_of_all_nodes[Base.getnqubits()] += [node_one]
 
-        # ----------
+
+            # ----------
         #   Ausgabe der übertragenen Werte
         if Base.get_debug():
-            print('\n\n\nTest mit auf Elternknoten übertragenen Werten (Max aus Nachfolgeknoten):\n')
+            print('\n\n\nTest Entscheidungsdiagramm mit Kantengewichten:\n')
+            #   print root edge
+            print(self.list_of_all_edges[0])
+            # ---------
+
+        #   Berechnen der gewichteten Wahrscheinlichkeit aller Knoten (p=p_left * w_left^2 + p_right * w_right^2)
+        self.list_of_all_nodes[0][0].get_weighted_propability_of_node()
+        self.set_is_calculated_false()
+
+            # ----------
+        #   Ausgabe der gewichteten Wahrscheinlichkeit aller Knoten
+        if Base.get_debug():
+            print('\n\n\nTest gewichtete Wahrscheinlichkeit aller Knoten:\n')
             #   print alle Knoten in der 2D Liste
-            for zeile in self.list_of_all_nodes:
-                for element in zeile:
-                    print(element.saved_value_on_node)
+            for row in self.list_of_all_nodes:
+                for node in row:
+                    print(node.saved_value_on_node)
+            # ---------
+
+        #   Berechnen des Produktes aller Kantengewichte auf dem Ast von der jeweiligen Kante bis zur Wurzelkante
+        self.list_of_all_edges[0].calc_product_of_weights(1)
+        self.set_is_calculated_false()
+        #   Prüfen, ob alle eingehenden Kanten pro Knoten den selben berechneten Wert haben
+        for row in self.list_of_all_nodes:
+            for node in row:
+                #   Prüfe ob die Liste nicht leer ist, sonst kann einfach mit dem nächsten Knoten weiter gemacht werden
+                if any(node.list_incoming_edges):
+                    #   Speichere edge_probability der ersten Kante, um die Werte der anderen eingehenden Kanten damit
+                    #   zu vergleichen
+                    temp = node.list_incoming_edges[0].edge_probability
+                    for x in node.list_incoming_edges:
+                        #   Falls diese Werte gleich sind oder wenn es der 1-Knoten / 0-Knoten der letzten Ebene ist,
+                        #   kann die nächste Kante der Liste überprüft werden (Die 1-Knoten / 0-Knoten sind die
+                        #   einzigen Knoten mit mehreren eingehenden Kanten, die verschiedene Kantengewichte haben. )
+                        if x.edge_probability == temp or (node.level == Base.getnqubits() and
+                                                    (node.saved_value_on_node == 0 or node.saved_value_on_node == 1)):
+                            continue
+                        else:
+                            print('Fehler, Annahme die getroffen wurde ist ungültig. In der Datei:'
+                          '"instruction_for_decision_diagram.docx", Schritt 7 müssen die Produkte aller Kantengewichte '
+                          'auf dem Ast vom jeweiligen Knoten bis zum Wurzelknoten, gleich groß sein. Element 0: ', temp,
+                          ', geprüftes Element: ', x)# ToDo Bessere Ausgabe
+
+            # ----------
+        #   Ausgabe des Produktes aller Kantengewichte hoch zur Wurzelkante
+        if Base.get_debug():
+            print('\n\n\nTest der berechneten Produkte der Kantengewichte:\n')
+            #   print alle Knoten in der 2D Liste
+            for row in self.list_of_all_nodes:
+                for node in row:
+                    for edge in node.list_incoming_edges:
+                        print('Produkte der Kantengewichte auf den Ästen zum Wurzelknoten: ', edge.edge_probability)
+            # ---------
+
+        #   Berechnen der Wahrscheinlichkeit an jeder Kante (Wert im Zielknoten multipliziert mit oben berechneten
+        #   Produkt der Kantengewichte, welches in edge_probability gespeichert ist)
+        self.list_of_all_edges[0].calc_edge_propability()
+        self.set_is_calculated_false()
+
+            # ----------
+        #   Ausgabe der Wahrscheinlichkeit aller Kanten
+        if Base.get_debug():
+            print('\n\n\nTest der berechneten Wahrscheinlichkeiten:\n')
+            #   print alle Knoten in der 2D Liste
+            for row in self.list_of_all_nodes:
+                for node in row:
+                    for edge in node.list_incoming_edges:
+                        print(edge.edge_probability * edge.count_calc)
             # ---------
 
 
@@ -124,67 +199,76 @@ def determine_nodes_on_level(dd_obj, n, matrix_in):
     :param matrix_in: Matrix, die in Teilmatrizen geteilt werden soll
     :return:
     """
+    #   Erstellen des Wurzelknotens mit Kante, Start des Entscheidunsdiagramms
     if n == 0:
-        #   Erstelle die Wurzelkante mit einem Wurzelnkoten, indem die ausgangsmatrix gespeichert ist
-        #   Leerer Knoten, der für die Kante benötigt wird
+        #   Erstelle die Wurzelkante mit einem Wurzelnkoten, indem die zu Beginn vorgegebene Matrix gespeichert ist.
+        #   Leerer Knoten, der für die Kante benötigt wird:
         dd_obj.node_root = DDNode([], [])
-        #   Die Kante hat nur einen Zielknoten
-        dd_obj.edge_root = DDEdge(None, dd_obj.node_root)
+        #   Die Kante hat nur einen Zielknoten, Quellknoten ist leer
+        dd_obj.edge_root = DDEdge([], dd_obj.node_root)
+        #   Die Kante wird dem neuen Knoten bei den eingehenden Kanten zugefügt
         dd_obj.node_root.list_incoming_edges = [dd_obj.edge_root]
-        #   Index der Ebene auf dem sich der Knoten befindet. Wird für die Funktion des Programmes zurzeit nicht benötigt
-        dd_obj.node_root.level = 0
-        #   Liste der Kanten ist neu, sie besitzt nur ein Element. Der Knoten weiter unten in list_of_nodes_per_level
-        #   gespeichert und wird erst auserhalb der Funktion mit der gesamten Ebene der Liste aller Knoten hinzugefügt
+#        #   Index der Ebene auf dem sich der Knoten befindet. Wird für die Funktion des Programmes zurzeit nicht benötigt
+#        dd_obj.node_root.level = 0
+        #   Liste der Kanten ist neu, sie besitzt nur ein Element. Der Knoten wird weiter unten in list_of_nodes_per_level
+        #   gespeichert und dann außerhalb der Funktion, mit der gesamten Ebene, der Liste aller Knoten hinzugefügt.
         dd_obj.list_of_all_edges = np.array([dd_obj.edge_root])
 
-        #   Speichere Matrix in Knoten, die dann geteilt wird und wieder in zusammengefassten Knoten gespeichert wird
+        #   Speichere Matrix im Wurzelknoten, die im neuen Funktionsaufruf für n=1 geteilt wird und in
+        #   zusammengefassten Knoten gespeichert wird
         dd_obj.node_root.saved_value_on_node = matrix_in
-        #   Ebene 0 hat immer nur den Wurzelknoten
+        #   Ebene 0 hat immer nur den Wurzelknoten gespeichert
         dd_obj.list_of_nodes_per_level = np.array([dd_obj.node_root])
 
         #   Erstelle 0-Endknoten, auf den alle Kanten verweisen, die irgendwo im Entscheidungsdiagramm auf eine
         #   0 Matrix/Vektor/Element führen
         dd_obj.node_zero = DDNode(np.array([]), np.array([]))
 
-        # Falls Vektor gespeichert ist [0], falls Matrix: [[0]]
+        # Falls in matrix_in ein Vektor gespeichert ist [0], falls Matrix: [[0]]
         if np.ndim(matrix_in) == 1:
-            dd_obj.node_zero.saved_value_on_node = [0]
+            dd_obj.node_zero.saved_value_on_node = 0
         else:
-            dd_obj.node_zero.saved_value_on_node = [[0]]
+            dd_obj.node_zero.saved_value_on_node = 0
 
-        dd_obj.node_zero.level = Base.getnqubits()
+#        dd_obj.node_zero.level = Base.getnqubits()
+        #   Füge den 0-Endknoten der Liste aller Knoten in der letzten Ebene hinzu
         dd_obj.list_of_all_nodes[Base.getnqubits()] = [dd_obj.node_zero]
 
 
+    #   Regelablauf für Ebenen ab dem Wurzelknoten
     if n > 0:
-        #   Für jeden Knoten einer Ebene wird die nächste Teilmatrix bestimmt und somit die zusammengefassten Knoten
-        #   der nächsten Ebene
+        #   Für jeden Knoten einer Ebene wird die nächste Teilmatrix bestimmt und für jede einzigartige Teilmatrix auf
+        #   der gesamten Ebene wird ein Knoten erstellt. Das sind zusammengefasste Knoten auf der nächsten Ebene.
         for source_node in dd_obj.list_of_nodes_per_level:
 
-            # Speichere den aktuellen Quellknoten um später Kanten zu erstellen
+            #   Speichere den aktuellen Quellknoten um damit später Kanten zu erstellen
             DDNode.remember_node = source_node
+            #   matrix_in speichert die Matrix die im Quellknoten gespeichert ist. Diese Matrix soll nun geteilt werden
+            #   und auf redundanz geprüft werden (in shared_memory_for_equivalence_check soll es jede Teilmatrix genau
+            #   einmal geben).
             matrix_in = source_node.saved_value_on_node
 
-            #   Falls matrix_in schon eine 0-Matrix / ein 0-Vektor ist, gehen direkt alle Kanten auf 0
-            if np.array_equal(matrix_in, np.zeros_like(matrix_in)):
-                #   Anzahl der Möglichkeiten x ab matrix_in im Entscheidungsdiagramm = Anzahl der Kanten auf den 0-Knoten
-                #   x Berechnet sich mit der geometrischen Summenformel für i=1 bis i=n
-                q = 2 * np.ndim(matrix_in)
-                i = Base.getnqubits()
-                # x = int((1 - pow(q, i)) / (1 - q))
-                x = pow(2, Base.getnqubits() + 1 - n)
-                for i in range(x):
-                    new_edge = DDEdge(source_node, dd_obj.node_zero)
-                    #   Füge neue Kante der Liste aller Kanten hinzu
-                    dd_obj.list_of_all_edges = np.append(dd_obj.list_of_all_edges, [new_edge])
-                    #   Füge neue Kante der Liste des Elternknoten als ausgehende Kante hinzu
-                    source_node.list_outgoing_edges = np.append(source_node.list_outgoing_edges, [new_edge])
-                    dd_obj.node_zero.list_incoming_edges = np.append(dd_obj.node_zero.list_incoming_edges, [new_edge])
+            #   Falls matrix_in eine 0-Matrix / ein 0-Vektor ist, gehen direkt alle Kanten auf 0
+#            if np.array_equal(matrix_in, np.zeros_like(matrix_in)):
+#                #   Anzahl der möglichen Äste x im Entscheidungsdiagramm, ab Quellknoten mit matrix_in bis Endknoten
+#                #   x entspricht Anzahl der Kanten auf den 0-Knoten
+#                #   x Berechnet sich mit 2^Anzahl der verbleibenden Ebenen
+#                x = pow(2, Base.getnqubits() + 1 - n)
+#                for i in range(x):
+#                    #   Neue Kante vom betrachteten Quellknoten bis zum 0-Endknoten
+#                    new_edge = DDEdge(source_node, dd_obj.node_zero)
+#                    #   Füge neue Kante der Liste aller Kanten hinzu
+#                    dd_obj.list_of_all_edges = np.append(dd_obj.list_of_all_edges, [new_edge])
+#                    #   Füge neue Kante der Liste des Elternknoten als ausgehende Kante hinzu
+#                    source_node.list_outgoing_edges = np.append(source_node.list_outgoing_edges, [new_edge])
+#                    #   Füge neue Kante der Liste des 0-Endknotens als eingehende Kante hinzu
+#                    dd_obj.node_zero.list_incoming_edges = np.append(dd_obj.node_zero.list_incoming_edges, [new_edge])
 
-                #   Überspringe die Teilung der Matrix, da Baum an der Stelle endet
-                continue
+                #   Überspringe die Teilung der Matrix, da Baum an der Stelle endet. In for-Schleife wird neuer Knoten
+#                #   der Ebene n betrachtet
+#                continue
 
-            #   Anzahl der Zeilen der Matrix/ des Vektors
+            #   Anzahl der Zeilen der Matrix/ des Vektors vor der Teilung
             m_in = np.shape(matrix_in)[0]
             #   Anzahl der Zeilen nach der Teilung
             m_out = int(m_in / 2)
@@ -230,8 +314,8 @@ def determine_nodes_on_level(dd_obj, n, matrix_in):
         #   Lösche node_zero, der bereits ganz zu Beginn der Liste aller Knoten hinzugefügt wurde, und daher nicht in
         #   list_of_nodes_per_level vorkommen darf, um Duplikat zu vermeiden, wenn list_of_nodes_per_level der Liste
         #   aller Knoten hinzugefügt wird
-        if n == Base.getnqubits():
-            dd_obj.list_of_all_nodes[n] = []
+        #if n == Base.getnqubits():
+        #    dd_obj.list_of_all_nodes[n] = []
 
         #   Die Knoten der nachsten Ebene werden nun in list_of_nodes_per_level gespeichert, falls vorhanden
         dd_obj.list_of_nodes_per_level = dd_obj.shared_memory_for_equivalence_check
@@ -279,18 +363,50 @@ def create_node_if_new(dd_obj, matrix_to_find, n):
 
     #   Erstelle neuen und leeren Knoten, der an verschiedenen Stellen vervollständigt wird.
     new_node_obj = DDNode([], [])
-    new_node_obj.level = n
+#    new_node_obj.level = n
 
-    if n == Base.getnqubits() and dd_obj.first_time == True:
-        #   Erstelle Kante mit gespeicherten Knoten und neuem Knoten als Zielknoten (enthält die erste Teilmatrix)
-        #new_edge_obj = DDEdge(DDNode.remember_node, dd_obj.node_zero)
-        #   Die erstellte Kante wird in dem neuen Knoten gespeichert
-        #dd_obj.node_zero.list_incoming_edges = np.append(dd_obj.node_zero.list_incoming_edges, [new_edge_obj])
-        dd_obj.shared_memory_for_equivalence_check = np.array([dd_obj.node_zero])
-        dd_obj.first_time = False
+    #   Falls für die erste Teilmatrix in der gesamten letzten Ebene ein Knoten erstellt werden soll, wird
+    #   shared_memory_for_equivalence_check der 0-Endknoten hinzugefügt, damit 0-Elemente auf der Ebene diesen bereits
+    #   vorhandenen Knoten finden und nicht neu erstellt werden
+  #  if n == Base.getnqubits() and dd_obj.first_time == True:
+#        #   Erstelle Kante mit gespeicherten Knoten und neuem Knoten als Zielknoten (enthält die erste Teilmatrix)
+#        #new_edge_obj = DDEdge(DDNode.remember_node, dd_obj.node_zero)
+#        #   Die erstellte Kante wird in dem neuen Knoten gespeichert
+#        #dd_obj.node_zero.list_incoming_edges = np.append(dd_obj.node_zero.list_incoming_edges, [new_edge_obj])
+  #      dd_obj.shared_memory_for_equivalence_check = np.array([dd_obj.node_zero])
+        #   Setze first_time False, da nun erster Knoten existiert und mit dem regulären Vergleich auf gleiche
+        #   Teilmatrizen fortgefahren werden soll
+  #      dd_obj.first_time = False
 
 
+    #   Falls matrix_in eine 0-Matrix / ein 0-Vektor ist, gehen direkt alle Kanten auf 0
+    if np.array_equal(matrix_to_find, np.zeros_like(matrix_to_find)):
+        #   Anzahl der möglichen Äste x im Entscheidungsdiagramm, ab Quellknoten mit matrix_in bis Endknoten
+        #   x entspricht Anzahl der Kanten auf den 0-Knoten
+        #   x Berechnet sich mit 2^Anzahl der verbleibenden Ebenen (Basis 2 oder 4, Vektor oder Matrix)
+        #   ToDo: Entweder so wie jetzt oder nur eine Kante erstellen und Anzahl der Möglichkeiten in calc_count
+        #    speichern (evtl. anderer Name)
+        x = pow(2 * np.ndim(matrix_to_find), Base.getnqubits() - n)
+        for i in range(x):
+            #   Neue Kante vom betrachteten Quellknoten bis zum 0-Endknoten
+            new_edge = DDEdge(DDNode.remember_node, dd_obj.node_zero)
+            #   Füge neue Kante der Liste aller Kanten hinzu
+            dd_obj.list_of_all_edges = np.append(dd_obj.list_of_all_edges, [new_edge])
+            #   Füge neue Kante der Liste des Elternknoten als ausgehende Kante hinzu
+            DDNode.remember_node.list_outgoing_edges = np.append(DDNode.remember_node.list_outgoing_edges, [new_edge])
+            #   Füge neue Kante der Liste des 0-Endknotens als eingehende Kante hinzu
+            dd_obj.node_zero.list_incoming_edges = np.append(dd_obj.node_zero.list_incoming_edges, [new_edge])
+
+        #   Überspringe die Teilung der Matrix, da Baum an der Stelle endet. In for-Schleife wird neuer Knoten
+        #   der Ebene n betrachtet
+        return 0
+
+
+    #   Falls die Funktion create_node_if_new das erste Mal für die Ebene n aufgerufen wird
     if dd_obj.first_time:
+        #   Erstelle für die aktuelle Teilmatrix (matrix_to_find) einen Knoten, eine neue Kante, speichere diese in den
+        #   jeweiligen Listen
+
         #   Ablauf zum erstellen eines neuen Knotens mit Kante (Erster Knoten ohne append)
         #---   New_node_obj gehört noch mit dazu!
 

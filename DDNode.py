@@ -15,14 +15,33 @@ class DDNode(Base):
         self.level = None
         self.list_incoming_edges = list_incoming_edges
         self.list_outgoing_edges = list_outgoing_edges
+        self.is_calculated = False
         super().__init__()
 
     def get_max_value_of_target_nodes(self):
-        temp = []
-        if any(self.list_outgoing_edges):
-            for edge in self.list_outgoing_edges:
-                temp += [edge.target_node.get_max_value_of_target_nodes()]
-                self.saved_value_on_node = max(temp)
+        if self.is_calculated:
             return self.saved_value_on_node
         else:
-            return abs(self.saved_value_on_node)
+            temp = []
+            self.is_calculated = True
+            if any(self.list_outgoing_edges):
+                for edge in self.list_outgoing_edges:
+                    temp += [edge.target_node.get_max_value_of_target_nodes()]
+                self.saved_value_on_node = max(temp)
+                return self.saved_value_on_node
+            else:
+                return abs(self.saved_value_on_node)
+
+    def get_weighted_propability_of_node(self):
+        if self.is_calculated:
+            return self.saved_value_on_node
+        else:
+            temp = 0.0
+            self.is_calculated = True
+            if any(self.list_outgoing_edges):
+                for edge in self.list_outgoing_edges:
+                    temp += edge.target_node.get_weighted_propability_of_node() * pow(abs(edge.edge_weight), 2)
+                self.saved_value_on_node = temp
+                return self.saved_value_on_node
+            else:
+                return self.saved_value_on_node
