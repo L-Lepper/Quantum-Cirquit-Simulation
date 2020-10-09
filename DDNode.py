@@ -29,6 +29,13 @@ class DDNode(Base):
         self.is_calculated = False
         super().__init__()
 
+    """
+    def __del__(self, dd_obj):
+        for edge in self.list_outgoing_edges:
+            del edge
+        dd_obj.list_of_all_nodes.remove(self)
+    """
+
     def get_max_value_of_target_nodes(self):
         """
         Bestimmt den betragsmäßig größten Wert. Funktion wird rekursiv für Nachfolgeknoten aufgerufen.

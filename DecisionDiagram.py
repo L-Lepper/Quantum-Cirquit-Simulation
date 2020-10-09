@@ -83,17 +83,18 @@ class DecisionDiagram(Base):
             #   debug True. Ansprechen der Knoten über jede einzelne Kante
         if Base.get_debug():
             print(
-                '\n\nTest des Aufbaus des Entscheidungsdiagramms. Die jeder Knoten hat 4 Nachfolgekanten, \n'
-                'die Knoten werden durch die jeweiligen Matrizen dargestellt:\n')
+                '\n\nTest des Aufbaus des Entscheidungsdiagramms nach Schritt 1 und 2. Beginnend mit der Wurzelkante, wird für jede Kante '
+                'der im Zielknoten gespeicherte Wert ausgegeben. Momentan ist das die jeweilige Teilmatrix:\n')
             #   print root node
             print(self.list_of_all_edges[0])
 
             #   Ausgabe aller elementaren Knoten, durch die Matrix die dort gespeichert ist
             print('\n\n\nTest der Anzahl an verschiedenen Knoten. Redundante Knoten sind zusammengefasst:\n')
             #   print alle Knoten in der 2D Liste
-            for row in self.list_of_all_nodes:
-                for node in row:
-                    print(node.saved_value_on_node)
+            for index, row in enumerate(self.list_of_all_nodes):
+                print('Knoten der Ebene ', index, ':')
+                for j, node in enumerate(row):
+                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
             # ----------
 
         """ SCHRITT 3 """
@@ -105,11 +106,13 @@ class DecisionDiagram(Base):
             # ----------
             #   Ausgabe der übertragenen Werte
         if Base.get_debug():
-            print('\n\n\nTest mit auf Elternknoten übertragenen Werten (Max aus Nachfolgeknoten):\n')
+            print('\n\n\nTest von Schritt 3 mit den auf die Elternknoten übertragenen Werten (Max aus '
+                  'Nachfolgeknoten). Ein 0 Knoten ist hier immer dabei, auch wenn keine Kante auf ihn zeigt:\n')
             #   print alle Knoten in der 2D Liste
-            for row in self.list_of_all_nodes:
-                for node in row:
-                    print(node.saved_value_on_node)
+            for index, row in enumerate(self.list_of_all_nodes):
+                print('Knoten der Ebene ', index, ':')
+                for j, node in enumerate(row):
+                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
             # ---------
 
         """ SCHRITT 4 """
@@ -146,7 +149,7 @@ class DecisionDiagram(Base):
             # ----------
         #   Ausgabe der übertragenen Werte
         if Base.get_debug():
-            print('\n\n\nTest Entscheidungsdiagramm mit Kantengewichten:\n')
+            print('\n\n\nTest für Schritt 4 und 5 - Entscheidungsdiagramm mit Kantengewichten:\n')
             #   print root edge
             print(self.list_of_all_edges[0])
             # ---------
@@ -160,50 +163,59 @@ class DecisionDiagram(Base):
             # ----------
         #   Ausgabe der gewichteten Wahrscheinlichkeit aller Knoten
         if Base.get_debug():
-            print('\n\n\nTest gewichtete Wahrscheinlichkeit aller Knoten:\n')
+            print('\n\n\nTest für Schritt 6 - Gewichtete Wahrscheinlichkeit aller Knoten:\n')
             #   print alle Knoten in der 2D Liste
-            for row in self.list_of_all_nodes:
-                for node in row:
-                    print(node.saved_value_on_node)
+            for index, row in enumerate(self.list_of_all_nodes):
+                print('Knoten der Ebene ', index, ':')
+                for j, node in enumerate(row):
+                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
             # ---------
 
         """ SCHRITT 7 """
 
+        #   Fasse Knoten mit den selben gespeicherten Werten zusammen. Nachfolgeäste unterscheiden sich nur
+        #   durch Skalierung
+#        for i, level in enumerate(self.list_of_all_nodes):
+ #           for j, operating_node in enumerate(level):
+  #              for k in range(j + 1, len(level)):
+   #                 if operating_node.saved_value_on_node == level[j].saved_value_on_node:
+    #                    level[j].list_incoming_edges = np.append(level[j].list_incoming_edges, operating_node.list_incoming_edges)
+     #                   del self.list_of_all_nodes[i][j]
+                        
+
+          # ----------
+        #   Ausgabe der gewichteten Wahrscheinlichkeit aller Knoten
+        if Base.get_debug():
+            print('\n\n\nTest für Schritt 6 - Gewichtete Wahrscheinlichkeit aller Knoten:\n')
+            #   print alle Knoten in der 2D Liste
+            for index, row in enumerate(self.list_of_all_nodes):
+                print('Knoten der Ebene ', index, ':')
+                for j, node in enumerate(row):
+                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
+            # ---------
+
+
+
+        """ SCHRITT 8 """
+
         #   Berechnen des Produktes aller Kantengewichte auf dem Ast von der jeweiligen Kante bis zur Wurzelkante
         self.list_of_all_edges[0].calc_product_of_weights(1)
         self.set_is_calculated_false()
-        #   Prüfen, ob alle eingehenden Kanten pro Knoten den selben berechneten Wert haben
-        for row in self.list_of_all_nodes:
-            for node in row:
-                #   Prüfe ob die Liste nicht leer ist, sonst kann einfach mit dem nächsten Knoten weiter gemacht werden
-                if any(node.list_incoming_edges):
-                    #   Speichere edge_probability der ersten Kante, um die Werte der anderen eingehenden Kanten damit
-                    #   zu vergleichen
-                    temp = node.list_incoming_edges[0].edge_probability
-                    for x in node.list_incoming_edges:
-                        #   Falls diese Werte gleich sind oder wenn es der 1-Knoten / 0-Knoten der letzten Ebene ist,
-                        #   kann die nächste Kante der Liste überprüft werden (Die 1-Knoten / 0-Knoten sind die
-                        #   einzigen Knoten mit mehreren eingehenden Kanten, die verschiedene Kantengewichte haben. )
-                        if x.edge_probability == temp or node.saved_value_on_node == 0 or node.saved_value_on_node == 1:
-                            continue
-                        else:
-                            print('Fehler, Annahme die getroffen wurde ist ungültig. In der Datei:'
-                          '"instruction_for_decision_diagram.docx", Schritt 7 müssen die Produkte aller Kantengewichte '
-                          'auf dem Ast vom jeweiligen Knoten bis zum Wurzelknoten, gleich groß sein. Element 0: ', temp,
-                          ', geprüftes Element: ', x)# ToDo Bessere Ausgabe
 
             # ----------
         #   Ausgabe des Produktes aller Kantengewichte hoch zur Wurzelkante
         if Base.get_debug():
-            print('\n\n\nTest der berechneten Produkte der Kantengewichte:\n')
+            print('\n\n\nTest Schritt 7 - Berechnete Produkte der Kantengewichte:\n')
             #   print alle Knoten in der 2D Liste
-            for row in self.list_of_all_nodes:
-                for node in row:
-                    for edge in node.list_incoming_edges:
-                        print('Produkte der Kantengewichte auf den Ästen zum Wurzelknoten: ', edge.edge_probability)
+            for index, row in enumerate(self.list_of_all_nodes):
+                print('Knoten der Ebene ', index, ':')
+                for j, node in enumerate(row):
+                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
+                    for k, edge in enumerate(node.list_incoming_edges):
+                        print('\t\tEingehende Kante ', k, ': ', edge.edge_probability)
             # ---------
 
-        """ SCHRITT 8 """
+        """ SCHRITT 9 """
 
         #   Berechnen der Wahrscheinlichkeit an jeder Kante (Wert im Zielknoten multipliziert mit oben berechneten
         #   Produkt der Kantengewichte, welches in edge_probability gespeichert ist)
@@ -215,13 +227,17 @@ class DecisionDiagram(Base):
         if Base.get_debug():
             print('\n\n\nTest der berechneten Wahrscheinlichkeiten:\n')
             #   print alle Knoten in der 2D Liste
-            for row in self.list_of_all_nodes:
-                for node in row:
-                    for edge in node.list_incoming_edges:
-                        print(edge.edge_probability * edge.count_calc)
+            for index, row in enumerate(self.list_of_all_nodes):
+                print('Knoten der Ebene ', index, ':')
+                sum_probability_per_level = 0
+                for j, node in enumerate(row):
+                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
+                    for k, edge in enumerate(node.list_incoming_edges):
+                        print('\t\tKante ', k, ': ', edge.edge_probability)
+                        sum_probability_per_level += edge.edge_probability
+                print('Summe der Wahrscheinlichkeiten auf dieser Ebene:', sum_probability_per_level, '\n')
             # ---------
 
-        """ SCHRITT 9 """
 
 
 
@@ -374,7 +390,7 @@ def create_node_if_new(dd_obj, matrix_to_find, n):
         #   x entspricht Anzahl der Kanten auf den 0-Knoten
         #   x Berechnet sich mit 2^Anzahl der verbleibenden Ebenen (Basis 2 oder 4, Vektor oder Matrix)
         #   ToDo: Entweder so wie jetzt oder nur eine Kante erstellen und Anzahl der Möglichkeiten in calc_count
-        #    speichern (evtl. anderer Name)
+        #    speichern (evtl. anderer Name) (count_calc exitiert nun nicht mehr in anderen Funktionen)
         x = pow(2 * np.ndim(matrix_to_find), Base.getnqubits() - n)
         for i in range(x):
             #   Neue Kante vom betrachteten Quellknoten bis zum 0-Endknoten
