@@ -113,42 +113,36 @@ class DDNode(Base):
     def get_matrix(self, upstream_edge_weight):
         if any(self.list_outgoing_edges):
             if self.dd_obj.is_vector:
-                upstream_ew_0 = upstream_edge_weight * self.list_outgoing_edges[0].edge_weight
-                upstream_ew_1 = upstream_edge_weight * self.list_outgoing_edges[1].edge_weight
+                list_of_subvectors = np.array([])
 
-                v_0 = self.list_outgoing_edges[0].target_node.get_matrix(upstream_ew_0)
-                v_1 = self.list_outgoing_edges[1].target_node.get_matrix(upstream_ew_1)
+                for i in range(2):
+                    upstream_ew = upstream_edge_weight * self.list_outgoing_edges[i].edge_weight
+                    subvector = self.list_outgoing_edges[i].target_node.get_matrix(upstream_ew)
 
-                vec_out = np.append(v_0, v_1)
+                    if np.array_equal(subvector, [0]):
+                        #n = int(cmath.sqrt(self.list_outgoing_edges[i].n_possible_paths_to_zero).real)
+                        n = self.list_outgoing_edges[i].n_possible_paths_to_zero
+                        subvector = np.zeros(n)
+
+                    list_of_subvectors = np.append(list_of_subvectors, subvector)
+
+                vec_out = list_of_subvectors
 
                 return vec_out
 
             elif not self.dd_obj.is_vector:
-                list_of_submatrizes = []
+                list_of_submatrizes = np.array([[]])
 
                 for i in range(4):
                     upstream_ew = upstream_edge_weight * self.list_outgoing_edges[i].edge_weight
                     submatrix = self.list_outgoing_edges[i].target_node.get_matrix(upstream_ew)
 
                     if np.array_equal(submatrix, [[0]]):
-                        n = int(cmath.sqrt(self.list_outgoing_edges[i].n_possible_paths).real)
+                        #n = int(cmath.sqrt(self.list_outgoing_edges[i].n_possible_paths_to_zero).real)
+                        n = self.list_outgoing_edges[i].n_possible_paths_to_zero
                         submatrix = np.zeros((n, n))
 
-                    list_of_submatrizes += [submatrix]
-
-                #upstream_ew_0 = upstream_edge_weight * self.list_outgoing_edges[0].edge_weight
-                #upstream_ew_1 = upstream_edge_weight * self.list_outgoing_edges[1].edge_weight
-                #upstream_ew_2 = upstream_edge_weight * self.list_outgoing_edges[2].edge_weight
-                #upstream_ew_3 = upstream_edge_weight * self.list_outgoing_edges[3].edge_weight
-
-                #m_00 = self.list_outgoing_edges[0].target_node.get_matrix(upstream_ew_0)
-                #m_01 = self.list_outgoing_edges[1].target_node.get_matrix(upstream_ew_1)
-                #m_10 = self.list_outgoing_edges[2].target_node.get_matrix(upstream_ew_2)
-                #m_11 = self.list_outgoing_edges[3].target_node.get_matrix(upstream_ew_3)
-
-                #if m_00 == [[0]]:
-                #    n = self.list_outgoing_edges[0].n_possible_paths
-                #    m_00 = np.zeros((n, n))
+                    list_of_submatrizes = np.append(list_of_submatrizes, submatrix)
 
                 m_0x = np.append(list_of_submatrizes[0], list_of_submatrizes[1], 0)
                 m_1x = np.append(list_of_submatrizes[2], list_of_submatrizes[3], 0)
@@ -162,5 +156,8 @@ class DDNode(Base):
                       '\nKnoten müssen entweder 2 oder 4 ausgehende Kanten haben.')
 
         else:
-            return np.array([[self.saved_value_on_node * upstream_edge_weight]])
+            if self.dd_obj.is_vector:
+                return np.array([self.saved_value_on_node * upstream_edge_weight])
+            else:
+                return np.array([[self.saved_value_on_node * upstream_edge_weight]])
 

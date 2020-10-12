@@ -54,6 +54,18 @@ class DecisionDiagram(Base):
 
         super().__init__()
 
+    def __str__(self):
+        print('\n\n\nGebe Entscheidungsdiagramm aus:\n')
+        #   print alle Knoten in der 2D Liste
+        for index, row in enumerate(self.list_of_all_nodes):
+            print('Knoten der Ebene ', index, ':')
+            for j, node in enumerate(row):
+                print('\tKnoten ', j, ': ', node.saved_value_on_node)
+                for k, edge in enumerate(node.list_outgoing_edges):
+                    print('\t\tEingehende Kante ', k, ': ', edge.edge_weight, edge.count_of_paths, edge.n_possible_paths_to_zero)
+
+        return '\n'
+
     def set_is_calculated_false(self):
         """
         Funktion setzt für alle Objekte der Klassen DDNode, DDEdge die Variable is_calculated auf False. Diese Variable
@@ -176,6 +188,9 @@ class DecisionDiagram(Base):
         self.list_of_all_nodes[0][0].get_weighted_propability_of_node()
         self.set_is_calculated_false()
 
+        self.list_of_all_edges[0].calc_count_of_paths()
+        self.set_is_calculated_false()
+
             # ----------
         #   Ausgabe der gewichteten Wahrscheinlichkeit aller Knoten
         if Base.get_debug():
@@ -186,11 +201,11 @@ class DecisionDiagram(Base):
                 for j, node in enumerate(row):
                     print('\tKnoten ', j, ': ', node.saved_value_on_node)
                     for k, edge in enumerate(node.list_incoming_edges):
-                        print('\t\tEingehende Kante ', k, ': ', edge.edge_weight)
+                        print('\t\tEingehende Kante ', k, ': ', edge.edge_weight, edge.count_of_paths)
             # ---------
 
         """ SCHRITT 7 """
-
+# ToDo: oben calc_count_of_paths gehört hinter Schritt 7!
         """
         #   Fasse Knoten mit den selben gespeicherten Werten zusammen. Nachfolgeäste unterscheiden sich nur
         #   durch Skalierung
@@ -221,6 +236,7 @@ class DecisionDiagram(Base):
                         self.list_of_all_nodes[i][j].delete_node(self)
                         deleted_nodes += 1
         """
+
                         
 
           # ----------
@@ -453,10 +469,10 @@ def create_node_if_new(dd_obj, matrix_to_find, n):
         #   Neue Kante vom betrachteten Quellknoten bis zum 0-Endknoten
         new_edge = DDEdge(DDNode.remember_node, dd_obj.node_zero, dd_obj)
         #   Anzahl der möglichen Äste x im Entscheidungsdiagramm, ab Quellknoten mit matrix_in bis Endknoten.
-        #   n_possible_paths entspricht Anzahl der Kanten auf den 0-Knoten, es wird nur eine Kante erstellt,
+        #   n_possible_paths_to_zero entspricht Anzahl der Kanten auf den 0-Knoten, es wird nur eine Kante erstellt,
         #       welche die Anzahl der Möglichkeiten gespeichert hat.
-        #   n_possible_paths berechnet sich mit 2^Anzahl der verbleibenden Ebenen (Basis 2 oder 4, Vektor oder Matrix)
-        new_edge.n_possible_paths = pow(2 * np.ndim(matrix_to_find), Base.getnqubits() - n)
+        #   n_possible_paths_to_zero berechnet sich mit 2^Anzahl der verbleibenden Ebenen (Basis 2 oder 4, Vektor oder Matrix)
+        new_edge.n_possible_paths_to_zero = pow(2 * np.ndim(matrix_to_find), Base.getnqubits() - n)
         #   Füge neue Kante der Liste aller Kanten hinzu
         dd_obj.list_of_all_edges = np.append(dd_obj.list_of_all_edges, [new_edge])
         #   Füge neue Kante der Liste des Elternknoten als ausgehende Kante hinzu

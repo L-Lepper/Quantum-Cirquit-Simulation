@@ -91,12 +91,14 @@ class Measurement(QGate):
                                                             'Wahrscheinlichkeit für 1, muss 1 ergeben:', p_0 + p_1)
             # ----------
 
-        # ToDo: Anhand von Wahrscheinlichkeiten und Rand() eine Entscheidung treffen
+
         random_value = random.randint(0, 1000000) / 1000000
 
         new_dd_after_measurement_obj = deepcopy(self.state_dd_object)
-        if p_0 <= random_value:
+        if p_0 >= random_value:
             for node in new_dd_after_measurement_obj.list_of_all_nodes[self.qubit_to_measure]:
+
+
                 edge_0 = node.list_outgoing_edges[0]
                 edge_1 = node.list_outgoing_edges[1]
 
@@ -107,7 +109,26 @@ class Measurement(QGate):
                 edge_1.conditional_probability = 0
                 edge_1.edge_weight = 0
                 edge_1.target_node = new_dd_after_measurement_obj.node_zero
+                edge_1.n_possible_paths_to_zero = pow(2, Base.getnqubits() - self.qubit_to_measure - 1)
+                #edge_1.n_possible_paths_to_zero *= edge_1.count_of_paths
                 # ToDo: Lösche den abgeschnittenen Baum
+        else:
+            for node in new_dd_after_measurement_obj.list_of_all_nodes[self.qubit_to_measure]:
+                edge_0 = node.list_outgoing_edges[0]
+                edge_1 = node.list_outgoing_edges[1]
+
+                edge_1.edge_probability = 1
+                edge_1.edge_weight /= cmath.sqrt(edge_1.conditional_probability)
+
+                edge_0.edge_probability = 0
+                edge_0.conditional_probability = 0
+                edge_0.edge_weight = 0
+                edge_0.target_node = new_dd_after_measurement_obj.node_zero
+                edge_0.n_possible_paths_to_zero = pow(2, Base.getnqubits() - self.qubit_to_measure - 1)
+                #edge_0.n_possible_paths_to_zero *= edge_1.count_of_paths
+                # ToDo: Lösche den abgeschnittenen Baum
+
+        print(new_dd_after_measurement_obj)
 
         output_state_vec = new_dd_after_measurement_obj.create_matrix()
 

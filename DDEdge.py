@@ -27,7 +27,8 @@ class DDEdge(Base):
         self.target_node = target_node
         #   Speichert die Anzahl, wie oft die Kante in verschiedenen Ästen vorkommt. Wird bisher nur für die Kanten zum
         #   0-Endknoten benötigt
-        self.n_possible_paths = 0
+        self.n_possible_paths_to_zero = 0
+        self.count_of_paths = 0
         #   is_calculated wird benötigt, damit durch die rekursiven Funktionsaufrufe jedes Objekt nur einmal berechnet
         #   wird
         self.is_calculated = False
@@ -170,3 +171,55 @@ class DDEdge(Base):
                     edge.calc_conditional_probabilities()
 
             self.is_calculated = True
+
+    def calc_count_of_paths(self):
+        if not self.is_calculated:
+            self.count_of_paths = self.n_possible_paths_to_zero
+            self.is_calculated = True
+
+        self.count_of_paths += 1
+
+        for edge in self.target_node.list_outgoing_edges:
+            edge.calc_count_of_paths()
+
+    """
+    def get_matrix(self, upstream_edge_weight):
+        if any(self.target_node.list_outgoing_edges):
+            if self.dd_obj.is_vector:
+                for edge in self.target_node.list_outgoing_edges:
+                    
+
+                
+
+                return vec_out
+
+            elif not self.dd_obj.is_vector:
+                list_of_submatrizes = []
+
+                for i in range(4):
+                    upstream_ew = upstream_edge_weight * self.list_outgoing_edges[i].edge_weight
+                    submatrix = self.list_outgoing_edges[i].target_node.get_matrix(upstream_ew)
+
+                    if np.array_equal(submatrix, [[0]]):
+                        n = int(cmath.sqrt(self.list_outgoing_edges[i].n_possible_paths_to_zero).real)
+                        submatrix = np.zeros((n, n))
+
+                    list_of_submatrizes += [submatrix]
+
+                m_0x = np.append(list_of_submatrizes[0], list_of_submatrizes[1], 0)
+                m_1x = np.append(list_of_submatrizes[2], list_of_submatrizes[3], 0)
+
+                matrix_out = np.append(m_0x, m_1x, 1)
+
+                return matrix_out
+
+            else:
+                print('Fehler beim Umwandeln des Entscheidungsdiagramms in einen Vektor oder Matrix.'
+                      '\nKnoten müssen entweder 2 oder 4 ausgehende Kanten haben.')
+
+        else:
+            if self.dd_obj.is_vector:
+                return np.array([self.target_node.saved_value_on_node * upstream_edge_weight])
+            else:
+                return np.array([[self.target_node.saved_value_on_node * upstream_edge_weight]])
+    """
