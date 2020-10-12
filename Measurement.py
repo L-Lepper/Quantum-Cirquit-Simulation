@@ -6,6 +6,9 @@
 
 import cmath
 import numpy as np
+import random
+from copy import deepcopy
+from Base import Base
 from QGate import QGate
 from DecisionDiagram import DecisionDiagram
 
@@ -21,25 +24,91 @@ class Measurement(QGate):
         self.state_vec_to_measure = state_vec_to_measure
         self.qubit_to_measure = qubit_to_measure
 
-        self.state_dd_object = DecisionDiagram(self.state_vec_to_measure)
-        #self.probability_after_node = self.state_dd_object.dd_with_decision_probability()
+        if Base.get_debug():
+            print('\n\n\n\t\t---------- komplexeres Beispiel ----------\n\n')
+            #Base.set_n_qubits(3)
+            #arr = np.array([2, 2, 4, 4, 6, 6, 12, 12])
+            #arr = np.array([[5,7,1,0,6,4,5,0],[8,7,2,3,0,1,7,6],[1,0,5,7,3,8,4,0],[2,3,8,7,7,9,3,1],[0,0,0,0,0,7,1,0],[0,0,0,0,8,7,2,3],[0,0,0,0,1,0,5,7],[0,0,0,0,2,3,8,7]])
+            Base.set_n_qubits(4)
+            #arr = np.array([0.3082207, 0.054772256, 0.176068169, 0.242899156, 0.3082207, 0.054772256, 0.223606798, 0.346410162, 0.3082207, 0.054772256, 0.223606798, 0.346410162, 0.262678511, 0.262678511, 0.262678511, 0.262678511])
+            arr = np.array([-0.25364695+0.535476894j, -0.366378928+0j, 0+0j, 0.591842883-0.028182994j, 0.140914972+0.028182994j, 0.056365989+0.084548983j, 0.084548983+0.140914972j, -0.056365989+0.084548983j, 0.084548983-0.140914972j, -0.056365989-0.084548983j, 0.028182994-0.056365989j, 0.056365989+0.056365989j, 0.084548983-0.140914972j, -0.056365989-0.084548983j, 0.028182994-0.056365989j, 0.056365989+0.056365989j])
+            # Base.set_n_qubits(4)
+            # arr = np.array([1, 2, 2, 5, 2, 1, 5, 1, 1, 2, 2, 5, 0, 0, 5, 0])
+            # Base.set_n_qubits(2)
+            # arr = np.array([1, 0, 0, 0])
+            # arr = np.array([0, 0, 0, 0])
+
+
+            self.state_vec_to_measure = arr
+
+            self.state_dd_object = DecisionDiagram(arr)
+
+            #   Berechne alle Wahrscheinlichkeiten, wenn das Entscheidungsdiagramm einen Zustandsvektor darstellt.
+            #   Für Matrizen sind die Ergebnisse der Berechnung nutzlos...
+            self.state_dd_object.calc_probabilities_if_vector()
+
+                # ----------
+            #   Gebe eingegebene und ausgelesene Matrix/Vektor aus
+            if Base.get_debug():
+                print('\nEingegebener Vektor/Matrix:\n', arr)
+                #   Erstelle Matrix/Vektor aus Entscheidungsdiagramm
+                print('\nAusgelesener Vektor/Matrix:\n', self.state_dd_object.create_matrix())
+                # ----------
+
+            print('Gemessenes Qubit:', self.qubit_to_measure)
+            print('Ursprünglicher Zustandsvektor:', arr)
+            print('Zustandsvektor nach der Messung:', self.measure())
+            print('\n\t\t---------- Fortsetzung mit eingegebenen Werten: ----------')
+
+
+            self.state_vec_to_measure = state_vec_to_measure
+
+            self.state_dd_object = DecisionDiagram(self.state_vec_to_measure)
+
+            #   Berechne alle Wahrscheinlichkeiten, wenn das Entscheidungsdiagramm einen Zustandsvektor darstellt.
+            #   Für Matrizen sind die Ergebnisse der Berechnung nutzlos...
+            self.state_dd_object.calc_probabilities_if_vector()
+
+
 
         super().__init__(qubit_to_measure)
 
-#    def measure(self):
+    def __mul__(self, other):
+        return self.measure()
+
+    def measure(self):
         output_state_vec = np.empty_like(self.state_vec_to_measure)
-#        for x in self.probability_after_node:
 
-            # ToDo: Anhand von Wahrscheinlichkeiten und Rand() eine Entscheidung treffen
+        p_0 = 0
+        p_1 = 0
+        for node in self.state_dd_object.list_of_all_nodes[self.qubit_to_measure]:
+            p_0 += node.list_outgoing_edges[0].edge_probability
+            p_1 += node.list_outgoing_edges[1].edge_probability
 
-#            new_dd_after_measurement_obj = self.state_dd_object
-#            i = 0
-#            for x in self.state_dd_object.dd:
-#                i += 1
-#                if x == 0:  # ToDo: Ist in Stuktur von x das Qbit 0 oder 1, entsprechend der Messung zuvor, wird neuer
-                    # ToDo: Zustand 0 gesetzt
-#                    new_dd_after_measurement_obj.dd[i] = 0
+            # ----------
+        if Base.get_debug():
+            print('Teste Messung: Wahrscheinlichkeit für Qubit', self.qubit_to_measure, 'gleich 0 + die '
+                                                            'Wahrscheinlichkeit für 1, muss 1 ergeben:', p_0 + p_1)
+            # ----------
 
-#            output_state_vec = DecisionDiagram.create_vector_from_dd(new_dd_after_measurement_obj.dd)
+        # ToDo: Anhand von Wahrscheinlichkeiten und Rand() eine Entscheidung treffen
+        random_value = random.randint(0, 1000000) / 1000000
 
-#        return output_state_vec
+        new_dd_after_measurement_obj = deepcopy(self.state_dd_object)
+        if p_0 <= random_value:
+            for node in new_dd_after_measurement_obj.list_of_all_nodes[self.qubit_to_measure]:
+                edge_0 = node.list_outgoing_edges[0]
+                edge_1 = node.list_outgoing_edges[1]
+
+                edge_0.edge_probability = 1
+                edge_0.edge_weight /= cmath.sqrt(edge_0.conditional_probability)
+
+                edge_1.edge_probability = 0
+                edge_1.conditional_probability = 0
+                edge_1.edge_weight = 0
+                edge_1.target_node = new_dd_after_measurement_obj.node_zero
+                # ToDo: Lösche den abgeschnittenen Baum
+
+        output_state_vec = new_dd_after_measurement_obj.create_matrix()
+
+        return output_state_vec

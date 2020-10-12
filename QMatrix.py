@@ -27,6 +27,7 @@ class QMatrix(Base):
     def __mul__(self, qstate_obj):
         """
         Operator * führt Matrix-Vektor-Multiplikation zwischen QGate und QState durch."
+        Für die Messung wird dieser Operator in der Klasse Measurement überladen.
 
         :param qstate_obj: Zustandsvektor, mit dem Multipliziert wird
         :return qstate_obj: Gibt veränderten Zustandsvektor zurück

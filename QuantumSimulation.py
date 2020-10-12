@@ -156,7 +156,7 @@ class QuantumSimulation(Base):
             qubit_to_change = int(self.operation_obj.list_tuple_operation_qubit_i[i, 1])
 
             #   Erzeugen des benötigten Objekt für das Gatter (Gatter werden durch Konstruktor automatisch auf richtige
-            #   Größe erweitert.  ToDo: Objekt für Messung
+            #   Größe erweitert.
             if operation == 'x':
                 self.qgate_obj = PauliX(qubit_to_change)
             elif operation == 'z':
@@ -166,19 +166,20 @@ class QuantumSimulation(Base):
             elif operation == 'm':
                 self.qgate_obj = Measurement(self.qstate_obj.general_matrix, qubit_to_change)
 
-                # Index welches Tupel abgearbeitet wird, wird hcohgezählt
+                # Index welches Tupel abgearbeitet wird, wird hochgezählt
                 i += 1
 
                 break
 
             else:
-                print('Diese Operation (Gatter oder Messung) wurde noch nicht implementiert:', operation)
+                print('Diese Operation (Gatter) wurde noch nicht implementiert:', operation)
                 return -1
 
             #   Multiplikation führt Simulation aus: Neuer Zustandsvektor nachdem Gatter angewendet wurde
+            #   (Messung wird ebenfalls durch den Operator __mul__() aufgerufen)
             self.qstate_obj = self.qgate_obj * self.qstate_obj
 
-            # Index welches Tupel abgearbeitet wird, wird hcohgezählt
+            # Index welches Tupel abgearbeitet wird, wird hochgezählt
             i += 1
 
         return self.qstate_obj

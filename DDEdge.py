@@ -17,12 +17,17 @@ class DDEdge(Base):
     die Memberfunktionen, die zb. das Kantengewicht für alle Kanten rekursiv berechnen.
     """
 
-    def __init__(self, source_node, target_node):
+    def __init__(self, source_node, target_node, dd_obj_in):
+        self.dd_obj = dd_obj_in
         self.edge_weight = 1
         self.edge_probability = 0
         self.old_edge_probability = 0
+        self.conditional_probability = 0
         self.source_node = source_node
         self.target_node = target_node
+        #   Speichert die Anzahl, wie oft die Kante in verschiedenen Ästen vorkommt. Wird bisher nur für die Kanten zum
+        #   0-Endknoten benötigt
+        self.n_possible_paths = 0
         #   is_calculated wird benötigt, damit durch die rekursiven Funktionsaufrufe jedes Objekt nur einmal berechnet
         #   wird
         self.is_calculated = False
@@ -46,25 +51,24 @@ class DDEdge(Base):
         else:
             return str_out
 
-    """
-    def __del__(self, dd_obj):
+    def delete_edge(self, dd_obj):
+        edge_in = self
         if np.size(self.target_node.list_incoming_edges) == 1:
-            del self.target_node
+            self.target_node.delete_node(dd_obj)
         else:
-            index = np.where(self.target_node.list_incoming_edges == self)[0][0]
-            if len(index) == 1:
+            index = np.where(self.target_node.list_incoming_edges == edge_in)[0][0]
+            if np.size(index) == 1:
                 self.target_node.list_incoming_edges = np.delete(self.target_node.list_incoming_edges, index)
             else:
                 print('Fehler in DDedge.py in def __del__(self, dd_obj). target_node.list_incoming_edges sollte die'
                       'Kante die gelöscht werden soll, genau einmal gespeichert haben.')
 
-        index = np.where(dd_obj.list_of_all_edges == self)[0][0]
-        if len(index) == 1:
+        index = np.where(dd_obj.list_of_all_edges == edge_in)[0][0]
+        if np.size(index) == 1:
             dd_obj.list_of_all_edges = np.delete(dd_obj.list_of_all_edges, index)
         else:
             print('Fehler in DDedge.py in def __del__(self, dd_obj). dd_obj.list_of_all_edges sollte die Kante die'
                   'gelöscht werden soll, genau einmal gespeichert haben.')
-    """
 
     def calc_edge_weight(self):
         """
@@ -148,3 +152,21 @@ class DDEdge(Base):
             #   Die Funktion wird für alle ausgehenden Kanten rekursiv aufgerufen
             for edge in self.target_node.list_outgoing_edges:
                 edge.calc_edge_propability()
+
+    def calc_conditional_probabilities(self):
+        if self.is_calculated:
+            return
+        else:
+            if self.source_node:
+                sum_incoming_ep = 0
+                for edge in self.source_node.list_incoming_edges:
+                    sum_incoming_ep += edge.edge_probability
+                self.conditional_probability = self.edge_probability / sum_incoming_ep
+            else:
+                self.conditional_probability = self.edge_probability / 1
+
+            if any(self.target_node.list_outgoing_edges):
+                for edge in self.target_node.list_outgoing_edges:
+                    edge.calc_conditional_probabilities()
+
+            self.is_calculated = True
