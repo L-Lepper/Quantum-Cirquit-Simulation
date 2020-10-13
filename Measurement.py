@@ -26,12 +26,13 @@ class Measurement(QGate):
 
         if Base.get_debug():
             print('\n\n\n\t\t---------- komplexeres Beispiel ----------\n\n')
+            remember_old_number_qubits = Base.getnqubits()
             #Base.set_n_qubits(3)
             #arr = np.array([2, 2, 4, 4, 6, 6, 12, 12])
             #arr = np.array([[5,7,1,0,6,4,5,0],[8,7,2,3,0,1,7,6],[1,0,5,7,3,8,4,0],[2,3,8,7,7,9,3,1],[0,0,0,0,0,7,1,0],[0,0,0,0,8,7,2,3],[0,0,0,0,1,0,5,7],[0,0,0,0,2,3,8,7]])
             Base.set_n_qubits(4)
-            #arr = np.array([0.3082207, 0.054772256, 0.176068169, 0.242899156, 0.3082207, 0.054772256, 0.223606798, 0.346410162, 0.3082207, 0.054772256, 0.223606798, 0.346410162, 0.262678511, 0.262678511, 0.262678511, 0.262678511])
-            arr = np.array([-0.25364695+0.535476894j, -0.366378928+0j, 0+0j, 0.591842883-0.028182994j, 0.140914972+0.028182994j, 0.056365989+0.084548983j, 0.084548983+0.140914972j, -0.056365989+0.084548983j, 0.084548983-0.140914972j, -0.056365989-0.084548983j, 0.028182994-0.056365989j, 0.056365989+0.056365989j, 0.084548983-0.140914972j, -0.056365989-0.084548983j, 0.028182994-0.056365989j, 0.056365989+0.056365989j])
+            arr = np.array([0.3082207, 0.054772256, 0.176068169, 0.242899156, 0.3082207, 0.054772256, 0.223606798, 0.346410162, 0.3082207, 0.054772256, 0.223606798, 0.346410162, 0.262678511, 0.262678511, 0.262678511, 0.262678511])
+            #arr = np.array([-0.25364695+0.535476894j, -0.366378928+0j, 0+0j, 0.591842883-0.028182994j, 0.140914972+0.028182994j, 0.056365989+0.084548983j, 0.084548983+0.140914972j, -0.056365989+0.084548983j, 0.084548983-0.140914972j, -0.056365989-0.084548983j, 0.028182994-0.056365989j, 0.056365989+0.056365989j, 0.084548983-0.140914972j, -0.056365989-0.084548983j, 0.028182994-0.056365989j, 0.056365989+0.056365989j])
             # Base.set_n_qubits(4)
             # arr = np.array([1, 2, 2, 5, 2, 1, 5, 1, 1, 2, 2, 5, 0, 0, 5, 0])
             # Base.set_n_qubits(2)
@@ -52,12 +53,13 @@ class Measurement(QGate):
             if Base.get_debug():
                 print('\nEingegebener Vektor/Matrix:\n', arr)
                 #   Erstelle Matrix/Vektor aus Entscheidungsdiagramm
-                print('\nAusgelesener Vektor/Matrix:\n', self.state_dd_object.create_matrix())
+                print('\nAusgelesener Vektor/Matrix:\n', self.state_dd_object.create_matrix(), '\n')
                 # ----------
 
             print('Gemessenes Qubit:', self.qubit_to_measure)
-            print('Ursprünglicher Zustandsvektor:', arr)
-            print('Zustandsvektor nach der Messung:', self.measure())
+            print('Ursprünglicher Zustandsvektor:\n', arr)
+            print('Zustandsvektor nach der Messung:\n', self.measure())
+            Base.set_n_qubits(remember_old_number_qubits)
             print('\n\t\t---------- Fortsetzung mit eingegebenen Werten: ----------')
 
 
@@ -88,7 +90,7 @@ class Measurement(QGate):
             # ----------
         if Base.get_debug():
             print('Teste Messung: Wahrscheinlichkeit für Qubit', self.qubit_to_measure, 'gleich 0 + die '
-                                                            'Wahrscheinlichkeit für 1, muss 1 ergeben:', p_0 + p_1)
+                                                        'Wahrscheinlichkeit für 1, muss 1 ergeben:', p_0 + p_1, '\n')
             # ----------
 
 
@@ -131,5 +133,20 @@ class Measurement(QGate):
         print(new_dd_after_measurement_obj)
 
         output_state_vec = new_dd_after_measurement_obj.create_matrix()
+
+            # ----------
+        #   Ausgabe der Summe aus den gadrierten Beträge der Elemente aus dem Zustandsvektor
+        if Base.get_debug():
+            sum_entries = 0
+            for x in output_state_vec:
+                sum_entries += pow(abs(x), 2)
+            print('\nPrüfe Normiertheit')
+            if p_0 >= random_value:
+                print('Qubit', self.qubit_to_measure, 'wurde zu 0 gemessen.')
+            else:
+                print('Qubit', self.qubit_to_measure, 'wurde zu 1 gemessen.')
+            print('Summe der quadrierten Beträge:', sum_entries)
+            # ----------
+
 
         return output_state_vec

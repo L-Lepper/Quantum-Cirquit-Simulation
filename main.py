@@ -17,7 +17,7 @@ from Base import Base
 #   Jetzt erfolgt Eingabe fest vorprogrammiert über die Konsole
 read_from_file = False
 
-Base.enable_debug()
+Base.enable_debug(3)
 
 #   QuantumSimulation Objekt erstellen
 q_sim = QuantumSimulation()

@@ -61,6 +61,7 @@ class DDNode(Base):
                     temp += [edge.target_node.get_max_value_of_target_nodes()]
 
                 abs_temp = []
+                # ToDo abs kann direkt auf Liste angewendet werden
                 for value in temp:
                     abs_temp += [abs(value)]
 
