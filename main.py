@@ -1,8 +1,8 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 14.09.2020
+#   Author: Lukas Lepper, 19.10.2020
 #   Betreuer: Martin Hardieck
-#   Dateiname: DDEdge.py
-#   Version: 0.4
+#   Dateiname: main.py
+#   Version: 0.5
 
 #   Klassen importieren, mit deren Memberfunktionen gearbeitet werden muss.
 #   Die Klasse QuantumSimulation bietet die Hauptfunktionen für die Simulation an, die in der main gesteuert wird.
@@ -13,21 +13,14 @@ from QuantumSimulation import QuantumSimulation
 from Base import Base
 
 
-#   ToDo: Warte auf Befehl "von Datei einlesen" oder "aus Befehlen einlesen"
-#   Jetzt erfolgt Eingabe fest vorprogrammiert über die Konsole
-read_from_file = False
-
-Base.enable_debug(3)
-
 #   QuantumSimulation Objekt erstellen
 q_sim = QuantumSimulation()
 
-#   Je nach vorheriger Eingabe, wird aus Konsole oder von Datei eingelesen
-#   ToDo: Kann auch im Konstruktor von QuantumSimulation() erfolgen:
-if read_from_file:
-    q_sim.read_input_from_file()
-else:
-    q_sim.read_input_from_cmd()
+#   Hinweis, was das Programm berechnet. ToDo: An aktuelle Funktionen anpassen
+print('\nSimulation von Quantenschaltungen, für eine kleine Anzahl an Qubits.')
+
+#   Starte Eingabeaufforderung für Parameter der Klasse QuantumSimulation
+q_sim.cmd_input_for_qsim()
 
 #   Führe Berechnung der eingelesenen Eingabe durch
 q_sim.qstate_obj = q_sim.calculate()

@@ -1,12 +1,11 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 14.09.2020
+#   Author: Lukas Lepper, 19.10.2020
 #   Betreuer: Martin Hardieck
-#   Dateiname: DDEdge.py
-#   Version: 0.4
+#   Dateiname: DDNode.py
+#   Version: 0.5
 
 
 import numpy as np
-import cmath
 from Base import Base
 
 
@@ -61,7 +60,6 @@ class DDNode(Base):
                     temp += [edge.target_node.get_max_value_of_target_nodes()]
 
                 abs_temp = []
-                # ToDo abs kann direkt auf Liste angewendet werden
                 for value in temp:
                     abs_temp += [abs(value)]
 
@@ -112,16 +110,35 @@ class DDNode(Base):
                 return self.saved_value_on_node
 
     def get_matrix(self, upstream_edge_weight):
+        """
+        Funktion bestimmt rekursiv aus den Nachfolgeknoten die Matrix oder den Vektor, der durch das
+        Entscheidungsdiagramm dargestellt wird.
+        :param upstream_edge_weight: Das Produkt aus dem quadrierten Betrag aller Kantengewichte, auf dem über dem
+        betrachteten Knoten liegendem Ast.
+        :return: Matrix aus dem nachfolgenden Teildiagramm
+        """
+
+        #   Falls der Knoten ausgehende Kanten hat, wird die Funktion für die Nachfolgeknoten mit dem neuen Upstream-
+        #   Kantengewicht aufgerufen
         if any(self.list_outgoing_edges):
+
+            #   Für Vektoren
             if self.dd_obj.is_vector:
+
+                #   Liste merkt sich die Teilvektoren, die aus den Nachfolgeknoten zurückgegeben werden
                 list_of_subvectors = np.array([])
 
+                #   Für jeden Ast wird das neue Upstream-Kantengewicht berechnet und die Funktion rekursiv aufgerufen
+                #   und die Teilmatrix in der Liste gespeichert
                 for i in range(2):
                     upstream_ew = upstream_edge_weight * self.list_outgoing_edges[i].edge_weight
                     subvector = self.list_outgoing_edges[i].target_node.get_matrix(upstream_ew)
 
+                    #   Falls die Teilmatrix nur das Element 0 enthält, wird aus dem in der entsprechenden Kante
+                    #   gespeicherten Wert (Anzahl der verschiedenen Pfade auf den 0-Knoten, die durch diese Kante
+                    #   repräsentiert werden), die Matrix/der Vektor auf die entsprechende Größe erweitert. Selbe Größe,
+                    #   wie die anderen Teilmatrizen.
                     if np.array_equal(subvector, [0]):
-                        #n = int(cmath.sqrt(self.list_outgoing_edges[i].n_possible_paths_to_zero).real)
                         n = self.list_outgoing_edges[i].n_possible_paths_to_zero
                         subvector = np.zeros(n)
 
@@ -131,20 +148,29 @@ class DDNode(Base):
 
                 return vec_out
 
+            #   Falls Matrix
             elif not self.dd_obj.is_vector:
+
+                #   Liste merkt sich die Teilmatrizen, die aus den Nachfolgeknoten zurückgegeben werden
                 list_of_submatrizes = np.array([[]])
 
+                #   Für jeden Ast wird das neue Upstream-Kantengewicht berechnet und die Funktion rekursiv aufgerufen
+                #   und die Teilmatrix in der Liste gespeichert
                 for i in range(4):
                     upstream_ew = upstream_edge_weight * self.list_outgoing_edges[i].edge_weight
                     submatrix = self.list_outgoing_edges[i].target_node.get_matrix(upstream_ew)
 
+                    #   Falls die Teilmatrix nur das Element 0 enthält, wird aus dem in der entsprechenden Kante
+                    #   gespeicherten Wert (Anzahl der verschiedenen Pfade auf den 0-Knoten, die durch diese Kante
+                    #   repräsentiert werden), die Matrix/der Vektor auf die entsprechende Größe erweitert. Selbe Größe,
+                    #   wie die anderen Teilmatrizen.
                     if np.array_equal(submatrix, [[0]]):
-                        #n = int(cmath.sqrt(self.list_outgoing_edges[i].n_possible_paths_to_zero).real)
                         n = self.list_outgoing_edges[i].n_possible_paths_to_zero
                         submatrix = np.zeros((n, n))
 
                     list_of_submatrizes = np.append(list_of_submatrizes, submatrix)
 
+                #   Teilmatrizen werden so zusammengefasst, dass alle Teilmatrizen immer die selbe Größe haben
                 m_0x = np.append(list_of_submatrizes[0], list_of_submatrizes[1], 0)
                 m_1x = np.append(list_of_submatrizes[2], list_of_submatrizes[3], 0)
 
@@ -154,9 +180,13 @@ class DDNode(Base):
 
             else:
                 print('Fehler beim Umwandeln des Entscheidungsdiagramms in einen Vektor oder Matrix.'
-                      '\nKnoten müssen entweder 2 oder 4 ausgehende Kanten haben.')
+                      '\nKnoten müssen entweder 2 oder 4 ausgehende Kanten haben, Vektor oder Matrix.')
 
+        #   Falls Knoten keine ausgehenden Kanten hat, ist er ein Endknoten
         else:
+
+            #   Es wird das Produkt aus dem im Knoten gespeicherten Wert und dem Upstream-Kantengewicht als Vektor oder
+            #   Matrix zurückgegeben
             if self.dd_obj.is_vector:
                 return np.array([self.saved_value_on_node * upstream_edge_weight])
             else:

@@ -1,8 +1,8 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 14.09.2020
+#   Author: Lukas Lepper, 19.10.2020
 #   Betreuer: Martin Hardieck
-#   Dateiname: DDEdge.py
-#   Version: 0.4
+#   Dateiname: Measurement.py
+#   Version: 0.5
 
 import cmath
 import numpy as np
@@ -20,67 +20,45 @@ class Measurement(QGate):
     """
 
     def __init__(self, state_vec_to_measure, qubit_to_measure):
-        #self.state_vec_to_measure = np.array([0, 1/cmath.sqrt(2), 0, 0, 0, 1/2, 1/cmath.sqrt(8), 1/cmath.sqrt(8)])
+        """
+        Erstelle ein Objekt für die Messung, indem der Zustandsvektor, der Index des Qubits und das
+        Entscheidungsdiagramm für diesen Vektor gespeichert sind. Für das Entscheidungsdiagramm werden die
+        Wahrscheinlichkeiten berechnet.
+        :param state_vec_to_measure: Vektor, der im Entscheidungsdiagramm dargestellt wird.
+        :param qubit_to_measure: Index des Qubits, welches gemessen wird.
+        """
+
+        #   Speichere den zu Messenden Zustandsvektor und den index des Qubits in diesm Objekt
         self.state_vec_to_measure = state_vec_to_measure
         self.qubit_to_measure = qubit_to_measure
 
-        if Base.get_debug():
-            print('\n\n\n\t\t---------- komplexeres Beispiel ----------\n\n')
-            remember_old_number_qubits = Base.getnqubits()
-            #Base.set_n_qubits(3)
-            #arr = np.array([2, 2, 4, 4, 6, 6, 12, 12])
-            #arr = np.array([[5,7,1,0,6,4,5,0],[8,7,2,3,0,1,7,6],[1,0,5,7,3,8,4,0],[2,3,8,7,7,9,3,1],[0,0,0,0,0,7,1,0],[0,0,0,0,8,7,2,3],[0,0,0,0,1,0,5,7],[0,0,0,0,2,3,8,7]])
-            Base.set_n_qubits(4)
-            arr = np.array([0.3082207, 0.054772256, 0.176068169, 0.242899156, 0.3082207, 0.054772256, 0.223606798, 0.346410162, 0.3082207, 0.054772256, 0.223606798, 0.346410162, 0.262678511, 0.262678511, 0.262678511, 0.262678511])
-            #arr = np.array([-0.25364695+0.535476894j, -0.366378928+0j, 0+0j, 0.591842883-0.028182994j, 0.140914972+0.028182994j, 0.056365989+0.084548983j, 0.084548983+0.140914972j, -0.056365989+0.084548983j, 0.084548983-0.140914972j, -0.056365989-0.084548983j, 0.028182994-0.056365989j, 0.056365989+0.056365989j, 0.084548983-0.140914972j, -0.056365989-0.084548983j, 0.028182994-0.056365989j, 0.056365989+0.056365989j])
-            # Base.set_n_qubits(4)
-            # arr = np.array([1, 2, 2, 5, 2, 1, 5, 1, 1, 2, 2, 5, 0, 0, 5, 0])
-            # Base.set_n_qubits(2)
-            # arr = np.array([1, 0, 0, 0])
-            # arr = np.array([0, 0, 0, 0])
+        #   Erstelle das Entscheidungsdiagramm mit Kantengewichten
+        self.state_dd_object = DecisionDiagram(self.state_vec_to_measure)
 
-
-            self.state_vec_to_measure = arr
-
-            self.state_dd_object = DecisionDiagram(arr)
-
-            #   Berechne alle Wahrscheinlichkeiten, wenn das Entscheidungsdiagramm einen Zustandsvektor darstellt.
-            #   Für Matrizen sind die Ergebnisse der Berechnung nutzlos...
-            self.state_dd_object.calc_probabilities_if_vector()
-
-                # ----------
-            #   Gebe eingegebene und ausgelesene Matrix/Vektor aus
-            if Base.get_debug():
-                print('\nEingegebener Vektor/Matrix:\n', arr)
-                #   Erstelle Matrix/Vektor aus Entscheidungsdiagramm
-                print('\nAusgelesener Vektor/Matrix:\n', self.state_dd_object.create_matrix(), '\n')
-                # ----------
-
-            print('Gemessenes Qubit:', self.qubit_to_measure)
-            print('Ursprünglicher Zustandsvektor:\n', arr)
-            print('Zustandsvektor nach der Messung:\n', self.measure())
-            Base.set_n_qubits(remember_old_number_qubits)
-            print('\n\t\t---------- Fortsetzung mit eingegebenen Werten: ----------')
-
-
-            self.state_vec_to_measure = state_vec_to_measure
-
-            self.state_dd_object = DecisionDiagram(self.state_vec_to_measure)
-
-            #   Berechne alle Wahrscheinlichkeiten, wenn das Entscheidungsdiagramm einen Zustandsvektor darstellt.
-            #   Für Matrizen sind die Ergebnisse der Berechnung nutzlos...
-            self.state_dd_object.calc_probabilities_if_vector()
-
-
+        #   Berechne alle Wahrscheinlichkeiten, wenn das Entscheidungsdiagramm einen Zustandsvektor darstellt.
+        #   Für Matrizen sind die Ergebnisse der Berechnung nutzlos...
+        self.state_dd_object.calc_probabilities_if_vector()
 
         super().__init__(qubit_to_measure)
 
-    def __mul__(self, other):
-        return self.measure()
-
     def measure(self):
-        output_state_vec = np.empty_like(self.state_vec_to_measure)
+        """
+        Die Funktion erstellt eine echte Kopie von dem Entscheidungsdiagramm state_dd_object, welches gemessen werden
+        soll, und misst das Qubit state_vec_to_measure. ToDo gebe das neue Entscheidungsdiagramm zurück oder
+        ToDo überschreibe das Originale
+        Die einzelnen Schritte, wie die Messung durchgeführt wird, sind in der
+        Datei "Anleitung - Entscheidungsdiagramm und Messung - v4.pdf" gespeichert. ToDo: Dateiname überprüfen
 
+        :return output_state_vec: Neuer Zustandsvektor nach der Messung wird zurückgegeben.
+        """
+
+        """ Schritt 11 """
+
+        #   ToDo: Ausgabe erfolgt anders(siehe Todo oben)
+        print('--------------- Entscheidungsdiagramm vor der Messung ---------------', self.state_dd_object)
+
+        #   Für das zu messende Qubit wird die Wahrscheinlichkeit berechnet für den Zustand 0 oder 1 (Summe der
+        #   jeweiligen Äste aller Knoten auf einer Ebene).
         p_0 = 0
         p_1 = 0
         for node in self.state_dd_object.list_of_all_nodes[self.qubit_to_measure]:
@@ -88,55 +66,100 @@ class Measurement(QGate):
             p_1 += node.list_outgoing_edges[1].edge_probability
 
             # ----------
-        if Base.get_debug():
+        #   Test, dass die Wahrscheinlichkeit p_0 + p_1 gleich 1 ist.
+        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
             print('Teste Messung: Wahrscheinlichkeit für Qubit', self.qubit_to_measure, 'gleich 0 + die '
                                                         'Wahrscheinlichkeit für 1, muss 1 ergeben:', p_0 + p_1, '\n')
             # ----------
 
 
+        #   Erzeuge eine Zufallszahl zwischen 0 und 1 mit 6 Nachkommastellen
         random_value = random.randint(0, 1000000) / 1000000
 
+        #   Erstelle eine echte Kopie, des originalen Entscheidungsdiagramms
         new_dd_after_measurement_obj = deepcopy(self.state_dd_object)
+
+        #   Falls p_0 größer gleich wie die Zufallszahl ist, wurde das Qubit zu 0 gemessen.
         if p_0 >= random_value:
+
+            """ Schritt 12 """
+
+            #   Für jeden Knoten auf der Ebene des zu messenden Qubits, wird das Entscheidungsdiagramm durch die
+            #   Messung angepasst
             for node in new_dd_after_measurement_obj.list_of_all_nodes[self.qubit_to_measure]:
 
-
+                #   Speichere die linke (0) und die rechte Kante (1)
                 edge_0 = node.list_outgoing_edges[0]
                 edge_1 = node.list_outgoing_edges[1]
 
+                #   Durch die Messung hat die linke Kante die Wahrscheinlichkeit 1
                 edge_0.edge_probability = 1
+
+                """ Schritt 13 """
+                #   Normierung des neuen Entscheidungsdiagramms erfolgt durch division des Kantengewichts durch die
+                #   Wurzel aus der bedingten Wahrschinlichkeit, mit der dieser Zustand an diesem Knoten eingetreten ist.
                 edge_0.edge_weight /= cmath.sqrt(edge_0.conditional_probability)
 
+                #   Die nicht gemessene Kante wird auf den 0-Knoten gezogen, und ihre Eigenschagten entsprechend
+                #   angepasst
                 edge_1.edge_probability = 0
                 edge_1.conditional_probability = 0
                 edge_1.edge_weight = 0
                 edge_1.target_node = new_dd_after_measurement_obj.node_zero
+
+                #   Anzahl der Kanten, die durch diese Kante dargestellt wird, wird berechnet
                 edge_1.n_possible_paths_to_zero = pow(2, Base.getnqubits() - self.qubit_to_measure - 1)
-                #edge_1.n_possible_paths_to_zero *= edge_1.count_of_paths
+                #   Diese Anzahl wird mit der Häufigkeit multipliziert, mit der die Kante in allen Ästen aufgetreten ist
+                edge_1.n_possible_paths_to_zero *= edge_1.count_of_paths
+
                 # ToDo: Lösche den abgeschnittenen Baum
+
+        #   Falls p_0 < als die Zufallszahl, wird der Zustand 1 gemessen
         else:
+
+            """ Schritt 12 """
+
+            #   Für jeden Knoten auf der Ebene des zu messenden Qubits, wird das Entscheidungsdiagramm durch die
+            #   Messung angepasst
             for node in new_dd_after_measurement_obj.list_of_all_nodes[self.qubit_to_measure]:
+
+                #   Speichere die linke (0) und die rechte Kante (1)
                 edge_0 = node.list_outgoing_edges[0]
                 edge_1 = node.list_outgoing_edges[1]
 
+                #   Durch die Messung hat die rechte Kante die Wahrscheinlichkeit 1
                 edge_1.edge_probability = 1
+
+                """ Schritt 13 """
+                #   Normierung des neuen Entscheidungsdiagramms erfolgt durch division des Kantengewichts durch die
+                #   Wurzel aus der bedingten Wahrschinlichkeit, mit der dieser Zustand an diesem Knoten eingetreten ist.
                 edge_1.edge_weight /= cmath.sqrt(edge_1.conditional_probability)
 
+                #   Die nicht gemessene Kante wird auf den 0-Knoten gezogen, und ihre Eigenschagten entsprechend
+                #   angepasst
                 edge_0.edge_probability = 0
                 edge_0.conditional_probability = 0
                 edge_0.edge_weight = 0
                 edge_0.target_node = new_dd_after_measurement_obj.node_zero
+
+                #   Anzahl der Kanten, die durch diese Kante dargestellt wird, wird berechnet
                 edge_0.n_possible_paths_to_zero = pow(2, Base.getnqubits() - self.qubit_to_measure - 1)
-                #edge_0.n_possible_paths_to_zero *= edge_1.count_of_paths
+                #   Diese Anzahl wird mit der Häufigkeit multipliziert, mit der die Kante in allen Ästen aufgetreten ist
+                edge_0.n_possible_paths_to_zero *= edge_1.count_of_paths
+
                 # ToDo: Lösche den abgeschnittenen Baum
 
-        print(new_dd_after_measurement_obj)
+        #   ToDo: Ausgabe erfolgt anders(siehe Todo oben)
+        print('--------------- Entscheidungsdiagramm nach der Messung ---------------', new_dd_after_measurement_obj)
 
+        """ Schritt 14 """
+        #   Aus dem neuen Entscheidungsdiagramm wird ein Vektor ausgelesen
         output_state_vec = new_dd_after_measurement_obj.create_matrix()
 
+        #   ToDo: Ausgabe erfolgt anders(siehe Todo oben)
             # ----------
         #   Ausgabe der Summe aus den gadrierten Beträge der Elemente aus dem Zustandsvektor
-        if Base.get_debug():
+        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
             sum_entries = 0
             for x in output_state_vec:
                 sum_entries += pow(abs(x), 2)
@@ -147,6 +170,5 @@ class Measurement(QGate):
                 print('Qubit', self.qubit_to_measure, 'wurde zu 1 gemessen.')
             print('Summe der quadrierten Beträge:', sum_entries)
             # ----------
-
 
         return output_state_vec

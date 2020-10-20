@@ -1,8 +1,8 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 14.09.2020
+#   Author: Lukas Lepper, 19.10.2020
 #   Betreuer: Martin Hardieck
-#   Dateiname: DDEdge.py
-#   Version: 0.4
+#   Dateiname: DecisionDiagram.py
+#   Version: 0.5
 
 
 import numpy as np
@@ -55,14 +55,31 @@ class DecisionDiagram(Base):
         super().__init__()
 
     def __str__(self):
-        print('\n\n\nGebe Entscheidungsdiagramm aus:\n')
-        #   print alle Knoten in der 2D Liste
-        for index, row in enumerate(self.list_of_all_nodes):
-            print('Knoten der Ebene ', index, ':')
-            for j, node in enumerate(row):
-                print('\tKnoten ', j, ': ', node.saved_value_on_node)
-                for k, edge in enumerate(node.list_outgoing_edges):
-                    print('\t\tEingehende Kante ', k, ': ', edge.edge_weight, edge.count_of_paths, edge.n_possible_paths_to_zero)
+        print('Gebe Entscheidungsdiagramm aus:\nEigenschaften der Kanten:\tKantengewicht | Häufigkeit | '
+              'Anzahl gleicher Kanten | Kantenwahrscheinlichkeit | Bedingte Wahrscheinlichkeit\n')
+
+        #   Debug Verbose-Level 3
+        if Base.get_debug()[1] >= 3:
+            #   print alle Knoten in der 2D Liste
+            for index, row in enumerate(self.list_of_all_nodes):
+                print('Ebene ', index, ':')
+                for j, node in enumerate(row):
+                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
+                    for k, edge in enumerate(node.list_outgoing_edges):
+                        print('\t\tAusgehende Kante', k, ':')
+                        print('\t\t\tKantengewicht', edge.edge_weight, '\n\t\t\tHäufigkeit', edge.count_of_paths, '\n\t\t\tAnzahl gleicher Kanten', edge.n_possible_paths_to_zero,
+                              '\n\t\t\tKantenwahrscheinlichkeit', edge.edge_probability, '\n\t\t\tBedingte Wahrscheinlichkeit', edge.conditional_probability)
+
+        #   Debug Verbose-Level < 3
+        if Base.get_debug()[1] < 3:
+            #   print alle Knoten in der 2D Liste
+            for index, row in enumerate(self.list_of_all_nodes):
+                print('Knoten der Ebene', index, ':')
+                for j, node in enumerate(row):
+                    print('\tKnoten', j, ': ')
+                    for k, edge in enumerate(node.list_outgoing_edges):
+                        print('\t\tAusgehende Kante ', k, ':')
+                        print('\t\t\tKantengewicht:', edge.edge_weight, '\n\t\t\tKantenwahrscheinlichkeit:', edge.edge_probability)
 
         return '\n'
 
@@ -74,6 +91,7 @@ class DecisionDiagram(Base):
         haben, wann berechnung abgeschlossen ist.
         :return:
         """
+
         #   is_calculated für alle Kanten auf False setzen
         for edge in self.list_of_all_edges:
             edge.is_calculated = False
@@ -86,7 +104,7 @@ class DecisionDiagram(Base):
         """
         Die Funktion baut das Entscheidungsdiagramm aus einem Vektor oder einer Matrix auf. Die Knoten speichern
         Zwischenergebnisse in saved_value_on_node. Die einzelnen Schritte, wie das Diagramm aufgebaut wird, sind in der
-        Datei "instructions_for_decision_diagram.doocx" gespeichert. ToDo: Dateiname überprüfen
+        Datei "Anleitung - Entscheidungsdiagramm und Messung - v4.pdf" gespeichert. ToDo: Dateiname überprüfen
         :param matrix_in: Matrix oder Vektor aus dem das Entscheidungsdiagramm erstellt wird
         :return:
         """
@@ -104,15 +122,14 @@ class DecisionDiagram(Base):
             # ----------
             #   Ausgabe der Matrizen im vollständigen Diagramm, die momentan in den Knoten gespeichert sind, falls
             #   debug True. Ansprechen der Knoten über jede einzelne Kante
-        if Base.get_debug():
+        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
             print(
-                '\n\nTest des Aufbaus des Entscheidungsdiagramms nach Schritt 1 und 2. Beginnend mit der Wurzelkante, wird für jede Kante '
-                'der im Zielknoten gespeicherte Wert ausgegeben. Momentan ist das die jeweilige Teilmatrix:\n')
-            #   print root node
-            print(self.list_of_all_edges[0])
+                '\n\nTest des Aufbaus des Entscheidungsdiagramms nach Schritt 1 und 2. \nBeginnend mit der Wurzelkante, wird für jede Kante '
+                'der im Zielknoten gespeicherte Wert ausgegeben. \nMomentan ist das die jeweilige Teilmatrix:\n')
+            print(self)
 
             #   Ausgabe aller elementaren Knoten, durch die Matrix die dort gespeichert ist
-            print('\n\n\nTest der Anzahl an verschiedenen Knoten. Redundante Knoten sind zusammengefasst:\n')
+            print('\nTest der Anzahl an verschiedenen Knoten. Redundante Knoten sind zusammengefasst:\n')
             #   print alle Knoten in der 2D Liste
             for index, row in enumerate(self.list_of_all_nodes):
                 print('Knoten der Ebene ', index, ':')
@@ -128,7 +145,7 @@ class DecisionDiagram(Base):
 
             # ----------
             #   Ausgabe der übertragenen Werte
-        if Base.get_debug():
+        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
             print('\n\n\nTest von Schritt 3 mit den auf die Elternknoten übertragenen Werten (Max aus '
                   'Nachfolgeknoten). Ein 0 Knoten ist hier immer dabei, auch wenn keine Kante auf ihn zeigt:\n')
             #   print alle Knoten in der 2D Liste
@@ -171,7 +188,7 @@ class DecisionDiagram(Base):
 
             # ----------
         #   Ausgabe der übertragenen Werte
-        if Base.get_debug():
+        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
             print('\n\n\nTest für Schritt 4 und 5 - Entscheidungsdiagramm mit Kantengewichten:\n')
             #   print alle Knoten in der 2D Liste
             for index, row in enumerate(self.list_of_all_nodes):
@@ -188,12 +205,13 @@ class DecisionDiagram(Base):
         self.list_of_all_nodes[0][0].get_weighted_propability_of_node()
         self.set_is_calculated_false()
 
+        #   Für jede Kante wird die Anzahl berechnet, wie häufig sie in den Ästen vorkommt
         self.list_of_all_edges[0].calc_count_of_paths()
         self.set_is_calculated_false()
 
             # ----------
         #   Ausgabe der gewichteten Wahrscheinlichkeit aller Knoten
-        if Base.get_debug():
+        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
             print('\n\n\nTest für Schritt 6 - Gewichtete Wahrscheinlichkeit aller Knoten:\n')
             #   print alle Knoten in der 2D Liste
             for index, row in enumerate(self.list_of_all_nodes):
@@ -201,7 +219,8 @@ class DecisionDiagram(Base):
                 for j, node in enumerate(row):
                     print('\tKnoten ', j, ': ', node.saved_value_on_node)
                     for k, edge in enumerate(node.list_incoming_edges):
-                        print('\t\tEingehende Kante ', k, ': ', edge.edge_weight, edge.count_of_paths)
+                        print('\t\tEingehende Kante ', k, ': ')
+                        print('\t\t\tKantengewicht', edge.edge_weight, '\n\t\t\tHäufigkeit', edge.count_of_paths)
             # ---------
 
         """ SCHRITT 7 """
@@ -235,13 +254,13 @@ class DecisionDiagram(Base):
                             
                         self.list_of_all_nodes[i][j].delete_node(self)
                         deleted_nodes += 1
-        """
+        
 
                         
 
           # ----------
         #   Ausgabe der gewichteten Wahrscheinlichkeit aller Knoten
-        if Base.get_debug():
+        if Base.get_debug()[0] and Base.get_debug()[1] < 3:
             print('\n\n\nTest für Schritt 7 - Zusammengefasste Knoten:\n')
             #   print alle Knoten in der 2D Liste
             for index, row in enumerate(self.list_of_all_nodes):
@@ -251,6 +270,7 @@ class DecisionDiagram(Base):
                     for k, edge in enumerate(node.list_incoming_edges):
                         print('\t\tEingehende Kante ', k, ': ', edge.edge_weight)
             # ---------
+        """
 
 
     def calc_probabilities_if_vector(self):
@@ -263,7 +283,7 @@ class DecisionDiagram(Base):
 
             # ----------
         #   Ausgabe des Produktes aller Kantengewichte hoch zur Wurzelkante
-        if Base.get_debug():
+        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
             print('\n\n\nTest Schritt 8 - Berechnete Produkte der Kantengewichte:\n')
             #   print alle Knoten in der 2D Liste
             for index, row in enumerate(self.list_of_all_nodes):
@@ -283,7 +303,7 @@ class DecisionDiagram(Base):
 
             # ----------
         #   Ausgabe der Wahrscheinlichkeit aller Kanten
-        if Base.get_debug():
+        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
             print('\n\n\nTest der berechneten Wahrscheinlichkeiten in Schritt 9:\n')
             #   print alle Knoten in der 2D Liste
             for index, row in enumerate(self.list_of_all_nodes):
@@ -297,14 +317,16 @@ class DecisionDiagram(Base):
                 print('Summe der Wahrscheinlichkeiten auf dieser Ebene:', sum_probability_per_level, '\n')
             # ---------
 
-        """ SCHRITT 9 """
+        """ SCHRITT 10 """
 
+        #   Berechne dei bedingte Wahrscheinlichkeit der Kanten: Entscheidung nach jedem Knoten entweder linker
+        #   oder rechter Ast. Summe der ausgehenden Äste = 1.
         self.list_of_all_edges[0].calc_conditional_probabilities()
         self.set_is_calculated_false()
 
             # ----------
         #   Ausgabe der berechneten bedingten Wahrscheinlichkeit für jede Kante
-        if Base.get_debug():
+        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
             print('\n\n\nTest der bedingten Wahrscheinlichkeiten in Schritt 10:\n(Diesmal werden die ausgehenden Kanten'
                   ' anstatt die eingehenden Kanten gezeigt, letzte Ebene hat also keine Kanten)')
             print('Kante 0:', self.list_of_all_nodes[0][0].list_incoming_edges[0].conditional_probability)
@@ -321,6 +343,12 @@ class DecisionDiagram(Base):
             # ---------
 
     def create_matrix(self):
+        """
+        Funktion ruft die Funktion get_matrix() für den ersten Knoten auf. Dadurch wird rekursiv die Matrix/ der Vektor
+         bestimmt.
+        :return: Vektor/Matrix, der mit dem Entscheidungsdiagramm dargestellt wird.
+        """
+
         return self.list_of_all_nodes[0][0].get_matrix(self.list_of_all_edges[0].edge_weight)
 
 

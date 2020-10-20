@@ -1,8 +1,8 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 25.08.2020
+#   Author: Lukas Lepper, 19.10.2020
 #   Betreuer: Martin Hardieck
-#   Dateiname: HadarmardH.py
-#   Version: 0.3
+#   Dateiname: HadamardH.py
+#   Version: 0.5
 
 
 import numpy as np
@@ -25,7 +25,9 @@ class HadamardH(QGate):
         """
 
         super().__init__(qubit_to_change)
+        #   Typ und spezifische Matrix des Hadarmard Gatters
         self.type = 'h'
         self.general_matrix = np.array([[1 / cmath.sqrt(2), 1 / cmath.sqrt(2)], [1 / cmath.sqrt(2),
                                                                                  -1 / cmath.sqrt(2)]], dtype=complex)
+        #   Erweitere die Matrix auf die Anzahl der Qubits
         self.general_matrix = self.expandmatrix(self.getnqubits(), qubit_to_change)

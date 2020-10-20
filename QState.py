@@ -1,8 +1,8 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 25.08.2020
+#   Author: Lukas Lepper, 19.10.2020
 #   Betreuer: Martin Hardieck
 #   Dateiname: QState.py
-#   Version: 0.3
+#   Version: 0.5
 
 
 import numpy as np
@@ -40,7 +40,7 @@ class QState(QMatrix):
                 #   Berechnung der Wahrscheinlichkeit in %
                 probability = round(pow(abs(value), 2) * 100, 13)
 
-                return_str += 'Der Zustand {} hat die Wahrscheinlichkeit von {}%.\n'.format(diracnotation, probability)
+                return_str += 'Der Zustand {} hat eine Wahrscheinlichkeit von {}%.\n'.format(diracnotation, probability)
 
             index += 1
 

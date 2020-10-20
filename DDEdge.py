@@ -1,8 +1,8 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 14.09.2020
+#   Author: Lukas Lepper, 19.10.2020
 #   Betreuer: Martin Hardieck
 #   Dateiname: DDEdge.py
-#   Version: 0.4
+#   Version: 0.5
 
 
 from Base import Base
@@ -18,6 +18,14 @@ class DDEdge(Base):
     """
 
     def __init__(self, source_node, target_node, dd_obj_in):
+        """
+        Es wird ein Objekt für die Kante erstellt.
+        :param source_node: Quellknoten der Kante
+        :param target_node: Zielknoten der Kante
+        :param dd_obj_in: Objekt des Entscheidungsdiagramms, zudem diese Kante gehört.
+        """
+
+        #   Objekt des Entscheidungsdiagramms wird benötigt um auf Liste der Knoten und Kanten zuzugreifen.
         self.dd_obj = dd_obj_in
         self.edge_weight = 1
         self.edge_probability = 0
@@ -25,34 +33,25 @@ class DDEdge(Base):
         self.conditional_probability = 0
         self.source_node = source_node
         self.target_node = target_node
-        #   Speichert die Anzahl, wie oft die Kante in verschiedenen Ästen vorkommt. Wird bisher nur für die Kanten zum
-        #   0-Endknoten benötigt
+
+        #   Speichert die Anzahl, wie viele Kanten auf den 0-Knoten durch diese Kante dargestellt werden.
         self.n_possible_paths_to_zero = 0
+        #   Speichert die Anzahl, wie häufig diese Kante in allen möglichen Ästen vorkommt.
         self.count_of_paths = 0
         #   is_calculated wird benötigt, damit durch die rekursiven Funktionsaufrufe jedes Objekt nur einmal berechnet
         #   wird
         self.is_calculated = False
+
         super().__init__()
 
-    def __str__(self):
+
+    def delete_edge(self, dd_obj):
         """
-        Ausgabe des Entscheidungsdiagramms, wenn die Wurzelkante aufgerufen wird.
+        Funktion löscht nachfolgende Kanten und Knoten, welche nicht mehr benötigt werden.
+        :param dd_obj:
         :return:
         """
 
-        print(self.target_node.saved_value_on_node, '\t', self.edge_weight, '\t', self.edge_probability, '\n')
-
-        #   Ausgabestring, der für return benötigt wird
-        str_out = ''
-
-        if any(self.target_node.list_outgoing_edges):
-            for element in self.target_node.list_outgoing_edges:
-                str_out += (element.__str__())
-            return str_out
-        else:
-            return str_out
-
-    def delete_edge(self, dd_obj):
         edge_in = self
         if np.size(self.target_node.list_incoming_edges) == 1:
             self.target_node.delete_node(dd_obj)
@@ -155,71 +154,60 @@ class DDEdge(Base):
                 edge.calc_edge_propability()
 
     def calc_conditional_probabilities(self):
+        """
+        Die Funktion berechnet die bedingte Wahrscheinlichkeit, dass an einem Knoten die Entscheidung 0 oder 1, linke
+        oder rechte Kante getroffen wird.
+        :return:
+        """
+
+        #   Falls die Wahrscheinlichkeit bereits berechnet wurde, kann Funktion abgebrochen werden.
         if self.is_calculated:
             return
+
+        #   Berechnung der bedingten Wahrscheinlichkeit, falls noch nicht getan
         else:
+            #   Falls die Kante einen Quellknoten hat, wird Kantenwahrscheinlichkeit der aktuellen Kante durch die
+            #   Summe der Kantenwahrscheinlichkeiten der eingehenden Kanten des Quellknotens geteilt.
             if self.source_node:
                 sum_incoming_ep = 0
+
+                #   Summe der Wahrscheinlichkeiten der eingehenden Kanten
                 for edge in self.source_node.list_incoming_edges:
                     sum_incoming_ep += edge.edge_probability
+
+                #   Berechnung der bedingten Wahrscheinlichkeit durch division der Kantenwahrscheinlichkeit durch die
+                #   Summe der eingehenden Kanten
                 self.conditional_probability = self.edge_probability / sum_incoming_ep
+
+            #   Falls die Kante keinen Quellknoten hat, entspricht die bedigte Wahrscheinlichkeit der
+            #   Kantenwahrscheinlichkeit (Wurzelknoten mit P=1)
             else:
                 self.conditional_probability = self.edge_probability / 1
 
+            #   Falls der Zielknoten ausgehende Kanten hat, wird die Funktion für diese Kanten rekursiv aufgerufen
             if any(self.target_node.list_outgoing_edges):
                 for edge in self.target_node.list_outgoing_edges:
                     edge.calc_conditional_probabilities()
 
+            #   Merke, dass diese Kante berechnet wurde
             self.is_calculated = True
 
     def calc_count_of_paths(self):
+        """
+        Diese Funktion berechnet die Anzahl, wie oft eine Kante in allen Möglichen Ästen vorkommt.
+        :return:
+        """
+
+        #   Falls die Anzahl noch nicht berechnet wurde, entspricht sie der Anzahl der Kanten auf den 0-Knoten, die
+        #   durch die betrachtete Kante dargestellt werden. (Ist bei Kanten die nicht auf den 0-Knoten zeigen 0)
         if not self.is_calculated:
             self.count_of_paths = self.n_possible_paths_to_zero
             self.is_calculated = True
 
+        #   Zähle Anzahl für jeden Funktionsaufruf hoch
         self.count_of_paths += 1
 
-        for edge in self.target_node.list_outgoing_edges:
-            edge.calc_count_of_paths()
-
-    """
-    def get_matrix(self, upstream_edge_weight):
+        #   Falls der Zielknoten ausgehende Kanten hat, wird die Funktion rekursiv für diese Kanten aufgerufen
         if any(self.target_node.list_outgoing_edges):
-            if self.dd_obj.is_vector:
-                for edge in self.target_node.list_outgoing_edges:
-                    
-
-                
-
-                return vec_out
-
-            elif not self.dd_obj.is_vector:
-                list_of_submatrizes = []
-
-                for i in range(4):
-                    upstream_ew = upstream_edge_weight * self.list_outgoing_edges[i].edge_weight
-                    submatrix = self.list_outgoing_edges[i].target_node.get_matrix(upstream_ew)
-
-                    if np.array_equal(submatrix, [[0]]):
-                        n = int(cmath.sqrt(self.list_outgoing_edges[i].n_possible_paths_to_zero).real)
-                        submatrix = np.zeros((n, n))
-
-                    list_of_submatrizes += [submatrix]
-
-                m_0x = np.append(list_of_submatrizes[0], list_of_submatrizes[1], 0)
-                m_1x = np.append(list_of_submatrizes[2], list_of_submatrizes[3], 0)
-
-                matrix_out = np.append(m_0x, m_1x, 1)
-
-                return matrix_out
-
-            else:
-                print('Fehler beim Umwandeln des Entscheidungsdiagramms in einen Vektor oder Matrix.'
-                      '\nKnoten müssen entweder 2 oder 4 ausgehende Kanten haben.')
-
-        else:
-            if self.dd_obj.is_vector:
-                return np.array([self.target_node.saved_value_on_node * upstream_edge_weight])
-            else:
-                return np.array([[self.target_node.saved_value_on_node * upstream_edge_weight]])
-    """
+            for edge in self.target_node.list_outgoing_edges:
+                edge.calc_count_of_paths()

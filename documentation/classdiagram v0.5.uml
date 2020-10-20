@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>Python</ID>
+  <OriginalElement>#C:/Users/lukas/PycharmProjects/SimulationQA-V1-ein_Qubit-X-Z/main.py</OriginalElement>
+  <nodes>
+    <node x="0.0" y="941.0">PauliZ.PauliZ</node>
+    <node x="766.0" y="941.0">PauliX.PauliX</node>
+    <node x="562.0641025641024" y="423.0">QMatrix.QMatrix</node>
+    <node x="553.0" y="941.0">HadarmardH.HadamardH</node>
+    <node x="1279.75" y="0.0">Base.Base</node>
+    <node x="2097.0641025641025" y="412.0">Operation.Operation</node>
+    <node x="745.0641025641024" y="368.0">QuantumSimulation.QuantumSimulation</node>
+    <node x="1696.0641025641025" y="335.0">DDNode.DDNode</node>
+    <node x="653.1666666666666" y="726.0">QState.QState</node>
+    <node x="1377.0641025641025" y="269.0">DDEdge.DDEdge</node>
+    <node x="364.16666666666663" y="748.0">QGate.QGate</node>
+    <node x="213.0" y="919.0">Measurement.Measurement</node>
+    <node x="1077.0641025641025" y="291.0">DecisionDiagram.DecisionDiagram</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="PauliZ.PauliZ" target="QGate.QGate">
+      <point x="0.0" y="-49.5" />
+      <point x="96.5" y="889.0" />
+      <point x="397.79166666666663" y="889.0" />
+      <point x="-100.875" y="49.5" />
+    </edge>
+    <edge source="DDEdge.DDEdge" target="Base.Base">
+      <point x="0.0" y="-203.5" />
+      <point x="1526.5641025641025" y="249.0" />
+      <point x="1391.1666666666667" y="249.0" />
+      <point x="15.916666666666742" y="104.5" />
+    </edge>
+    <edge source="QState.QState" target="QMatrix.QMatrix">
+      <point x="0.0" y="-71.5" />
+      <point x="770.1666666666666" y="701.0" />
+      <point x="684.3141025641024" y="701.0" />
+      <point x="40.75" y="49.5" />
+    </edge>
+    <edge source="Operation.Operation" target="Base.Base">
+      <point x="0.0" y="-60.5" />
+      <point x="2262.5641025641025" y="229.0" />
+      <point x="1454.8333333333333" y="229.0" />
+      <point x="79.58333333333326" y="104.5" />
+    </edge>
+    <edge source="QuantumSimulation.QuantumSimulation" target="Base.Base">
+      <point x="0.0" y="-104.5" />
+      <point x="901.0641025641024" y="239.0" />
+      <point x="1327.5" y="239.0" />
+      <point x="-47.75" y="104.5" />
+    </edge>
+    <edge source="HadarmardH.HadamardH" target="QGate.QGate">
+      <point x="0.0" y="-49.5" />
+      <point x="649.5" y="899.0" />
+      <point x="532.2916666666666" y="899.0" />
+      <point x="33.625" y="49.5" />
+    </edge>
+    <edge source="PauliX.PauliX" target="QGate.QGate">
+      <point x="0.0" y="-49.5" />
+      <point x="862.5" y="889.0" />
+      <point x="599.5416666666666" y="889.0" />
+      <point x="100.875" y="49.5" />
+    </edge>
+    <edge source="DecisionDiagram.DecisionDiagram" target="Base.Base">
+      <point x="0.0" y="-181.5" />
+      <point x="1217.0641025641025" y="249.0" />
+      <point x="1359.3333333333333" y="249.0" />
+      <point x="-15.916666666666742" y="104.5" />
+    </edge>
+    <edge source="QMatrix.QMatrix" target="Base.Base">
+      <point x="0.0" y="-49.5" />
+      <point x="643.5641025641024" y="229.0" />
+      <point x="1295.6666666666667" y="229.0" />
+      <point x="-79.58333333333326" y="104.5" />
+    </edge>
+    <edge source="Measurement.Measurement" target="QGate.QGate">
+      <point x="0.0" y="-71.5" />
+      <point x="373.0" y="899.0" />
+      <point x="465.04166666666663" y="899.0" />
+      <point x="-33.625" y="49.5" />
+    </edge>
+    <edge source="DDNode.DDNode" target="Base.Base">
+      <point x="0.0" y="-137.5" />
+      <point x="1886.5641025641025" y="239.0" />
+      <point x="1423.0" y="239.0" />
+      <point x="47.75" y="104.5" />
+    </edge>
+    <edge source="QGate.QGate" target="QMatrix.QMatrix">
+      <point x="0.0" y="-49.5" />
+      <point x="498.66666666666663" y="701.0" />
+      <point x="602.8141025641024" y="701.0" />
+      <point x="-40.75" y="49.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.3000000000000003" x="1172.9999999999995" y="484.08333333333314" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Methods</Category>
+    <Category>Inner Classes</Category>
+    <Category>Fields</Category>
+  </Categories>
+</Diagram>
+
