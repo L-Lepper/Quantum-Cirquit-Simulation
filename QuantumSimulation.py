@@ -1,5 +1,5 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 19.10.2020
+#   Author: Lukas Lepper, 21.10.2020
 #   Betreuer: Martin Hardieck
 #   Dateiname: QuantumSimulation.py
 #   Version: 0.5
@@ -14,6 +14,8 @@ from PauliX import PauliX
 from PauliZ import PauliZ
 from HadarmardH import HadamardH
 from Measurement import Measurement
+from pathlib import Path
+import numpy as np
 
 
 class QuantumSimulation(Base):
@@ -50,90 +52,162 @@ class QuantumSimulation(Base):
         die Verwendung des Strings.
         :return: void.
         """
+
         bit_seq_as_int = int(bit_seq_as_str, 2)
         self.qstate_obj = self.qstate_obj.init_vec_with_bitsequence(bit_seq_as_int)
 
-    #   Funktion zum einlesen einer Datei. ToDo: Muss noch implementiert werden
-    def read_input_from_file(self):
-        pass
 
-    #   Funktion nimmt nacheinander Befehler aus dem Consolenfenster entgegen und startet entsprechend die Simulation
+    #   Funktion nimmt nacheinander Befehler aus dem Konsolenfenster entgegen und startet entsprechend die Simulation
+    #   Einlesen von Befehlen aus Datei erfolgt über Befehl mit Dateipfad in der Konsole
     def cmd_input_for_qsim(self):
         """
         Diese Funktion nimmt mit hilfe einer Endlosschleife nacheinander neue Befehle an. Es wird zwischen Quanten-
-        Befehlen q, Gattern g und sonstigen Befehlen c unterschieden. Ähnlich einem Switch Case wird für jeden Befehl
-        eine andere Funktion ausgeführt, beginnend beim Initialzustand, über den Schaltungsaufbau und zur Simulation,
-        bis zu Debug Funktionen.
-        Befehle werden auf gültige Eingaben überprüft, wobei die Anzahl der Qubits entsprechend der Eingabe erweitert
-        oder gekürzt wird, unter ausgabe einer Warnung.
+        Befehlen q, Gattern g und sonstigen Befehlen c unterschieden. Sie ruft die Funktion execute_cmd auf, in der
+        ähnlich wie bei einem Switch Case für jeden Befehl eine andere Funktion ausgeführt wird. (Initialzustand setzen,
+        Schaltungsaufbau einlesen, Simulation starten, Debug-Modus einstellen, ...) Befehle werden auf gültige Eingaben
+        überprüft, wobei die Anzahl der Qubits entsprechend der Eingabe erweitert oder gekürzt wird, unter aussenden
+        einer Warnung. Das Einlesen einer Datei erfolgt mit Hilfe eines Befehls mit Dateipfad (zb. cfile """
+        #      "C:\Users\NAME\Documents\test.txt") <-- ACHTUNG! Pfad erzeugt unicode error, wenn er innerhalb
+        #      von """...""" steht! Im Code muss er in der Form r"C:\Users\NAME\Documents\test.txt" angegeben werden!
+        #      https://stackoverflow.com/questions/1347791/unicode-error-unicodeescape-codec-cant-decode-bytes-cannot-open-text-file
+        """ 
         Mit dem Befehl help werden alle Befehle aufgelistet, die Eingabe wird in Kleinbuchstaben umgewandelt.
         :return:
         """
-
         #   Speichere die erste Eingabe
         cmd_input = input().lower()
         #   Erstelle eine leere Liste für den Ausganszustand aus den initialisierten Qubits
         phi_in = []
 
+        #   Solange die Funktion execute_cmd() Fals zurück gibt, wird immer auf eine neue Konsoleneingabe gewartet.
+        #   Der Befehl cend beendet das Programm, die Funktion gibt False zurück und die Schleife wird beendet.
         while True:
-            #   Gatter-Befehle
-            if cmd_input[0] == 'g':
+            if self.execute_cmd(phi_in, cmd_input):
+                break
 
-                #   Für Gatter, die eine Quantenschaltung aufbauen
-                if cmd_input[1] == 'h' or cmd_input[1] == 'x' or cmd_input[1] == 'z' or cmd_input[1] == 'm':
-                    # g| name:h,x,z,cx |(| Zahl 1, 10, 100 |)
-                    # 0      1 bis n   n+1    n bis m      m+1      Index
-                    i = cmd_input.find('(')
-                    j = cmd_input.find(')')
-                    gate_in = cmd_input[1:i]
-                    qubit_to_change = int(cmd_input[i + 1:j])
+            #   Es wird auf eine neue Eingabe gewartet
+            cmd_input = input().lower()
 
-                    if qubit_to_change >= Base.getnqubits():
-                        print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber das Qubit mit Index',
-                              qubit_to_change, 'liegt darüber.\n\tDie Anzahl an Qubits wurde auf', qubit_to_change + 1,
-                              'geändert!\n')
-                        Base.set_n_qubits(qubit_to_change + 1)
-                        phi_in += (Base.getnqubits() - len(phi_in)) * '0'
+    def execute_cmd(self, phi_in, cmd_input):
+        """
+        Diese Funktion führt die Befehle aus. Entweder wurden die Befehle aus dem Kommandofenster über die Funktion
+        cmd_input_for_qsim() eingegeben, oder der Befehl cfile "PATH" liefert die eingelesenen Befehle aus einer Datei.
 
-                    #   Der Operationen-Liste wird über die Funktion aus dem Operation-Objekt ein Tupel aus Gatter und betreffendem
-                    #   Qubit hinzugefügt.
-                    self.operation_obj.add_tuple_to_operation_list([(gate_in, qubit_to_change)])
+        :param phi_in: Speichert die Initialzustände der verwendeten Qubits. Diese Liste wird übergeben, damit auch
+        nach einem rekursiven Funktionsaufruf diese Information auserhalb einer Stufe verfügbar ist.
+        ToDo: phi_in global speichern, anstatt Parameter übergeben (phi_in als Liste wirkt als Pointer)
+        :param cmd_input: Befehl, zu dem mit Hilfe von elif die Richtige Funktion zugewiesen wird, die ausgeführt wird.
+        :return:
+        """
 
-                else:
-                    print('\nFehler!\n\tUnbekanntes Gatter:', cmd_input, '\n')
+        #   Gatter-Befehle
+        if cmd_input[0] == 'g':
 
-            #   Sonstige Befehle
-            elif cmd_input[0] == 'c':
+            #   Für Gatter, die eine Quantenschaltung aufbauen
+            if cmd_input[1] == 'h' or cmd_input[1] == 'x' or cmd_input[1] == 'z' or cmd_input[1] == 'm':
 
-                #   Debug-Modus und Verbose-Level verändern
-                #   Syntax: cdebug true vl = 2
-                if cmd_input[1:6] == 'debug':
+                #   Finde Indizes der Variablen
+                #   g| name:h,x,z,cx |(| Zahl 1, 10, 100 |)
+                #   0      1 bis n   n+1    n bis m      m+1
+                i = cmd_input.find('(')
+                j = cmd_input.find(')')
+                gate_in = cmd_input[1:i]
+                qubit_to_change = int(cmd_input[i + 1:j])
 
-                    #   Debug-Modus aktivieren
-                    if cmd_input[7:11] == 'true':
-                        index = cmd_input.find('= ') + 2
+                #   Falls die Anzahl der Qubits kleiner ist, als der Index des Qubits welches initialisiert wird, wird
+                #   eine Warnung ausgegeben und die Anzahl angepasst. Die restlichen neuen Qubits haben den Zustand 0.
+                if qubit_to_change >= Base.getnqubits():
+                    print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber das Qubit mit Index',
+                          qubit_to_change, 'liegt darüber.\n\tDie Anzahl an Qubits wurde auf', qubit_to_change + 1,
+                          'geändert!\n')
+                    Base.set_n_qubits(qubit_to_change + 1)
+                    phi_in += (Base.getnqubits() - len(phi_in)) * '0'
 
-                        #   gültiges Verbose-Level auslesen
-                        if index >= 0:
-                            value = int(cmd_input[index:])
-                        else:
-                            value = 0
+                #   Der Operationen-Liste wird über die Funktion aus dem Operation-Objekt ein Tupel aus Gatter und
+                #   betreffendem Qubit hinzugefügt.
+                self.operation_obj.add_tuple_to_operation_list([(gate_in, qubit_to_change)])
 
-                        Base.enable_debug(value)
+            else:
+                print('\nFehler!\n\tUnbekanntes Gatter:', cmd_input, '\n')
 
-                    #   Debug-Modus deaktivieren
-                    elif cmd_input[7:12] == 'false':
-                        Base.disable_debug()
+        #   Sonstige Befehle
+        elif cmd_input[0] == 'c':
+
+            #   Debug-Modus und Verbose-Level verändern
+            #   Syntax: cdebug true vl = 2
+            if cmd_input[1:6] == 'debug':
+
+                #   Debug-Modus aktivieren
+                if cmd_input[7:11] == 'true':
+                    index = cmd_input.find('= ') + 2
+
+                    #   gültiges Verbose-Level auslesen
+                    if index >= 0:
+                        value = int(cmd_input[index:])
                     else:
-                        print('\nFehler!\n\tSyntaxfehler:', cmd_input, cmd_input[7:11], 'entweder true oder fals(e), erwartete Syntax: cdebug true vl = 3, cdebug = false\n')
+                        value = 0
 
-                #   Befehle aus Datei auslesen und ausführen
-                elif cmd_input[1:5] == 'file':
-                    pass
+                    Base.enable_debug(value)
+
+                #   Debug-Modus deaktivieren
+                elif cmd_input[7:12] == 'false':
+                    Base.disable_debug()
+                else:
+                    print('\nFehler!\n\tSyntaxfehler:', cmd_input, cmd_input[7:11],
+                          'entweder true oder fals(e), erwartete Syntax: cdebug true vl = 3, cdebug = false\n')
+
+            #   Befehle aus Datei auslesen und ausführen
+            elif cmd_input[1:5] == 'file':
+
+                #   Finde Index, an dem der Dateipfad anfängt durch das Zeichen " und schneide alles davor ab
+                i = cmd_input.find('\"') + 1
+                file_name = cmd_input[i:]
+
+                #   Suche Index, an dem der Dateipfad aufhört (wieder ") und schneide alles ab dem Zeichen " ab
+                j = file_name.find('\"')
+                file_name = file_name[0:j]
+
+                #   file_obj erstellen, um zu prüfen, ob angegebene Datei existiert
+                file_obj = Path(file_name)
+                if file_obj.is_file():
+
+                    #   Lese die gesammte Datei, Zeile für Zeile ein, und Speichere sie in einer Liste
+                    list_of_cmds = open(file_name).readlines()
+
+                    #   Führe die eingelesenen Befehle nacheinander aus. Falls der Befehl cend dabei war, gibt die
+                    #   Funktion execute_cmd True zurück und das Programm wird beendet.
+                    for cmd in list_of_cmds:
+                        #   rstrip() entfernt Leerzeichen und Zeilenumbrüche am Ende eines Strings
+                        if self.execute_cmd(phi_in, cmd.rstrip()):
+                            return True
+
+                #   Falls die angegebene Datei nicht existiert:
+                else:
+                    print('\nFehler!\n\tFolgende Datei wurde nicht gefunden:', file_name, '\n')
+
+            #   Ausgabe bestimmter Parameter, wie der eingegebene Initialzustand oder die Liste der Gatter
+            #   (cprint = gates|states)
+            elif cmd_input[1:6] == 'print':
+
+                #   Suche Index, wo Parameter des Befehls gespeichert sind
+                index = cmd_input.find('= ') + 2
+
+                #   Liste der gespeicherten Operationen ausgeben
+                if cmd_input[index:index + 5] == 'gates':
+                    print('Liste der gespeicherten Gatter:')
+
+                    #   Falls in der Liste der Operationen Elemente vorhanden sind:
+                    if np.size(self.operation_obj.list_tuple_operation_qubit_i) > 0:    #   ToDo Operation List mit Listen, nicht Numpy. 2 ist hier jetzt notwendig, da gelöschte Liste so aussieht: [['', '']]
+                        print('\tGatter | Index der Qubits, auf die das Gatter angewendet wird')
+
+                        for operation in self.operation_obj.list_tuple_operation_qubit_i:
+                            str_out = '\t\tg' + operation[0] + ' | ' + operation[1]
+                            print(str_out)
+                    else:
+                        print('Die Liste ist leer.')
 
                 #   Aktuellen Initialzustand in Diracnotation ausgegben, z.B.: |10011)
-                elif cmd_input[1:6] == 'print':
-
+                elif cmd_input[index:index + 5] == 'state':
                     #   Ausgabestring erstellen
                     #   For-Schleife notwendig, da Liste in String gespeichert werden soll. Mit Strings konnte vorher
                     #   nicht gearbeitet werden, da z.B. bsp_str[2]='g' nicht funktioniert.
@@ -144,128 +218,159 @@ class QuantumSimulation(Base):
 
                     print('Der Initialzustand in Diracnotation lautet', phi_str, '.')
 
-                #   Simulation ausführen, wenn Anzahl der Qubits größer 0 ist (Dann ist in phi_in auch ein Bitmuster
-                #   in Form einer Liste gespeichert.
-                elif cmd_input[1:9] == 'simulate':
-                    if Base.getnqubits() > 0:
+                else:
+                    print('\nFehler!\n\tUnbekannte Syntax:', cmd_input, '. Eingabe in der Form: cprint = state|gates erwartet.\n')
 
-                        #   Das Bitmuster für den initialen Zustand, wird aus der Liste in eimen String gespeichert
-                        phi_str = ""
-                        for char in phi_in:
-                            phi_str += char
+            #   Simulation ausführen, wenn Anzahl der Qubits größer 0 ist (Dann ist in phi_in auch ein Bitmuster
+            #   in Form einer Liste gespeichert.
+            elif cmd_input[1:9] == 'simulate':
+                if Base.getnqubits() > 0:
 
-                        #   Diese Funktion wandelt das Bitmuster 0011 in eine 3 um, und ruft dann die Funktion
-                        #   init_vec_with_bitsequence(self, int_in) in QState auf, die den zugehörigen Vektor im
-                        #   jeweiligen Objekt erzeugt
-                        self.init_qbit_sequence_to_statevec(phi_str)
+                    #   Das Bitmuster für den initialen Zustand, wird aus der Liste in eimen String gespeichert
+                    phi_str = ""
+                    for char in phi_in:
+                        phi_str += char
 
-                        #   Nachdem die Simulation gestartet wurde, wird diese Schleife beendet (Aufruf der Berechnung
-                        #   in der main.py)
-                        break
+                    #   Diese Funktion wandelt das Bitmuster 0011 in eine 3 um, und ruft dann die Funktion
+                    #   init_vec_with_bitsequence(self, int_in) in QState auf, die den zugehörigen Vektor im
+                    #   jeweiligen Objekt erzeugt
+                    self.init_qbit_sequence_to_statevec(phi_str)
 
-                    else:
-                        print('\nFehler!\n\tSimulation wurde nicht gestartet, die Anzahl der Qubits beträgt', Base.getnqubits(), '.\n')
+                    #   Führe Berechnung der eingelesenen Eingabe durch
+                    self.qstate_obj = self.calculate()
 
                 else:
-                    print('\nFehler!\n\tUnbekannter Befehl:', cmd_input, '\n')
+                    print('\nFehler!\n\tSimulation wurde nicht gestartet, die Anzahl der Qubits beträgt',
+                          Base.getnqubits(), '.\n')
 
-            #   Quantenbefehle zur Initialisierung
-            elif cmd_input[0] == 'q':
+            #   Zurücksetzen der Simulationsparameter
+            elif cmd_input[1:6] == 'clear':
 
-                #   Einlesen der Anzahl an Qubits
-                #   Speichere Anzahl der Qubits global in der Klasse QuantumSimulation, sodass alle Objekte auf diese
-                #   Information zugreifen können, mit get_n_qubits
-                if cmd_input.find('b_n = ') >= 0:
+                #   Entferne alle Gatter in der Liste aller Operationen, die ausgeführt werden sollen
+                self.operation_obj.list_tuple_operation_qubit_i = np.array([[]])
 
-                    #   Suche Index, wo die Anzahl n steht uns speichere sie
-                    i = cmd_input.find('= ') + 2
-                    n_qubits = int(cmd_input[i:])
+                #   Setze die Anzahl der Qubits auf 0
+                self.set_n_qubits(0)
 
-                    #   Falls der neue Wert größer ist als der bisherige Wert für die Qubits, wird die neue Anzahl
-                    #   gespeichert.
-                    if n_qubits >= Base.getnqubits():
-                        self.set_n_qubits(n_qubits)
+                #   Lösche die Initialisierung aller Qubits
+                del phi_in[:]
 
-                        #   In der Liste phi_in wird für jedes neue Qubit eine 0 hinzugefügt.
-                        phi_in += (Base.getnqubits() - len(phi_in)) * '0'
-
-                    #   Falls es bereits mehr Qubits gibt, als in dem Befehl vorgegeben, wird eine Warnung ausgegeben
-                    #   und alle darüberliegenden Qubits gelöscht
-                    else:
-                        print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber sollte auf',
-                              n_qubits, 'gesetzt werden.\n\tDie Anzahl an Qubits wurde auf', n_qubits,
-                              'geändert und alle darüber liegenden Qubits wurden gelöscht!\n')
-                        self.set_n_qubits(n_qubits)
-
-                        #   Prüfen, dass Index wirklich weiter geht, als die neue Anzahl der Qubits
-                        if len(phi_in) > n_qubits:
-                            phi_in = phi_in[0:n_qubits]
-
-                #   Initialisieren der Zustände der einzelnen Qubits (standardmäßig 0)
-                elif cmd_input[0:3] == 'qb[':
-
-                    #   Index finden, an dem der Index des Qubit gespeichert ist. Kann mehrere Stellen haben...
-                    i = cmd_input.find('qb[') + 3
-                    j = cmd_input.find(']')
-                    index = int(cmd_input[i:j])
-
-                    #   Falls der Index des zu initialisierenden Qubits aus dem Bereich der Anzahl an Qubits hinaus geht,
-                    #   wird eine Warnung ausgegeben und die Anzahl angepasst.
-                    if index >= Base.getnqubits():
-                        print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber das Qubit mit Index',
-                              index, 'liegt darüber.\n\tDie Anzahl an Qubits wurde auf', index + 1,
-                              'geändert!\n')
-                        Base.set_n_qubits(index + 1)
-
-                    #   Der Liste der initialen Zustände der Qubits wird mit 0en für die neuen Qubits erweitert
-                    phi_in += (Base.getnqubits() - len(phi_in)) * '0'
-
-                    #   Index, andem der Initialzustand des betreffenden Qubits gespeichert ist
-                    i = cmd_input.find('= ') + 2
-                    value = cmd_input[i]
-
-                    #   Falls der Zustand 0 oder 1 eingegeben wurde, wird dieser Wert in der Liste gespeichert
-                    if value == '0' or value == '1':
-                        phi_in[index] = value
-
-                    #   Andernfalls liegt ein Syntaxfehler vor, es wird angenommen dass der Zustand 1 sein sollte und
-                    #   es wird eine Warnung ausgegeben.
-                    else:
-                        print(
-                            '\nFehler!\n\tQubits können nur mit 0 oder 1 initialisiert werden, statdessen wurde der Wert',
-                            value, 'eingegeben.\nQubit mit Index', index, 'wird mit 1 initialisiert.\n')
-                        phi_in[index] = '1'
-
-                else:
-                    print('\nFehler!\n\tUnbekannte Initialisierung:', cmd_input, '\n')
-
-            #   Befehl für die Hilfe: Auflistung aller möglichen Befehler mit ihrer Syntax
-            elif cmd_input[0] == '?' or cmd_input == 'help' or cmd_input == 'h':
-
-                print('\n##################################################\n')
-                print('Liste aller Befehle für das Programm QuantumSimulation:\n'
-                      '\tBefehle für den Initialzustand. Standardmäßig haben Qubits den Zustand 0.\n'
-                      '\tqb_n = x\t\tLegt Anzahl n der Qubits entsprechend der Eingabe x fest.\n'
-                      '\tqb[i] = x\t\tInitialisierung des i-ten Qubits auf den Wert x, x = {0, 1}.\n'
-                      '\n'
-                      '\tBefehle, um der Liste an Operationen verschiedene Gatter hinzuzufügen, welche auf das i-te Qubit angewendet werden.\n'
-                      '\tgx(i)\t\t\tPauli-X-Gatter.\n'
-                      '\tgz(i)\t\t\tPauli-Z-Gatter.\n'
-                      '\tgh(i)\t\t\tHadarmard-Gatter.\n'
-                      '\tgm(i)\t\t\tMessung des i-ten Qubits.\n'
-                      '\n'
-                      '\tSonstige Befehle:\n'
-                      '\tcdebug true|false vl = x\tDebug-Modus aktivieren oder deaktivieren. Beim aktivieren wird mit x das Verbose-Level 0-3 benötigt.\n'
-                      '\tcfile PATH\t\t\t\tPATH gibt einen Dateipfad auf eine Textdatei an, aus der eine Liste an Befehlen eingelesen und ausgeführt werden soll.\n'
-                      '\tcsimulate\t\t\t\tFalls die Anzahl an Qubits größer 0 ist, wird die Simulation gestartet.\n'
-                      '\tcprint\t\t\t\t\tGibt den aktuellen Initialzustand in Diracnotation 0110 aus.\n')
-                print('##################################################\n')
+            #   Beende das Programm
+            elif cmd_input[1:4] == 'end':
+                return True
 
             else:
-                print('\nFehler!\n\tUnbekannter Eingabetyp:', cmd_input, '. Tippe \'?\' oder \'help\' um alle Befehle aufgelistet zu bekommen.\n')
+                print('\nFehler!\n\tUnbekannter Befehl:', cmd_input, '\n')
 
-            #   Es wird auf eine neue Eingabe gewartet
-            cmd_input = input().lower()
+        #   Quantenbefehle zur Initialisierung
+        elif cmd_input[0] == 'q':
+
+            #   Einlesen der Anzahl an Qubits
+            #   Speichere Anzahl der Qubits global in der Klasse QuantumSimulation, sodass alle Objekte auf diese
+            #   Information zugreifen können, mit get_n_qubits
+            if cmd_input.find('b_n = ') >= 0:
+
+                #   Suche Index, wo die Anzahl n steht uns speichere sie
+                i = cmd_input.find('= ') + 2
+                n_qubits = int(cmd_input[i:])
+
+                #   Falls der neue Wert größer ist als der bisherige Wert für die Qubits, wird die neue Anzahl
+                #   gespeichert.
+                if n_qubits >= Base.getnqubits():
+                    self.set_n_qubits(n_qubits)
+
+                    #   In der Liste phi_in wird für jedes neue Qubit eine 0 hinzugefügt.
+                    phi_in += (Base.getnqubits() - len(phi_in)) * '0'
+
+                #   Falls es bereits mehr Qubits gibt, als in dem Befehl vorgegeben, wird eine Warnung ausgegeben
+                #   und alle darüberliegenden Qubits gelöscht
+                else:
+                    print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber sollte auf',
+                          n_qubits, 'gesetzt werden.\n\tDie Anzahl an Qubits wurde auf', n_qubits,
+                          'geändert und alle darüber liegenden Qubits und deren Gatter wurden gelöscht!\n')
+                    self.set_n_qubits(n_qubits)
+
+                    #   Prüfen, dass Index wirklich weiter geht, als die neue Anzahl der Qubits
+                    if len(phi_in) > n_qubits:
+                        del phi_in[n_qubits:]
+
+                    #   Speichere die Indizes, an denen Operatoren gespeichert sind, die auf Qubits oberhalb von
+                    #   n_qubits angewendet werden
+                    list_of_index = []
+                    for index, tuple in enumerate(self.operation_obj.list_tuple_operation_qubit_i):
+                        if int(tuple[1]) >= n_qubits:
+                            list_of_index += [index]
+
+                    #   Entferne alle Gatter in der Liste aller Operationen, die auf Qubits angewendet werden sollen,
+                    #   die eben gelöscht wurden
+                    self.operation_obj.list_tuple_operation_qubit_i = np.delete(self.operation_obj.list_tuple_operation_qubit_i, list_of_index, 0)
+
+
+            #   Initialisieren der Zustände der einzelnen Qubits (standardmäßig 0)
+            elif cmd_input[0:3] == 'qb[':
+
+                #   Index finden, an dem der Index des Qubit gespeichert ist. Kann mehrere Stellen haben...
+                i = cmd_input.find('qb[') + 3
+                j = cmd_input.find(']')
+                index = int(cmd_input[i:j])
+
+                #   Falls der Index des zu initialisierenden Qubits aus dem Bereich der Anzahl an Qubits hinaus geht,
+                #   wird eine Warnung ausgegeben und die Anzahl angepasst.
+                if index >= Base.getnqubits():
+                    print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber das Qubit mit Index',
+                          index, 'liegt darüber.\n\tDie Anzahl an Qubits wurde auf', index + 1,
+                          'geändert!\n')
+                    Base.set_n_qubits(index + 1)
+
+                #   Der Liste der initialen Zustände der Qubits wird mit 0en für die neuen Qubits erweitert
+                phi_in += (Base.getnqubits() - len(phi_in)) * '0'
+
+                #   Index, andem der Initialzustand des betreffenden Qubits gespeichert ist
+                i = cmd_input.find('= ') + 2
+                value = cmd_input[i]
+
+                #   Falls der Zustand 0 oder 1 eingegeben wurde, wird dieser Wert in der Liste gespeichert
+                if value == '0' or value == '1':
+                    phi_in[index] = value
+
+                #   Andernfalls liegt ein Syntaxfehler vor, es wird angenommen dass der Zustand 1 sein sollte und
+                #   es wird eine Warnung ausgegeben.
+                else:
+                    print('\nFehler!\n\tQubits können nur mit 0 oder 1 initialisiert werden, statdessen wurde der Wert',
+                          value, 'eingegeben.\nQubit mit Index', index, 'wird mit 1 initialisiert.\n')
+                    phi_in[index] = '1'
+
+            else:
+                print('\nFehler!\n\tUnbekannte Initialisierung:', cmd_input, '\n')
+
+        #   Befehl für die Hilfe: Auflistung aller möglichen Befehler mit ihrer Syntax
+        elif cmd_input[0] == '?' or cmd_input == 'help' or cmd_input == 'h':
+
+            print('\n##################################################\n')
+            print('Liste aller Befehle für das Programm QuantumSimulation:\n'
+                  '\tBefehle für den Initialzustand. Standardmäßig haben Qubits den Zustand 0.\n'
+                  '\tqb_n = x\t\tLegt Anzahl n der Qubits entsprechend der Eingabe x fest.\n'
+                  '\tqb[i] = x\t\tInitialisierung des i-ten Qubits auf den Wert x, x = {0, 1}.\n')
+            print('\tBefehle, um der Liste an Operationen verschiedene Gatter hinzuzufügen, welche auf das i-te Qubit angewendet werden.\n'
+                  '\tgx(i)\t\t\tPauli-X-Gatter.\n'
+                  '\tgz(i)\t\t\tPauli-Z-Gatter.\n'
+                  '\tgh(i)\t\t\tHadarmard-Gatter.\n'
+                  '\tgm(i)\t\t\tMessung des i-ten Qubits.\n')
+            print('\tSonstige Befehle:\n'
+                  '\tcdebug true|false vl = x Debug-Modus aktivieren oder deaktivieren. Beim aktivieren wird mit x das Verbose-Level 0-3 benötigt.\n'
+                  '\tcfile "PATH"\t\t\tPATH gibt einen Dateipfad auf eine Textdatei an, aus der eine Liste an Befehlen eingelesen und ausgeführt werden soll. Z.b. cfile', r' "C:\Users\NAME\Documents\test.txt"', '\n'
+                  '\tcsimulate\t\t\t\tFalls die Anzahl an Qubits größer 0 ist, wird die Simulation gestartet.\n'
+                  '\tcprint = state|gates\tGibt den aktuellen Initialzustand in Diracnotation oder die Liste der gespeicherten Gatter in ihrer Reihenfolge aus.\n'
+                  '\tcclear\t\t\t\t\tLöscht alle Qubits und Gatter, und setzt die Anzahl an Qubits auf 0.\n'
+                  '\tcend\t\t\t\t\tBeendet das Programm.\n'
+                  '\t?|h|help\t\t\t\tListet alle Befehle auf.\n')
+            print('##################################################\n')
+
+        else:
+            print('\nFehler!\n\tUnbekannter Eingabetyp:', cmd_input,
+                  '. Tippe \'?\' oder \'help\' um alle Befehle aufgelistet zu bekommen.\n')
+
+        return False
 
     def calculate(self):
         """
@@ -299,10 +404,19 @@ class QuantumSimulation(Base):
                 self.qgate_obj = Measurement(self.qstate_obj.general_matrix, qubit_to_change)
 
                 #   gebe Zustände des Zustandsvektors vor der Messung aus
-                print(self.qstate_obj)
+                    # ----------
+                if Base.get_debug()[0]:
+                    print('\nZustände des Zustandsvektors vor der Messung:\n', self.qstate_obj)
+                    # ----------
 
                 #   Bei der Messung wird anstatt der Multiplikation unten, die Funktion measure() aufgerufen.
                 self.qstate_obj.general_matrix = self.qgate_obj.measure()
+
+                #   gebe Zustände des Zustandsvektors nach der Messung aus
+                    # ----------
+                if Base.get_debug()[0]:
+                    print('\nZustände des Zustandsvektors nach der Messung:\n', self.qstate_obj)
+                    # ----------
 
                 # Index welches Tupel abgearbeitet wird, wird hochgezählt
                 i += 1

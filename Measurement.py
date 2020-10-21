@@ -1,5 +1,5 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 19.10.2020
+#   Author: Lukas Lepper, 21.10.2020
 #   Betreuer: Martin Hardieck
 #   Dateiname: Measurement.py
 #   Version: 0.5
@@ -55,7 +55,10 @@ class Measurement(QGate):
         """ Schritt 11 """
 
         #   ToDo: Ausgabe erfolgt anders(siehe Todo oben)
-        print('--------------- Entscheidungsdiagramm vor der Messung ---------------', self.state_dd_object)
+            # ----------
+        if Base.get_debug()[0] and Base.get_debug()[1] >= 1:
+            print('--------------- Entscheidungsdiagramm vor der Messung ---------------\n', self.state_dd_object)
+            # ----------
 
         #   Für das zu messende Qubit wird die Wahrscheinlichkeit berechnet für den Zustand 0 oder 1 (Summe der
         #   jeweiligen Äste aller Knoten auf einer Ebene).
@@ -150,7 +153,10 @@ class Measurement(QGate):
                 # ToDo: Lösche den abgeschnittenen Baum
 
         #   ToDo: Ausgabe erfolgt anders(siehe Todo oben)
-        print('--------------- Entscheidungsdiagramm nach der Messung ---------------', new_dd_after_measurement_obj)
+            # ----------
+        if Base.get_debug()[0] and Base.get_debug()[1] >= 1:
+            print('--------------- Entscheidungsdiagramm nach der Messung ---------------\n', new_dd_after_measurement_obj)
+            # ----------
 
         """ Schritt 14 """
         #   Aus dem neuen Entscheidungsdiagramm wird ein Vektor ausgelesen

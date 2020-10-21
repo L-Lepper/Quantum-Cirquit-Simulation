@@ -1,5 +1,5 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 19.10.2020
+#   Author: Lukas Lepper, 21.10.2020
 #   Betreuer: Martin Hardieck
 #   Dateiname: main.py
 #   Version: 0.5
@@ -21,10 +21,3 @@ print('\nSimulation von Quantenschaltungen, für eine kleine Anzahl an Qubits.')
 
 #   Starte Eingabeaufforderung für Parameter der Klasse QuantumSimulation
 q_sim.cmd_input_for_qsim()
-
-#   Führe Berechnung der eingelesenen Eingabe durch
-q_sim.qstate_obj = q_sim.calculate()
-
-#   gebe Ergebnis des Zustandsvektors aus
-print(q_sim.qstate_obj)
-
