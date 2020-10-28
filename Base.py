@@ -36,7 +36,7 @@ class Base:
     #   Deaktiviere Debug-Mode
     @staticmethod
     def disable_debug():
-        Base.__debug_mode = False
+        Base.__debug_mode = (False, 0)
     #   get Debug-Mode
     @staticmethod
     def get_debug():

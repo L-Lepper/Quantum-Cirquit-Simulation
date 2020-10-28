@@ -117,8 +117,9 @@ class QuantumSimulation(Base):
         #   7 ToDo: In Liste der Operationen Speichern, sodass Zwischenergebnisse ausgegeben werden können
         # ToDo: Oder für jeden Parameter action implementeiren
         parser.add_argument('--print', '-p',
-                            dest='to_print',
+                            dest='list_to_print',
                             choices=['init_state', 'state_vec', 'gates'],
+                            action='append',
                             help='Print the initial state, the state vector or the list of gates')
 
         #   8
@@ -167,9 +168,8 @@ class QuantumSimulation(Base):
 
             #   Entferne alle Gatter in der Liste aller Operationen, die auf Qubits angewendet werden sollen,
             #   die eben gelöscht wurden
-            self.operation_obj.list_tuple_operation_qubit_i = np.delete(
-                self.operation_obj.list_tuple_operation_qubit_i,
-                list_of_index, 0)
+            for i in list_of_index:
+                del self.operation_obj.list_tuple_operation_qubit_i[i]
         # ---1
 
         if args.phi_in:
@@ -195,21 +195,21 @@ class QuantumSimulation(Base):
 
         if args.list_of_gates:
             for gate in args.list_of_gates:
-                qubit_to_change = gate[1]  # ToDo: Mehrere Qubits in einem Gatter
+                list_affected_qubits = gate[1]  # ToDo: Mehrere Qubits in einem Gatter
                 gate_in = gate[0]
                 # ---3
                 #   Falls die Anzahl der Qubits kleiner ist, als der Index des Qubits welches initialisiert wird, wird
                 #   eine Warnung ausgegeben und die Anzahl angepasst. Die restlichen neuen Qubits haben den Zustand 0.
-                if qubit_to_change >= Base.getnqubits():
+                if list_affected_qubits >= Base.getnqubits():
                     print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber das Qubit mit Index',
-                          qubit_to_change, 'liegt darüber.\n\tDie Anzahl an Qubits wurde auf', qubit_to_change + 1,
+                          list_affected_qubits, 'liegt darüber.\n\tDie Anzahl an Qubits wurde auf', list_affected_qubits + 1,
                           'geändert!\n')
-                    Base.set_n_qubits(qubit_to_change + 1)
+                    Base.set_n_qubits(list_affected_qubits + 1)
                     phi_in += (Base.getnqubits() - len(phi_in)) * [0]
 
                 #   Der Operationen-Liste wird über die Funktion aus dem Operation-Objekt ein Tupel aus Gatter und
                 #   betreffendem Qubit hinzugefügt.
-                self.operation_obj.add_tuple_to_operation_list([(gate_in, qubit_to_change)])
+                self.operation_obj.add_tuple_to_operation_list([[gate_in, list_affected_qubits]])
         # ---3
 
         #---5
@@ -221,60 +221,65 @@ class QuantumSimulation(Base):
         ###########
 
 # ---sim
-            if Base.getnqubits() > 0:
+        if Base.getnqubits() > 0:
 
-                #   Das Bitmuster für den initialen Zustand, wird aus der Liste in einem String gespeichert
-                phi_str = ""
-                for value in phi_in:
-                    phi_str += str(value)
+            #   Das Bitmuster für den initialen Zustand, wird aus der Liste in einem String gespeichert
+            phi_str = ""
+            for value in phi_in:
+                phi_str += str(value)
 
-                #   Diese Funktion wandelt das Bitmuster 0011 in eine 3 um, und ruft dann die Funktion
-                #   init_vec_with_bitsequence(self, int_in) in QState auf, die den zugehörigen Vektor im
-                #   jeweiligen Objekt erzeugt
-                self.init_qbit_sequence_to_statevec(phi_str)
+            #   Diese Funktion wandelt das Bitmuster 0011 in eine 3 um, und ruft dann die Funktion
+            #   init_vec_with_bitsequence(self, int_in) in QState auf, die den zugehörigen Vektor im
+            #   jeweiligen Objekt erzeugt
+            self.init_qbit_sequence_to_statevec(phi_str)
 
-                #   Führe Berechnung der eingelesenen Eingabe durch
-                self.qstate_obj = self.calculate()
+            #   Führe Berechnung der eingelesenen Eingabe durch
+            self.qstate_obj = self.calculate()
 
-            else:
-                print('\nFehler!\n\tSimulation wurde nicht gestartet, die Anzahl der Qubits beträgt',
-                      Base.getnqubits(), '.\n')
+            #   Ausgabe der Zustände nach der Simulation, falls vebose level 0 (nicht quiet)
+            if Base.get_debug()[0]:
+                print('Simulation beendet:')
+            print(self.qstate_obj)
+
+        else:
+            print('\nFehler!\n\tSimulation wurde nicht gestartet, die Anzahl der Qubits beträgt',
+                    Base.getnqubits(), '.\n')
     # ---sim
 
         ##########
 
-        if args.to_print == 'gates':
-        # ---7
+        if args.list_to_print:
+            for element in args.list_to_print:
+                if element == 'gates':
+# ---7
+                    print('Liste der gespeicherten Gatter:')
 
-            print('Liste der gespeicherten Gatter:')
+                    #   Falls in der Liste der Operationen Elemente vorhanden sind:
+                    if self.operation_obj.list_tuple_operation_qubit_i:
+                        print('\tGatter\t| Index der Qubits, auf die das Gatter angewendet wird')
 
-            #   Falls in der Liste der Operationen Elemente vorhanden sind:
-            if np.size(
-                    self.operation_obj.list_tuple_operation_qubit_i) > 0:  # ToDo Operation List mit Listen, nicht Numpy. 2 ist hier jetzt notwendig, da gelöschte Liste so aussieht: [['', '']]
-                print('\tGatter\t| Index der Qubits, auf die das Gatter angewendet wird')
-
-                for operation in self.operation_obj.list_tuple_operation_qubit_i:
-                    str_out = '\t\t' + operation[0] + '\t|\t' + operation[1]
-                    print(str_out)
-            else:
-                print('Die Liste ist leer.')
+                        for operation in self.operation_obj.list_tuple_operation_qubit_i:
+                            str_out = '\t\t' + operation[0] + '\t|\t' + str(operation[1])
+                            print(str_out)
+                    else:
+                        print('Die Liste ist leer.')
     # ---7
 
-        #   Aktuellen Initialzustand in Diracnotation ausgegben, z.B.: |10011)
-        elif args.to_print == 'init_state':
+                #   Aktuellen Initialzustand in Diracnotation ausgegben, z.B.: |10011)
+                elif element == 'init_state':
 # ---7
-            #   Ausgabestring erstellen
-            #   For-Schleife notwendig, da Liste in String gespeichert werden soll. Mit Strings konnte vorher
-            #   nicht gearbeitet werden, da z.B. bsp_str[2]='g' nicht funktioniert.
-            phi_str = "|"
-            for value in phi_in:
-                phi_str += str(value)
-            phi_str += ")"
+                    #   Ausgabestring erstellen
+                    #   For-Schleife notwendig, da Liste in String gespeichert werden soll. Mit Strings konnte vorher
+                    #   nicht gearbeitet werden, da z.B. bsp_str[2]='g' nicht funktioniert.
+                    phi_str = "|"
+                    for value in phi_in:
+                        phi_str += str(value)
+                    phi_str += ")"
 
-            print('Der Initialzustand in Diracnotation lautet', phi_str, '.')
+                    print('Der Initialzustand in Diracnotation lautet', phi_str, '.')
 # ---7
-        elif args.to_print == 'state_vec':
-            pass
+                elif element == 'state_vec':
+                    print(self.qstate_obj)
 
 #---9
         if args.interactive_input:
@@ -290,7 +295,7 @@ class QuantumSimulation(Base):
             del args
 # ---8
             #   Entferne alle Gatter in der Liste aller Operationen, die ausgeführt werden sollen
-            self.operation_obj.list_tuple_operation_qubit_i = np.array([[]])
+            self.operation_obj.list_tuple_operation_qubit_i = []
 
             #   Setze die Anzahl der Qubits auf 0
             self.set_n_qubits(0)
@@ -365,21 +370,21 @@ class QuantumSimulation(Base):
                     i = cmd_input.find('(')
                     j = cmd_input.find(')')
                     gate_in = cmd_input[1:i]
-                    qubit_to_change = int(cmd_input[i + 1:j])
+                    list_affected_qubits = int(cmd_input[i + 1:j])
 
 #---3
                     #   Falls die Anzahl der Qubits kleiner ist, als der Index des Qubits welches initialisiert wird, wird
                     #   eine Warnung ausgegeben und die Anzahl angepasst. Die restlichen neuen Qubits haben den Zustand 0.
-                    if qubit_to_change >= Base.getnqubits():
+                    if list_affected_qubits >= Base.getnqubits():
                         print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber das Qubit mit Index',
-                              qubit_to_change, 'liegt darüber.\n\tDie Anzahl an Qubits wurde auf', qubit_to_change + 1,
+                              list_affected_qubits, 'liegt darüber.\n\tDie Anzahl an Qubits wurde auf', list_affected_qubits + 1,
                               'geändert!\n')
-                        Base.set_n_qubits(qubit_to_change + 1)
+                        Base.set_n_qubits(list_affected_qubits + 1)
                         phi_in += (Base.getnqubits() - len(phi_in)) * [0]
 
                     #   Der Operationen-Liste wird über die Funktion aus dem Operation-Objekt ein Tupel aus Gatter und
                     #   betreffendem Qubit hinzugefügt.
-                    self.operation_obj.add_tuple_to_operation_list([(gate_in, qubit_to_change)])
+                    self.operation_obj.add_tuple_to_operation_list([[gate_in, list_affected_qubits]])
 #---3
 
                     #   Felermeldung soll nicht ausgegeben werden, daher wird an dieser Stelle schon die Funktion
@@ -459,7 +464,7 @@ class QuantumSimulation(Base):
                     print('Liste der gespeicherten Gatter:')
 
                     #   Falls in der Liste der Operationen Elemente vorhanden sind:
-                    if np.size(self.operation_obj.list_tuple_operation_qubit_i) > 0:    #   ToDo Operation List mit Listen, nicht Numpy. 2 ist hier jetzt notwendig, da gelöschte Liste so aussieht: [['', '']]
+                    if self.operation_obj.list_tuple_operation_qubit_i:
                         print('\tGatter | Index der Qubits, auf die das Gatter angewendet wird')
 
                         for operation in self.operation_obj.list_tuple_operation_qubit_i:
@@ -504,6 +509,11 @@ class QuantumSimulation(Base):
                     #   Führe Berechnung der eingelesenen Eingabe durch
                     self.qstate_obj = self.calculate()
 
+                    #   Ausgabe der Zustände nach der Simulation, falls vebose level 0 (nicht quiet)
+                    if Base.get_debug()[0]:
+                        print('Simulation beendet:')
+                        print(self.qstate_obj)
+
                 else:
                     print('\nFehler!\n\tSimulation wurde nicht gestartet, die Anzahl der Qubits beträgt',
                           Base.getnqubits(), '.\n')
@@ -513,7 +523,7 @@ class QuantumSimulation(Base):
             elif cmd_input[1:6] == 'clear':
 #---8
                 #   Entferne alle Gatter in der Liste aller Operationen, die ausgeführt werden sollen
-                self.operation_obj.list_tuple_operation_qubit_i = np.array([[]])
+                self.operation_obj.list_tuple_operation_qubit_i = []
 
                 #   Setze die Anzahl der Qubits auf 0
                 self.set_n_qubits(0)
@@ -570,7 +580,8 @@ class QuantumSimulation(Base):
 
                     #   Entferne alle Gatter in der Liste aller Operationen, die auf Qubits angewendet werden sollen,
                     #   die eben gelöscht wurden
-                    self.operation_obj.list_tuple_operation_qubit_i = np.delete(self.operation_obj.list_tuple_operation_qubit_i, list_of_index, 0)
+                    for i in list_of_index:
+                        del self.operation_obj.list_tuple_operation_qubit_i[i]
 #---1
 
             #   Initialisieren der Zustände der einzelnen Qubits (standardmäßig 0)
@@ -655,29 +666,30 @@ class QuantumSimulation(Base):
         i = 0
 
         #   Führe nacheinander die Operationen aus operation_obj.list_tuple_operation_qubit_i
-        for operation in self.operation_obj.list_tuple_operation_qubit_i[:, 0]:
+        for operation in self.operation_obj.list_tuple_operation_qubit_i:
 
             #   ToDo: Hier gibt es einen Fehler: Eigentlich soll Operationsliste das qubit to change als int speichern,
             #    wird aber irgendwie als numpy_str verwandelt. Desswegen ist hier konvertierung in int notwendig
             #   In der Liste wird aus dem Tuple mit dem aktuellen Index i, das zweite Element (Index des Qubit,
             #   welches verändert werden soll) ausgelesen
-            qubit_to_change = int(self.operation_obj.list_tuple_operation_qubit_i[i, 1])
+            list_affected_qubits = operation[1:]
 
             #   Erzeugen des benötigten Objekt für das Gatter (Gatter werden durch Konstruktor automatisch auf richtige
             #   Größe erweitert.
-            if operation == 'x':
-                self.qgate_obj = PauliX(qubit_to_change)
-            elif operation == 'z':
-                self.qgate_obj = PauliZ(qubit_to_change)
-            elif operation == 'h':
-                self.qgate_obj = HadamardH(qubit_to_change)
-            elif operation == 'm':
-                self.qgate_obj = Measurement(self.qstate_obj.general_matrix, qubit_to_change)
+            if operation[0] == 'x':
+                self.qgate_obj = PauliX(list_affected_qubits)
+            elif operation[0] == 'z':
+                self.qgate_obj = PauliZ(list_affected_qubits)
+            elif operation[0] == 'h':
+                self.qgate_obj = HadamardH(list_affected_qubits)
+            elif operation[0] == 'm':
+                self.qgate_obj = Measurement(self.qstate_obj.general_matrix, list_affected_qubits)
 
                 #   gebe Zustände des Zustandsvektors vor der Messung aus
                     # ----------
                 if Base.get_debug()[0]:
-                    print('\nZustände des Zustandsvektors vor der Messung:\n', self.qstate_obj)
+                    print('Zustände des Zustandsvektors vor der Messung:')
+                    print(self.qstate_obj, '\n')
                     # ----------
 
                 #   Bei der Messung wird anstatt der Multiplikation unten, die Funktion measure() aufgerufen.
@@ -686,7 +698,8 @@ class QuantumSimulation(Base):
                 #   gebe Zustände des Zustandsvektors nach der Messung aus
                     # ----------
                 if Base.get_debug()[0]:
-                    print('\nZustände des Zustandsvektors nach der Messung:\n', self.qstate_obj)
+                    print('Zustände des Zustandsvektors nach der Messung:')
+                    print(self.qstate_obj, '\n')
                     # ----------
 
                 # Index welches Tupel abgearbeitet wird, wird hochgezählt
@@ -708,5 +721,4 @@ class QuantumSimulation(Base):
             # Index welches Tupel abgearbeitet wird, wird hochgezählt
             i += 1
 
-        print(self.qstate_obj)
         return self.qstate_obj

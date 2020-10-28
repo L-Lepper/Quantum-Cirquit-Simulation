@@ -15,13 +15,13 @@ class QGate(QMatrix):
     Funktion mit der eine Matrix auf die Größe des Zustandsvektors erweitert werden kann.
     """
 
-    def __init__(self, qubit_to_change):
+    def __init__(self, list_affected_qubits):
         """
         Default-Konstruktor: Speichert welches Qubits betrachtet wird
 
-        :param qubit_to_change: Index des zu verändernden Qubits
+        :param list_affected_qubits: Index des zu verändernden Qubits
         """
-        self.qubitToChange = qubit_to_change
+        self.list_affected_qubits = list_affected_qubits
         super().__init__()
 
     def expandmatrix(self, n_qubits, qubittochange):

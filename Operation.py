@@ -26,7 +26,7 @@ class Operation(Base):
         self.call_function_first_time = True
 
         #   Erstelle Prototyp für die Liste
-        self.list_tuple_operation_qubit_i = np.empty_like([('X', 0)])
+        self.list_tuple_operation_qubit_i = []
 
         super().__init__()
 
@@ -42,11 +42,11 @@ class Operation(Base):
 
         #   Wird die Funktion das erste Mal aufgerufen, wird das erste Element des Prototyps überschrieben, welches
         #   den Datentyp festgelegt hat
-        if self.call_function_first_time:
-            self.list_tuple_operation_qubit_i = np.array(tuple_operation_qbit_i)
-            self.call_function_first_time = False
+        #if self.call_function_first_time:
+        #    self.list_tuple_operation_qubit_i = np.array(tuple_operation_qbit_i)
+        #    self.call_function_first_time = False
         #   Sonst wird einfach ein Tupel angehängt
-        else:
-            self.list_tuple_operation_qubit_i = np.append(self.list_tuple_operation_qubit_i, tuple_operation_qbit_i, 0)
+        #else:
+        self.list_tuple_operation_qubit_i += tuple_operation_qbit_i
 
         return self

@@ -6,6 +6,7 @@
 
 
 import numpy as np
+from Base import Base
 from QMatrix import QMatrix
 
 
@@ -29,6 +30,7 @@ class QState(QMatrix):
         """
 
         return_str = ''
+        return_list = []
         index = 0
 
         #   Ausgabe für jeden einzelnen Wert ungleich 0, im Zustandsvektor
@@ -37,14 +39,21 @@ class QState(QMatrix):
             if value != 0. + 0.j:
                 #   Umwandlung des Indexes in ein Bitmuster (3 --> 0011)
                 diracnotation = self.getdiracnotation(index, self.getnqubits())
-                #   Berechnung der Wahrscheinlichkeit in %
-                probability = round(pow(abs(value), 2) * 100, 13)
+                #   Berechnung der Wahrscheinlichkeit in % ToDo: Genauigkeit?
+                probability = round(pow(abs(value), 2) * 100, 6)
 
-                return_str += 'Der Zustand {} hat eine Wahrscheinlichkeit von {}%.\n'.format(diracnotation, probability)
+                if Base.get_debug()[0]:
+                    return_str += 'Der Zustand {} hat eine Wahrscheinlichkeit von {}%.\n'.format(diracnotation, probability)
+                else:
+                    return_list += [diracnotation, probability]
 
             index += 1
 
-        return return_str
+        if Base.get_debug()[0]:
+            #   rstrip() entfernt den letzten Zeilenumbruch, der durch for-Schleife zu viel ist
+            return return_str.rstrip()
+        else:
+            return str(return_list)
 
     @staticmethod
     def getdiracnotation(index, n_qubits):
@@ -60,7 +69,10 @@ class QState(QMatrix):
         #   Umwandlung von int in binärcode, Abschneiden der Information des Vorzeichenbits ( 0b / 1b )
         str_var = bin(index)[2:]
 
-        diracnotation = '|' + (n_qubits - len(str_var)) * '0' + str_var + ')'
+        if Base.get_debug()[0]:
+            diracnotation = '|' + (n_qubits - len(str_var)) * '0' + str_var + ')'
+        else:
+            diracnotation = (n_qubits - len(str_var)) * '0' + str_var
 
         return diracnotation
 

@@ -15,15 +15,15 @@ class PauliZ(QGate):
     Zustandsvektors.
     """
 
-    def __init__(self, qubit_to_change):
+    def __init__(self, list_affected_qubits):
         """
         Konstruktor erstellt Matrix in der Größe der Quantenschaltung (Anzahl der Qubits), die das Gatter auf ein
         bestimmtes Qubit beschreibt.
 
-        :param qubit_to_change: Index des Qubits, auf welches das Gatter angewendet wird
+        :param list_affected_qubits: Index des Qubits, auf welches das Gatter angewendet wird
         """
 
-        super().__init__(qubit_to_change)
+        super().__init__(list_affected_qubits)
         self.type = 'z'
         self.general_matrix = np.array([[1, 0], [0, -1]], dtype=complex)
-        self.general_matrix = self.expandmatrix(self.getnqubits(), qubit_to_change)
+        self.general_matrix = self.expandmatrix(self.getnqubits(), list_affected_qubits[0])

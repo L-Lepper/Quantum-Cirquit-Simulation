@@ -19,7 +19,7 @@ class Measurement(QGate):
     resultierenden Zustandsvektors.
     """
 
-    def __init__(self, state_vec_to_measure, qubit_to_measure):
+    def __init__(self, state_vec_to_measure, list_affected_qubits):
         """
         Erstelle ein Objekt für die Messung, indem der Zustandsvektor, der Index des Qubits und das
         Entscheidungsdiagramm für diesen Vektor gespeichert sind. Für das Entscheidungsdiagramm werden die
@@ -30,7 +30,7 @@ class Measurement(QGate):
 
         #   Speichere den zu Messenden Zustandsvektor und den index des Qubits in diesm Objekt
         self.state_vec_to_measure = state_vec_to_measure
-        self.qubit_to_measure = qubit_to_measure
+        self.qubit_to_measure = list_affected_qubits[0]
 
         #   Erstelle das Entscheidungsdiagramm mit Kantengewichten
         self.state_dd_object = DecisionDiagram(self.state_vec_to_measure)
@@ -39,7 +39,7 @@ class Measurement(QGate):
         #   Für Matrizen sind die Ergebnisse der Berechnung nutzlos...
         self.state_dd_object.calc_probabilities_if_vector()
 
-        super().__init__(qubit_to_measure)
+        super().__init__(list_affected_qubits)
 
     def measure(self):
         """
