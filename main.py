@@ -16,7 +16,7 @@ from Base import Base
 #   QuantumSimulation Objekt erstellen
 q_sim = QuantumSimulation()
 
-#   Hinweis, was das Programm berechnet. ToDo: An aktuelle Funktionen anpassen
+#   Hinweis, was das Programm berechnet.
 print('\nSimulation von Quantenschaltungen, für eine kleine Anzahl an Qubits.')
 
 #   Starte Eingabeaufforderung für Parameter der Klasse QuantumSimulation
