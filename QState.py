@@ -36,7 +36,7 @@ class QState(QMatrix):
         #   Ausgabe für jeden einzelnen Wert ungleich 0, im Zustandsvektor
         for value in self.general_matrix:
 
-            if value != 0. + 0.j:
+            if round(abs(value), 6) != 0.:  #ToDo Genauigkeit?
                 #   Umwandlung des Indexes in ein Bitmuster (3 --> 0011)
                 diracnotation = self.getdiracnotation(index, self.getnqubits())
                 #   Berechnung der Wahrscheinlichkeit in % ToDo: Genauigkeit?

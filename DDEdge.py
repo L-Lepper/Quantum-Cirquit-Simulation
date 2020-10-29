@@ -204,8 +204,9 @@ class DDEdge(Base):
             self.count_of_paths = self.n_possible_paths_to_zero
             self.is_calculated = True
 
-        #   Zähle Anzahl für jeden Funktionsaufruf hoch
-        self.count_of_paths += 1
+        else:
+            #   Zähle Anzahl für jeden Funktionsaufruf hoch
+            self.count_of_paths += 1
 
         #   Falls der Zielknoten ausgehende Kanten hat, wird die Funktion rekursiv für diese Kanten aufgerufen
         if any(self.target_node.list_outgoing_edges):

@@ -485,7 +485,7 @@ def create_node_if_new(dd_obj, matrix_to_find, n):
             direkt verändert (wie Pointer)
     :param matrix_to_find: Eingegebene Teilmatrix, die mit Teilmatrizen verglichen wird, die in schon gespeicherten
             Knoten sind
-    :param n: Index der Ebene, ist bisher nicht relevant, wird aber mit gespeichert
+    :param n: Index der Ebene wird zur Berechnung der Anzahl der selben Kanten auf 0 benötigt. (geht von 0 bis n_qubits+1)
     :return:
     """
 
@@ -499,8 +499,10 @@ def create_node_if_new(dd_obj, matrix_to_find, n):
         #   Anzahl der möglichen Äste x im Entscheidungsdiagramm, ab Quellknoten mit matrix_in bis Endknoten.
         #   n_possible_paths_to_zero entspricht Anzahl der Kanten auf den 0-Knoten, es wird nur eine Kante erstellt,
         #       welche die Anzahl der Möglichkeiten gespeichert hat.
-        #   n_possible_paths_to_zero berechnet sich mit 2^Anzahl der verbleibenden Ebenen (Basis 2 oder 4, Vektor oder Matrix)
-        new_edge.n_possible_paths_to_zero = pow(2 * np.ndim(matrix_to_find), Base.getnqubits() - n)
+        #   n_possible_paths_to_zero berechnet sich mit 2^(Anzahl der verbleibenden Ebenen - 1) (Basis 2 oder 4, Vektor oder Matrix)
+        #   n hat die Werte 0,1,2,3 bei 3 Qubits. Die letzte Ebene 3 mit Endknoten hat keine Ausgehenden Kanten, daher ist der Wert 1/2 egal.
+        #   Für die Ebene 0 ergenen sich dann 4 Möglichkeiten, bei 1: 2, bei 2: 1. Bei 3:1/2 wird wie gesagt, nicht benötigt.
+        new_edge.n_possible_paths_to_zero = int(pow(2 * np.ndim(matrix_to_find), Base.getnqubits() - 1 - n))
         #   Füge neue Kante der Liste aller Kanten hinzu
         dd_obj.list_of_all_edges = np.append(dd_obj.list_of_all_edges, [new_edge])
         #   Füge neue Kante der Liste des Elternknoten als ausgehende Kante hinzu
