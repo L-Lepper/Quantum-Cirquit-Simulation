@@ -42,14 +42,14 @@ class QState(QMatrix):
                 #   Berechnung der Wahrscheinlichkeit in % ToDo: Genauigkeit?
                 probability = round(pow(abs(value), 2) * 100, 6)
 
-                if Base.get_debug()[0]:
-                    return_str += 'Der Zustand {} hat eine Wahrscheinlichkeit von {}%.\n'.format(diracnotation, probability)
+                if Base.get_debug() > 0:
+                    return_str += 'The state {} has a probability of {}%.\n'.format(diracnotation, probability)
                 else:
                     return_list += [diracnotation, probability]
 
             index += 1
 
-        if Base.get_debug()[0]:
+        if Base.get_debug() > 0:
             #   rstrip() entfernt den letzten Zeilenumbruch, der durch for-Schleife zu viel ist
             return return_str.rstrip()
         else:
@@ -69,7 +69,7 @@ class QState(QMatrix):
         #   Umwandlung von int in binärcode, Abschneiden der Information des Vorzeichenbits ( 0b / 1b )
         str_var = bin(index)[2:]
 
-        if Base.get_debug()[0]:
+        if Base.get_debug() > 0:
             diracnotation = '|' + (n_qubits - len(str_var)) * '0' + str_var + ')'
         else:
             diracnotation = (n_qubits - len(str_var)) * '0' + str_var

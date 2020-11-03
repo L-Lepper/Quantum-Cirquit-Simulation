@@ -25,8 +25,7 @@ class DDEdge(Base):
         :param dd_obj_in: Objekt des Entscheidungsdiagramms, zudem diese Kante gehört.
         """
 
-        #   Objekt des Entscheidungsdiagramms wird benötigt um auf Liste der Knoten und Kanten zuzugreifen.
-        self.dd_obj = dd_obj_in
+
         self.edge_weight = 1
         self.edge_probability = 0
         self.old_edge_probability = 0
@@ -34,46 +33,56 @@ class DDEdge(Base):
         self.source_node = source_node
         self.target_node = target_node
 
+        #   Objekt des Entscheidungsdiagramms wird benötigt um auf Liste der Knoten und Kanten zuzugreifen.
+        #   Wird auch zum löschen benötigt (in dd-obj sind die Listen gespeichert)
+        self.dd_obj = dd_obj_in
+
         #   Speichert die Anzahl, wie viele Kanten auf den 0-Knoten durch diese Kante dargestellt werden.
         self.n_possible_paths_to_zero = 0
         #   Speichert die Anzahl, wie häufig diese Kante in allen möglichen Ästen vorkommt.
-        self.count_of_paths = 0
+        self.count_of_paths = 1
         #   is_calculated wird benötigt, damit durch die rekursiven Funktionsaufrufe jedes Objekt nur einmal berechnet
         #   wird
         self.is_calculated = False
 
         super().__init__()
 
+    def __str__(self):
+        return self.print_recursive('')
 
-    def delete_edge(self, dd_obj):
+    def print_recursive(self, str_in):
+        str_out = str_in + \
+                  str(self.edge_weight) + ' ' + \
+                  str(self.target_node.saved_value_on_node) + '\n' + \
+                  self.target_node.print_recursive(str_in)
+        return str_out
+
+
+    def delete_edge(self):
         """
         Funktion löscht nachfolgende Kanten und Knoten, welche nicht mehr benötigt werden.
         :param dd_obj:
         :return:
         """
 
-        edge_in = self
+        #   Falls die Liste des Zielknotens nur eine eingehende Kante hat, wird der Knoten gelöscht.
         if np.size(self.target_node.list_incoming_edges) == 1:
-            self.target_node.delete_node(dd_obj)
-        else:
-            index = np.where(self.target_node.list_incoming_edges == edge_in)[0][0]
-            if np.size(index) == 1:
-                self.target_node.list_incoming_edges = np.delete(self.target_node.list_incoming_edges, index)
-            else:
-                print('Fehler in DDedge.py in def __del__(self, dd_obj). target_node.list_incoming_edges sollte die'
-                      'Kante die gelöscht werden soll, genau einmal gespeichert haben.')
+            self.target_node.delete_node(self.dd_obj)
 
-        index = np.where(dd_obj.list_of_all_edges == edge_in)[0][0]
-        if np.size(index) == 1:
-            dd_obj.list_of_all_edges = np.delete(dd_obj.list_of_all_edges, index)
+        #   Andernfalls wird nur diese Kante, die gelöscht werden soll, aus der Liste der eingehenden Kanten entfernt
+        #   und gelöscht
         else:
-            print('Fehler in DDedge.py in def __del__(self, dd_obj). dd_obj.list_of_all_edges sollte die Kante die'
-                  'gelöscht werden soll, genau einmal gespeichert haben.')
+
+            #   Lösche diese Kante self in der Liste der eingehenden Kanten des Zielknotens
+            self.target_node.delete_edge_in_incoming_list(self)
+
+        #   Suche nun die zu löschende Kante in der Liste aller Kanten, um sie auch dort zu löschen.
+        self.dd_obj.delete_edge_list_of_all_edges(self)
 
     def calc_edge_weight(self):
         """
-        Funktion berechnet das Kantengewicht der einzelnen Kanten. Zuvor muss Schritt 3 in "instructions_for_decision_
-        diagram.doocx" ausgeführt worden sein, damit in den Knoten in saved_value_on_node die benötigten Werte stehen.
+        Funktion berechnet das Kantengewicht der einzelnen Kanten. Zuvor muss Schritt 3 in
+        "Anleitung - Entscheidungsdiagramm und Messung - v4.pdf" ausgeführt worden sein, damit in den Knoten in saved_value_on_node die benötigten Werte stehen.
         ToDo: Dateiname überprüfen
         :return:
         """
@@ -103,7 +112,7 @@ class DDEdge(Base):
     def calc_product_of_weights(self, upstream_value):
         """
         Die Funktion berechnet als Zwischenergebniss das Produkt aller Kantengewichte, von der betrachteten Kante, hoch
-        zur Wurzelkante. Zuvor muss Schritt 6 in "instructions_for_decision_diagram.doocx" ausgeführt worden sein,
+        zur Wurzelkante. Zuvor muss Schritt 6 in "Anleitung - Entscheidungsdiagramm und Messung - v4.pdf" ausgeführt worden sein,
         damit in den Knoten in saved_value_on_node die benötigten Werte stehen.
         ToDo: Dateiname überprüfen
         :param upstream_value: Bei Funktionsaufruf der Wurzelkante muss diesem Parameter 1 übergeben werden. Jede Kante
@@ -133,8 +142,8 @@ class DDEdge(Base):
 
     def calc_edge_propability(self):
         """
-        Die Funktion berechnet die Wahrscheinlichkeit der Kanten. Zuvor muss Schritt 7 in "instructions_for_decision_
-        diagram.doocx" ausgeführt worden sein, damit in den Kanten und Knoten die benötigten Werte stehen.
+        Die Funktion berechnet die Wahrscheinlichkeit der Kanten. Zuvor muss Schritt 7 in
+        "Anleitung - Entscheidungsdiagramm und Messung - v4.pdf" ausgeführt worden sein, damit in den Kanten und Knoten die benötigten Werte stehen.
         ToDo: Dateiname überprüfen
         :return:
         """
@@ -201,7 +210,8 @@ class DDEdge(Base):
         #   Falls die Anzahl noch nicht berechnet wurde, entspricht sie der Anzahl der Kanten auf den 0-Knoten, die
         #   durch die betrachtete Kante dargestellt werden. (Ist bei Kanten die nicht auf den 0-Knoten zeigen 0)
         if not self.is_calculated:
-            self.count_of_paths = self.n_possible_paths_to_zero
+            self.count_of_paths = 1
+            #self.count_of_paths += self.n_possible_paths_to_zero
             self.is_calculated = True
 
         else:

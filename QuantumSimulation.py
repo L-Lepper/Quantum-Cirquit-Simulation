@@ -15,7 +15,6 @@ from PauliZ import PauliZ
 from HadarmardH import HadamardH
 from Measurement import Measurement
 from pathlib import Path
-import numpy as np
 import argparse
 from CmdLineParser import ValidateGate
 from CmdLineParser import ValidateInitialization
@@ -102,18 +101,19 @@ class QuantumSimulation(Base):
                             )
 
         #   5
-        verbose_groupe.add_argument('--verbose', '-v',
-                            dest='verbose_level',
-                            action='count',
-                            default=0,
-                            help='Increase output verbosity.'
-                            )
+        verbose_groupe.add_argument('--verbose_level', '-v',
+                                    dest='verbose_level',
+                                    type=int,
+                                    action='store',
+                                    default=0,
+                                    help='Increase output verbosity.'
+                                    )
 
         #   6
         verbose_groupe.add_argument('--quiet', '-q',
-                            dest='quiet',
-                            action='store_true',
-                            help='Print only results.')
+                                    dest='quiet',
+                                    action='store_true',
+                                    help='Print only results.')
 
         #   7 ToDo: In Liste der Operationen Speichern, sodass Zwischenergebnisse ausgegeben werden können
         # ToDo: Oder für jeden Parameter action implementeiren
@@ -165,7 +165,7 @@ class QuantumSimulation(Base):
 
         if args.list_to_print:
             for element in args.list_to_print:
-        #   7
+                #   7
                 if element == 'gates':
                     self.print_list_of_operations()
 
@@ -174,11 +174,11 @@ class QuantumSimulation(Base):
                     self.print_init_state()
 
                 elif element == 'state_vec':
-                    if Base.get_debug()[0]:
-                        print('Ausgabe der aktuellen Zustände:')
+                    if Base.get_debug() > 0:
+                        print('Output actual state:')
                     print(self.qstate_obj)
 
-        #---9
+        # ---9
         if args.interactive_input:
             while True:
                 #   Es wird auf eine neue Eingabe gewartet
@@ -190,10 +190,8 @@ class QuantumSimulation(Base):
         if args.clear_memory:
             self.clear_memory()
 
-
-        #print(self.phi_in, Base.getnqubits(), str(args.list_of_gates), self.operation_obj.list_tuple_operation_qubit_i)
+        # print(self.phi_in, Base.getnqubits(), str(args.list_of_gates), self.operation_obj.list_tuple_operation_qubit_i)
         return False
-
 
     #   Funktion nimmt nacheinander Befehler aus dem Konsolenfenster entgegen und startet entsprechend die Simulation
     #   Einlesen von Befehlen aus Datei erfolgt über Befehl mit Dateipfad in der Konsole
@@ -215,7 +213,7 @@ class QuantumSimulation(Base):
         #   Speichere die erste Eingabe
         cmd_input = input().lower()
         #   Erstelle eine leere Liste für den Ausganszustand aus den initialisierten Qubits
-        #self.phi_in = []
+        # self.phi_in = []
 
         #   Solange die Funktion execute_cmd() Fals zurück gibt, wird immer auf eine neue Konsoleneingabe gewartet.
         #   Der Befehl cend beendet das Programm, die Funktion gibt False zurück und die Schleife wird beendet.
@@ -251,7 +249,7 @@ class QuantumSimulation(Base):
                     j = cmd_input.find(')')
                     gate_in = cmd_input[1:i]
                     list_affected_qubits = cmd_input[i + 1:j].split()
-                    #ToDo: Prüfe richtige Anzahl an Parametern (betroffene Qubits) / Ist später unwichtig wenn Befehle anders aufgebaut sind
+                    # ToDo: Prüfe richtige Anzahl an Parametern (betroffene Qubits) / Ist später unwichtig wenn Befehle anders aufgebaut sind
                     for i, x in enumerate(list_affected_qubits):
                         list_affected_qubits[i] = int(x)
 
@@ -261,7 +259,6 @@ class QuantumSimulation(Base):
                     #   Felermeldung soll nicht ausgegeben werden, daher wird an dieser Stelle schon die Funktion
                     #   beendet
                     return False
-
 
             print('\nFehler!\n\tUnbekanntes Gatter:', cmd_input, '\n')
 
@@ -302,7 +299,7 @@ class QuantumSimulation(Base):
                 j = file_name.find('\"')
                 file_name = file_name[0:j]
 
-#---4
+                # ---4
                 #   file_obj erstellen, um zu prüfen, ob angegebene Datei existiert
                 file_obj = Path(file_name)
                 if file_obj.is_file():
@@ -319,7 +316,7 @@ class QuantumSimulation(Base):
 
                 #   Falls die angegebene Datei nicht existiert:
                 else:
-#---4
+                    # ---4
                     print('\nFehler!\n\tFolgende Datei wurde nicht gefunden:', file_name, '\n')
 
             #   Ausgabe bestimmter Parameter, wie der eingegebene Initialzustand oder die Liste der Gatter
@@ -339,7 +336,8 @@ class QuantumSimulation(Base):
                     #   7
                     self.print_init_state()
                 else:
-                    print('\nFehler!\n\tUnbekannte Syntax:', cmd_input, '. Eingabe in der Form: cprint = state|gates erwartet.\n')
+                    print('\nFehler!\n\tUnbekannte Syntax:', cmd_input,
+                          '. Eingabe in der Form: cprint = state|gates erwartet.\n')
 
             #   Simulation ausführen, wenn Anzahl der Qubits größer 0 ist (Dann ist in self.phi_in auch ein Bitmuster
             #   in Form einer Liste gespeichert.
@@ -412,19 +410,21 @@ class QuantumSimulation(Base):
                   '\tBefehle für den Initialzustand. Standardmäßig haben Qubits den Zustand 0.\n'
                   '\tqb_n = x\t\tLegt Anzahl n der Qubits entsprechend der Eingabe x fest.\n'
                   '\tqb[i] = x\t\tInitialisierung des i-ten Qubits auf den Wert x, x = {0, 1}.\n')
-            print('\tBefehle, um der Liste an Operationen verschiedene Gatter hinzuzufügen, welche auf das i-te Qubit angewendet werden.\n'
-                  '\tgx(i)\t\t\tPauli-X-Gatter.\n'
-                  '\tgz(i)\t\t\tPauli-Z-Gatter.\n'
-                  '\tgh(i)\t\t\tHadarmard-Gatter.\n'
-                  '\tgm(i)\t\t\tMessung des i-ten Qubits.\n')
+            print(
+                '\tBefehle, um der Liste an Operationen verschiedene Gatter hinzuzufügen, welche auf das i-te Qubit angewendet werden.\n'
+                '\tgx(i)\t\t\tPauli-X-Gatter.\n'
+                '\tgz(i)\t\t\tPauli-Z-Gatter.\n'
+                '\tgh(i)\t\t\tHadarmard-Gatter.\n'
+                '\tgm(i)\t\t\tMessung des i-ten Qubits.\n')
             print('\tSonstige Befehle:\n'
                   '\tcdebug true|false vl = x Debug-Modus aktivieren oder deaktivieren. Beim aktivieren wird mit x das Verbose-Level 0-3 benötigt.\n'
-                  '\tcfile "PATH"\t\t\tPATH gibt einen Dateipfad auf eine Textdatei an, aus der eine Liste an Befehlen eingelesen und ausgeführt werden soll. Z.b. cfile', r' "C:\Users\NAME\Documents\test.txt"', '\n'
-                  '\tcsimulate\t\t\t\tFalls die Anzahl an Qubits größer 0 ist, wird die Simulation gestartet.\n'
-                  '\tcprint = state|gates\tGibt den aktuellen Initialzustand in Diracnotation oder die Liste der gespeicherten Gatter in ihrer Reihenfolge aus.\n'
-                  '\tcclear\t\t\t\t\tLöscht alle Qubits und Gatter, und setzt die Anzahl an Qubits auf 0.\n'
-                  '\tcend\t\t\t\t\tBeendet das Programm.\n'
-                  '\t?|h|help\t\t\t\tListet alle Befehle auf.\n')
+                  '\tcfile "PATH"\t\t\tPATH gibt einen Dateipfad auf eine Textdatei an, aus der eine Liste an Befehlen eingelesen und ausgeführt werden soll. Z.b. cfile',
+                  r' "C:\Users\NAME\Documents\test.txt"', '\n'
+                                                          '\tcsimulate\t\t\t\tFalls die Anzahl an Qubits größer 0 ist, wird die Simulation gestartet.\n'
+                                                          '\tcprint = state|gates\tGibt den aktuellen Initialzustand in Diracnotation oder die Liste der gespeicherten Gatter in ihrer Reihenfolge aus.\n'
+                                                          '\tcclear\t\t\t\t\tLöscht alle Qubits und Gatter, und setzt die Anzahl an Qubits auf 0.\n'
+                                                          '\tcend\t\t\t\t\tBeendet das Programm.\n'
+                                                          '\t?|h|help\t\t\t\tListet alle Befehle auf.\n')
             print('##################################################\n')
 
         else:
@@ -436,8 +436,9 @@ class QuantumSimulation(Base):
     def calculate(self):
         """
         Funktion führt Operationen aus der Operation_List aus. Elemente dieser Liste werden abgearbeitet:
-        Erstellt Objekt für Operation, und führt Multiplikation aus.
-        ToDo: Anderer Operator wenn Messung durchgeführt werden soll
+        Erstellt Objekt für Operation, und führt Multiplikation aus, wenn es ein Gatter ist. Wenn Messung oder der
+        Befehl printdurchgeführt werden soll, wird die Multipligation Gate*State nicht ausgeführt, sondern der
+        jeweilige Code.
         :return qstate_obj: Mit Ergebnis als Zustandsvektor.
         """
 
@@ -447,10 +448,9 @@ class QuantumSimulation(Base):
         #   Führe nacheinander die Operationen aus operation_obj.list_tuple_operation_qubit_i
         for operation in self.operation_obj.list_tuple_operation_qubit_i:
 
-            #   ToDo: Hier gibt es einen Fehler: Eigentlich soll Operationsliste das qubit to change als int speichern,
-            #    wird aber irgendwie als numpy_str verwandelt. Desswegen ist hier konvertierung in int notwendig
-            #   In der Liste wird aus dem Tuple mit dem aktuellen Index i, das zweite Element (Index des Qubit,
-            #   welches verändert werden soll) ausgelesen
+            #   In der 2-Dimensionalen Liste list_tuple_operation_qubit_i wird aus dem Element mit dem aktuellen Index
+            #   i, die Liste mit den Indizes der Qubits, auf welche das Gatter angewendet wird, ausgelesen.
+            #   [['h', 1], ['cx', 0, 3, 6]]
             list_affected_qubits = operation[1:]
 
             #   Erzeugen des benötigten Objekt für das Gatter (Gatter werden durch Konstruktor automatisch auf richtige
@@ -465,21 +465,18 @@ class QuantumSimulation(Base):
                 measure_obj = Measurement(self.qstate_obj.general_matrix, list_affected_qubits)
 
                 #   gebe Zustände des Zustandsvektors vor der Messung aus
-                    # ----------
-                if Base.get_debug()[0]:
-                    print('Zustände des Zustandsvektors vor der Messung:')
+                if Base.get_debug() > 0:
+                    print('States of the state vector before the measurement:')
                     print(self.qstate_obj, '\n')
-                    # ----------
 
                 #   Bei der Messung wird anstatt der Multiplikation unten, die Funktion measure() aufgerufen.
                 self.qstate_obj.general_matrix = measure_obj.measure()
 
                 #   gebe Zustände des Zustandsvektors nach der Messung aus
-                    # ----------
-                if Base.get_debug()[0]:
-                    print('Zustände des Zustandsvektors nach der Messung:')
+                if Base.get_debug() > 0:
+                    print('\nStates of the state vector after the measurement:')
                     print(self.qstate_obj, '\n')
-                    # ----------
+
 
                 # Index welches Tupel abgearbeitet wird, wird hochgezählt
                 i += 1
@@ -488,10 +485,9 @@ class QuantumSimulation(Base):
 
             #   Fehler: Operation wird als gültige Eingabe erkannt, ist oben aber nicht aufgeführt
             else:
-                print('\nFehler!\n\tFolgende Operation wurde in QuantumSimulation.py: cmd_input_for_qsim() nicht als '
-                      'Falsch erkannt, aber ist in QuantumSimulation.py: calculate() nicht implementiert:', operation,
-                      '\n')
-                return self.qstate_obj
+                raise Exception('Error: The following operation was not recognized as Error in '
+                      'QuantumSimulation.py: cmd_input_for_qsim(),\n'
+                      'but is not implemented in QuantumSimulation.py: calculate():', operation)
 
             #   Multiplikation führt Simulation aus: Neuer Zustandsvektor nachdem Gatter angewendet wurde
             #   (Messung wird ebenfalls durch den Operator __mul__() aufgerufen)
@@ -512,39 +508,47 @@ class QuantumSimulation(Base):
             #   In der Liste phi_in wird für jedes neue Qubit eine 0 hinzugefügt.
             self.phi_in += (Base.getnqubits() - len(self.phi_in)) * [0]
 
+        #   Dieser Fall sollte nach dem Parser nicht vorkommen, kann aber bei der interaktiven abfrage vorkommen
+        else:
+            raise Exception('Error: Number of Qubits already set to', Base.getnqubits())
+
         #   Falls es bereits mehr Qubits gibt, als in dem Befehl vorgegeben, wird eine Warnung ausgegeben
         #   und alle darüberliegenden Qubits gelöscht
-        else:
-            print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber sollte auf',
-                  n_qubits, 'gesetzt werden.\n\tDie Anzahl an Qubits wurde auf', n_qubits,
-                  'geändert und alle darüber liegenden Qubits und deren Gatter wurden gelöscht!\n')
-            self.set_n_qubits(n_qubits)
+#        else:
+ #           print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber sollte auf',
+  #                n_qubits, 'gesetzt werden.\n\tDie Anzahl an Qubits wurde auf', n_qubits,
+   #               'geändert und alle darüber liegenden Qubits und deren Gatter wurden gelöscht!\n')
+    #        self.set_n_qubits(n_qubits)
 
             #   Prüfen, dass Index wirklich weiter geht, als die neue Anzahl der Qubits
-            if len(self.phi_in) > n_qubits:
-                del self.phi_in[n_qubits:]
+#            if len(self.phi_in) > n_qubits:
+ #               del self.phi_in[n_qubits:]
 
             #   Speichere die Operationen, die auf Qubits oberhalb von n_qubits angewendet werden
-            list_of_elements = []
-            for element in self.operation_obj.list_tuple_operation_qubit_i:
-                if any(element):
-                    if max(element[1:]) >= n_qubits:
-                        list_of_elements += [element]
+  #          list_of_elements = []
+   #         for element in self.operation_obj.list_tuple_operation_qubit_i:
+    #            if any(element):
+     #               if max(element[1:]) >= n_qubits:
+      #                  list_of_elements += [element]
 
             #   Entferne alle Gatter in der Liste aller Operationen, die auf Qubits angewendet werden sollen,
             #   die oben gelöscht wurden
-            for element in list_of_elements:
-                self.operation_obj.list_tuple_operation_qubit_i.remove(element)
+#            for element in list_of_elements:
+ #               self.operation_obj.list_tuple_operation_qubit_i.remove(element)
 
     #   2
     def initialize_qubits(self, index, value):
         #   Falls der Index des zu initialisierenden Qubits aus dem Bereich der Anzahl an Qubits hinaus geht,
         #   wird eine Warnung ausgegeben und die Anzahl angepasst.
+#        if index >= Base.getnqubits():
+ #           print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber das Qubit mit Index',
+  #                index, 'liegt darüber.\n\tDie Anzahl an Qubits wurde auf', index + 1,
+   #               'geändert!\n')
+    #        Base.set_n_qubits(index + 1)
+
+        #   Die Anzahl der Qubits soll nicht automatisch festgelegt werden, sondern manuell mit -n
         if index >= Base.getnqubits():
-            print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber das Qubit mit Index',
-                  index, 'liegt darüber.\n\tDie Anzahl an Qubits wurde auf', index + 1,
-                  'geändert!\n')
-            Base.set_n_qubits(index + 1)
+            raise IndexError
 
         #   Der Liste der initialen Zustände der Qubits wird mit 0en für die neuen Qubits erweitert
         self.phi_in += (Base.getnqubits() - len(self.phi_in)) * [0]
@@ -556,16 +560,21 @@ class QuantumSimulation(Base):
     def process_gate(self, gate_in, list_affected_qubits):
         #   Falls die Anzahl der Qubits kleiner ist, als der Index des Qubits welches initialisiert wird, wird
         #   eine Warnung ausgegeben und die Anzahl angepasst. Die restlichen neuen Qubits haben den Zustand 0.
+#        if max(list_affected_qubits) >= Base.getnqubits():
+ #           print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber das Qubit mit Index',
+  #                max(list_affected_qubits), 'liegt darüber.\n\tDie Anzahl an Qubits wurde auf',
+   #               max(list_affected_qubits) + 1,
+    #              'geändert!\n')
+     #       Base.set_n_qubits(max(list_affected_qubits) + 1)
+      #      self.phi_in += (Base.getnqubits() - len(self.phi_in)) * [0]
+
+        #   Wird ein Gatter auf ein Index über der Anzahl an Qubits angewendet, soll es einen Fehler geben
         if max(list_affected_qubits) >= Base.getnqubits():
-            print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber das Qubit mit Index',
-                  max(list_affected_qubits), 'liegt darüber.\n\tDie Anzahl an Qubits wurde auf', max(list_affected_qubits) + 1,
-                  'geändert!\n')
-            Base.set_n_qubits(max(list_affected_qubits) + 1)
-            self.phi_in += (Base.getnqubits() - len(self.phi_in)) * [0]
+            raise IndexError
 
         #   Der Operationen-Liste wird über die Funktion aus dem Operation-Objekt ein Tupel aus Gatter und
         #   betreffendem Qubit hinzugefügt.
-        temp = [gate_in] + list_affected_qubits     #ToDo: Funktion add_tuple... überarbeiten
+        temp = [gate_in] + list_affected_qubits  # ToDo: Funktion add_tuple... überarbeiten
         self.operation_obj.add_tuple_to_operation_list([temp])
 
     #   sim
@@ -586,27 +595,27 @@ class QuantumSimulation(Base):
             self.qstate_obj = self.calculate()
 
             #   Ausgabe der Zustände nach der Simulation, falls vebose level 0 (nicht quiet)
-            if Base.get_debug()[0]:
-                print('Simulation beendet:')
+            if Base.get_debug() > 0:
+                print('\n---------------\t Simulation completed: \t---------------\n')
             print(self.qstate_obj)
 
         else:
-            print('\nFehler!\n\tSimulation wurde nicht gestartet, die Anzahl der Qubits beträgt 0 beträgt oder die '
-                  'Liste der Operationen leer ist.\n')
+            if Base.get_debug() > 0:
+                print('\nSimulation was not started, the number of qubits is 0 or the list of operations is empty.\n')
 
     #   7
     def print_list_of_operations(self):
-        print('Liste der gespeicherten Gatter:')
+        print('List of operations:')
 
         #   Falls in der Liste der Operationen Elemente vorhanden sind:
         if self.operation_obj.list_tuple_operation_qubit_i:
-            print('\tGatter\t| Index der Qubits, auf die das Gatter angewendet wird')
+            print('\tGates\t| Index of qubits to which the gate is applied')
 
             for operation in self.operation_obj.list_tuple_operation_qubit_i:
                 str_out = '\t\t' + operation[0] + '\t|\t' + str(operation[1])
                 print(str_out)
         else:
-            print('Die Liste ist leer.')
+            print('The list is empty.')
 
     #   7
     def print_init_state(self):
@@ -618,7 +627,7 @@ class QuantumSimulation(Base):
             phi_str += str(value)
         phi_str += ")"
 
-        print('Der Initialzustand in Diracnotation lautet', phi_str, '.')
+        print('The initial state in dirac notation is', phi_str, '.')
 
     #   8
     def clear_memory(self):

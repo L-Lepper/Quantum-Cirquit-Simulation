@@ -31,14 +31,14 @@ class DecisionDiagram(Base):
         elif np.ndim(matrix_in) == 1:
             self.is_vector = True
         else:
-            print('Ungültige Matrix: Entweder Vektor oder Quadratische Matrix!')
-            return
+            raise Exception('Invalid matrix: either vector or square matrix expected.')
 
         #   Liste aller Kanten
         self.list_of_all_edges = np.array([])
-        #   Leere Liste für alle Knoten: Alle Knoten einer Ebene werden in einer eigenen Zeile gespeichert
+        #   Leere Liste für alle Knoten: alle Knoten einer Ebene werden in einer eigenen Zeile gespeichert
         self.list_of_all_nodes = [[] for i in range(Base.getnqubits() + 1)]
-        #   Variable wird benötigt, um das Entscheidungsdiagramm aufzubauen: Liste aller Knoten in der betrachteten Ebene
+        #   Variable wird benötigt, um das Entscheidungsdiagramm aufzubauen:
+        #   Liste aller Knoten in der betrachteten Ebene
         self.list_of_nodes_per_level = np.array([])
         #   Objekte mit den Adressen, wo der Start und die Endknoten gespeichert sind
         self.node_root = None
@@ -55,31 +55,77 @@ class DecisionDiagram(Base):
         super().__init__()
 
     def __str__(self):
-        print('Gebe Entscheidungsdiagramm aus:\nEigenschaften der Kanten:\tKantengewicht | Häufigkeit | '
-              'Anzahl gleicher Kanten | Kantenwahrscheinlichkeit | Bedingte Wahrscheinlichkeit\n')
+        print('Print Decision Diagram:\n'
+              '(\'count to zero\' means the number of edges to zero represented by this edge.)\n')
 
         #   Debug Verbose-Level 3
-        if Base.get_debug()[1] >= 3:
-            #   print alle Knoten in der 2D Liste
-            for index, row in enumerate(self.list_of_all_nodes):
-                print('Ebene ', index, ':')
-                for j, node in enumerate(row):
-                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
-                    for k, edge in enumerate(node.list_outgoing_edges):
-                        print('\t\tAusgehende Kante', k, ':')
-                        print('\t\t\tKantengewicht', edge.edge_weight, '\n\t\t\tHäufigkeit', edge.count_of_paths, '\n\t\t\tAnzahl gleicher Kanten', edge.n_possible_paths_to_zero,
-                              '\n\t\t\tKantenwahrscheinlichkeit', edge.edge_probability, '\n\t\t\tBedingte Wahrscheinlichkeit', edge.conditional_probability)
+        if Base.get_debug() >= 3:
 
-        #   Debug Verbose-Level < 3
-        if Base.get_debug()[1] < 3:
-            #   print alle Knoten in der 2D Liste
+            #   Ebenen im Entscheidungsdiagramm
             for index, row in enumerate(self.list_of_all_nodes):
-                print('Knoten der Ebene', index, ':')
+                print('layer ', index, ':')
+
+                #   Knoten einer Ebene
                 for j, node in enumerate(row):
-                    print('\tKnoten', j, ': ')
+                    print('\tnode', j, ':', node.saved_value_on_node,
+                          ', number of incoming edges:', np.size(node.list_incoming_edges))
+
+                    if index == 0:
+                        #   print Eingehende Kante des Wurzelknotens
+                        print('\t\tincoming edge of root node:')
+                        print('\t\t\tedge weight\t', node.list_incoming_edges[0].edge_weight,
+                              '\n\t\t\toccurrence\t', node.list_incoming_edges[0].count_of_paths,
+                              '\n\t\t\tcount to zero\t', node.list_incoming_edges[0].n_possible_paths_to_zero,
+                              '\n\t\t\tedge probability\t', node.list_incoming_edges[0].edge_probability,
+                              '\n\t\t\tconditional probability\t', node.list_incoming_edges[0].conditional_probability)
+
+                    #   print Ausgehende Kanten
                     for k, edge in enumerate(node.list_outgoing_edges):
-                        print('\t\tAusgehende Kante ', k, ':')
-                        print('\t\t\tKantengewicht:', edge.edge_weight, '\n\t\t\tKantenwahrscheinlichkeit:', edge.edge_probability)
+                        print('\t\toutgoing edges', k, ':')
+                        print('\t\t\tedge weight\t', edge.edge_weight,
+                              '\n\t\t\toccurrence\t', edge.count_of_paths,
+                              '\n\t\t\tcount to zero\t', edge.n_possible_paths_to_zero,
+                              '\n\t\t\tedge probability\t', edge.edge_probability,
+                              '\n\t\t\tconditional probability\t', edge.conditional_probability,
+                              '\n\t\t\ttarget node', edge.target_node.saved_value_on_node)
+
+            #   Berechne Anzahl aller Kanten und Knoten
+            n = 0
+            for level in self.list_of_all_nodes:
+                n += len(level)
+
+            e = np.size(self.list_of_all_edges)
+            print('Number of all nodes:', n, ', number of all edges:', e, '\n')
+
+            #   Debug Verbose-Level 2
+            if Base.get_debug() == 2:
+
+                #   Ebenen im Entscheidungsdiagramm
+                for index, row in enumerate(self.list_of_all_nodes):
+                    print('layer ', index, ':')
+
+                    #   Knoten einer Ebene
+                    for j, node in enumerate(row):
+                        print('\tnode ', j, ': ', node.saved_value_on_node)
+
+                        if index == 0:
+                            #   print Eingehende Kante des Wurzelknotens
+                            print('\t\tincoming edge of root node:')
+                            print('\t\t\tedge weight\t', node.list_incoming_edges[0].edge_weight)
+
+                        #   print Ausgehende Kanten
+                        for k, edge in enumerate(node.list_outgoing_edges):
+                            print('\t\toutgoing edges', k, ':')
+                            print('\t\t\tedge weight\t', edge.edge_weight,
+                                  '\n\t\t\ttarget node', edge.target_node.saved_value_on_node)
+
+                #   Berechne Anzahl aller Kanten und Knoten
+                n = 0
+                for level in self.list_of_all_nodes:
+                    n += len(level)
+
+                e = np.size(self.list_of_all_edges)
+                print('Number of all nodes:', n, ', number of all edges:', e, '\n')
 
         return '\n'
 
@@ -95,6 +141,7 @@ class DecisionDiagram(Base):
         #   is_calculated für alle Kanten auf False setzen
         for edge in self.list_of_all_edges:
             edge.is_calculated = False
+
         #   is_calculated für alle Knoten auf False setzen
         for row in self.list_of_all_nodes:
             for node in row:
@@ -109,6 +156,12 @@ class DecisionDiagram(Base):
         :return:
         """
 
+        #   Debug Ausgabe für das erstellte Entscheidungsdiagramm
+        if Base.get_debug() >= 3:
+            print('\n--------------------\t'
+                  'Output all partial results of creating a decision diagram'
+                  '\t--------------------\n')
+
         """ SCHRITT 1 + 2 """
 
         #   Für jede Ebene werden die Knoten bestimmt, gleiche Knoten werden zusammengefasst und ihre Kanten in einer
@@ -119,23 +172,48 @@ class DecisionDiagram(Base):
             #   Der 2-Dimensionalen Liste aller Knoten wird pro Zeile die Liste der Knoten pro Ebene angehängt
             self.list_of_all_nodes[level_index] += self.list_of_nodes_per_level.tolist()
 
-            # ----------
-            #   Ausgabe der Matrizen im vollständigen Diagramm, die momentan in den Knoten gespeichert sind, falls
-            #   debug True. Ansprechen der Knoten über jede einzelne Kante
-        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
+        #   Ausgabe der Matrizen im vollständigen Diagramm, die momentan in den Knoten gespeichert sind, falls
+        #   debug True. Ansprechen der Knoten über jede einzelne Kante
+        if Base.get_debug() >= 3:
             print(
-                '\n\nTest des Aufbaus des Entscheidungsdiagramms nach Schritt 1 und 2. \nBeginnend mit der Wurzelkante, wird für jede Kante '
-                'der im Zielknoten gespeicherte Wert ausgegeben. \nMomentan ist das die jeweilige Teilmatrix:\n')
-            print(self)
+                '\nTest the structure of the decision diagram after steps 1 and 2 '
+                '(See instructions in documentation folder).\n'
+                'Starting with the root edge, the value stored in the target node is output for each edge.\n'
+                'Currently this is the respective sub-matrix:')
+
+            #   Ebenen im Entscheidungsdiagramm
+            for index, row in enumerate(self.list_of_all_nodes):
+                print('layer ', index, ':')
+
+                #   Knoten einer Ebene
+                for j, node in enumerate(row):
+                    print('\tnode ', j, ':')
+
+                    if index == 0:
+                        #   print Eingehende Kante des Wurzelknotens
+                        print('\t\tincoming edge of root node:')
+                        print('\t\t\ttarget node', node.list_incoming_edges[0].target_node.saved_value_on_node)
+
+                    #   print Ausgehende Kanten
+                    for k, edge in enumerate(node.list_outgoing_edges):
+                        print('\t\toutgoing edges', k, ':')
+                        print('\t\t\ttarget node', edge.target_node.saved_value_on_node)
+
+            #   Berechne Anzahl aller Kanten und Knoten
+            n = 0
+            for level in self.list_of_all_nodes:
+                n += len(level)
+
+            e = np.size(self.list_of_all_edges)
+            print('Number of all nodes:', n, ', number of all edges:', e, '\n')
 
             #   Ausgabe aller elementaren Knoten, durch die Matrix die dort gespeichert ist
-            print('\nTest der Anzahl an verschiedenen Knoten. Redundante Knoten sind zusammengefasst:\n')
+            print('Test the number of different nodes. Nodes from identical submatrices are combined:\n')
             #   print alle Knoten in der 2D Liste
             for index, row in enumerate(self.list_of_all_nodes):
-                print('Knoten der Ebene ', index, ':')
+                print('nodes of layer', index, ':')
                 for j, node in enumerate(row):
-                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
-            # ----------
+                    print('\tnode ', j, ': ', str(node.saved_value_on_node))
 
         """ SCHRITT 3 """
 
@@ -143,17 +221,15 @@ class DecisionDiagram(Base):
         self.list_of_all_nodes[0][0].get_max_value_of_target_nodes()
         self.set_is_calculated_false()
 
-            # ----------
-            #   Ausgabe der übertragenen Werte
-        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
-            print('\n\n\nTest von Schritt 3 mit den auf die Elternknoten übertragenen Werten (Max aus '
-                  'Nachfolgeknoten). Ein 0 Knoten ist hier immer dabei, auch wenn keine Kante auf ihn zeigt:\n')
+        #   Ausgabe der übertragenen Werte
+        if Base.get_debug() >= 3:
+            print('\n\nTest of step 3 with the values transferred to the parent nodes (max from successor nodes).\n'
+                  'A zero ending node is always present here, even if no edge points to it:\n')
             #   print alle Knoten in der 2D Liste
             for index, row in enumerate(self.list_of_all_nodes):
-                print('Knoten der Ebene ', index, ':')
+                print('nodes of layer', index, ':')
                 for j, node in enumerate(row):
-                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
-            # ---------
+                    print('\tnode ', j, ': ', str(node.saved_value_on_node))
 
         """ SCHRITT 4 """
 
@@ -166,10 +242,13 @@ class DecisionDiagram(Base):
         #   In der letzten Ebene der Knoten wurden die Einträge der Matrix/Vektor gespeichert, die für die Funktion
         #   zuvor benötigt wurde. Damit das Diagramm später normiert ist, muss Endknoten entweder 0 oder 1 sein
         remember_edges = np.array([])
-        #   Speichere für jeden Knoten in der letzten Ebene, dessen Wert ungleich 0 ist, die Liste der eingehenden Kanten
+
+        #   Speichere für jeden Knoten in der letzten Ebene, dessen Wert ungleich 0 ist,
+        #   die Liste der eingehenden Kanten
         for node in self.list_of_all_nodes[Base.getnqubits()][:]:
             if node.saved_value_on_node != 0:
                 remember_edges = np.append(remember_edges, node.list_incoming_edges)
+
                 #   Entferne den Knoten, dessen eingehenden Kanten gerade gespeichert wurden
                 self.list_of_all_nodes[Base.getnqubits()].remove(node)
 
@@ -185,19 +264,37 @@ class DecisionDiagram(Base):
         #   1-Endknoten)
         self.list_of_all_nodes[Base.getnqubits()] += [self.node_one]
 
-
-            # ----------
         #   Ausgabe der übertragenen Werte
-        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
-            print('\n\n\nTest für Schritt 4 und 5 - Entscheidungsdiagramm mit Kantengewichten:\n')
-            #   print alle Knoten in der 2D Liste
+        if Base.get_debug() >= 3:
+            print('\n\nTest for step 4 and 5 - Decision diagram with edge weights:\n')
+
+            #   Ebenen im Entscheidungsdiagramm
             for index, row in enumerate(self.list_of_all_nodes):
-                print('Knoten der Ebene ', index, ':')
+                print('layer ', index, ':')
+
+                #   Knoten einer Ebene
                 for j, node in enumerate(row):
-                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
-                    for k, edge in enumerate(node.list_incoming_edges):
-                        print('\t\tEingehende Kante ', k, ': ', edge.edge_weight)
-            # ---------
+                    print('\tnode ', j, ':')
+
+                    if index == 0:
+                        #   print Eingehende Kante des Wurzelknotens
+                        print('\t\tincoming edge of root node:')
+                        print('\t\t\tedge weight\t', node.list_incoming_edges[0].edge_weight,
+                              '\n\t\t\ttarget node', node.list_incoming_edges[0].target_node.saved_value_on_node)
+
+                    #   print Ausgehende Kanten
+                    for k, edge in enumerate(node.list_outgoing_edges):
+                        print('\t\toutgoing edges', k, ':')
+                        print('\t\t\tedge weight\t', edge.edge_weight,
+                              '\n\t\t\ttarget node', edge.target_node.saved_value_on_node)
+
+            #   Berechne Anzahl aller Kanten und Knoten
+            n = 0
+            for level in self.list_of_all_nodes:
+                n += len(level)
+
+            e = np.size(self.list_of_all_edges)
+            print('Number of all nodes:', n, ', number of all edges:', e, '\n')
 
         """ SCHRITT 6 """
 
@@ -205,73 +302,72 @@ class DecisionDiagram(Base):
         self.list_of_all_nodes[0][0].get_weighted_propability_of_node()
         self.set_is_calculated_false()
 
+        #   Ausgabe der gewichteten Wahrscheinlichkeit aller Knoten
+        if Base.get_debug() >= 3:
+            print('\n\nTest for step 6 - Weighted probability of all nodes:\n')
+
+            #   Ebenen im Entscheidungsdiagramm
+            for index, row in enumerate(self.list_of_all_nodes):
+                print('layer ', index, ':')
+
+                #   Knoten einer Ebene
+                for j, node in enumerate(row):
+                    print('\tnode ', j, ':')
+
+                    if index == 0:
+                        #   print Eingehende Kante des Wurzelknotens
+                        print('\t\tincoming edge of root node:')
+                        print('\t\t\ttarget node', node.list_incoming_edges[0].target_node.saved_value_on_node)
+
+                    #   print Ausgehende Kanten
+                    for k, edge in enumerate(node.list_outgoing_edges):
+                        print('\t\toutgoing edges', k, ':')
+                        print('\t\t\ttarget node', edge.target_node.saved_value_on_node)
+
+            #   Leerzeile nach der Ausgabe
+            print('\n')
+
+        """ SCHRITT 7 """
+
+        self.merge_dd_step7()
+
         #   Für jede Kante wird die Anzahl berechnet, wie häufig sie in den Ästen vorkommt
         self.list_of_all_edges[0].calc_count_of_paths()
         self.set_is_calculated_false()
 
-            # ----------
-        #   Ausgabe der gewichteten Wahrscheinlichkeit aller Knoten
-        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
-            print('\n\n\nTest für Schritt 6 - Gewichtete Wahrscheinlichkeit aller Knoten:\n')
-            #   print alle Knoten in der 2D Liste
+        #   Ausgabe der Häufigkeit der Kanten und Test für zusammengefasste Knoten
+        if Base.get_debug() >= 3:
+            print('\n\nTest for step 7 - Merged nodes:\n')
+
+            #   Ebenen im Entscheidungsdiagramm
             for index, row in enumerate(self.list_of_all_nodes):
-                print('Knoten der Ebene ', index, ':')
+                print('layer ', index, ':')
+
+                #   Knoten einer Ebene
                 for j, node in enumerate(row):
-                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
-                    for k, edge in enumerate(node.list_incoming_edges):
-                        print('\t\tEingehende Kante ', k, ': ')
-                        print('\t\t\tKantengewicht', edge.edge_weight, '\n\t\t\tHäufigkeit', edge.count_of_paths)
-            # ---------
+                    print('\tnode ', j, ':')
 
-        """ SCHRITT 7 """
-# ToDo: oben calc_count_of_paths gehört hinter Schritt 7!
-        """
-        #   Fasse Knoten mit den selben gespeicherten Werten zusammen. Nachfolgeäste unterscheiden sich nur
-        #   durch Skalierung
-        for i in range(Base.getnqubits() - 1, 0, -1):
-            for j, operating_node in enumerate(self.list_of_all_nodes[i]):
-                deleted_nodes = 0
-                for k in range(j + 1, len(self.list_of_all_nodes[i])):
+                    if index == 0:
+                        #   print Eingehende Kante des Wurzelknotens
+                        print('\t\tincoming edge of root node:')
+                        print('\t\t\tedge weight\t', node.list_incoming_edges[0].edge_weight,
+                              '\n\t\t\toccurrence\t', node.list_incoming_edges[0].count_of_paths,
+                              '\n\t\t\ttarget node', node.list_incoming_edges[0].target_node.saved_value_on_node)
 
-                    k -= deleted_nodes
+                    #   print Ausgehende Kanten
+                    for k, edge in enumerate(node.list_outgoing_edges):
+                        print('\t\toutgoing edges', k, ':')
+                        print('\t\t\tedge weight\t', edge.edge_weight,
+                              '\n\t\t\toccurrence\t', edge.count_of_paths,
+                              '\n\t\t\ttarget node', edge.target_node.saved_value_on_node)
 
-                    round_sv_1 = round(operating_node.saved_value_on_node, 6)
-                    round_sv_2 = round(self.list_of_all_nodes[i][k].saved_value_on_node, 6)
+            #   Berechne Anzahl aller Kanten und Knoten
+            n = 0
+            for level in self.list_of_all_nodes:
+                n += len(level)
 
-                    round_ew_1 = (round(operating_node.list_outgoing_edges[0].edge_weight.real, 6)
-                                  + round(operating_node.list_outgoing_edges[0].edge_weight.imag, 6)*1j)
-                    round_ew_2 = (round(self.list_of_all_nodes[i][k].list_outgoing_edges[0].edge_weight.real, 6)
-                                  + round(self.list_of_all_nodes[i][k].list_outgoing_edges[0].edge_weight.imag, 6) * 1j)
-                    round_ew_3 = (round(operating_node.list_outgoing_edges[1].edge_weight.real, 6)
-                                  + round(operating_node.list_outgoing_edges[1].edge_weight.imag, 6) * 1j)
-                    round_ew_4 = (round(self.list_of_all_nodes[i][k].list_outgoing_edges[1].edge_weight.real, 6)
-                                  + round(self.list_of_all_nodes[i][k].list_outgoing_edges[1].edge_weight.imag, 6) * 1j)
-
-                    if round_sv_1 == round_sv_2 and round_ew_1 == round_ew_2 and round_ew_3 == round_ew_4:
-                        self.list_of_all_nodes[i][k].list_incoming_edges = np.append(self.list_of_all_nodes[i][k].list_incoming_edges, operating_node.list_incoming_edges)
-                        for edge in operating_node.list_incoming_edges:
-                            edge.target_node = self.list_of_all_nodes[i][k]
-                            
-                        self.list_of_all_nodes[i][j].delete_node(self)
-                        deleted_nodes += 1
-        
-
-                        
-
-          # ----------
-        #   Ausgabe der gewichteten Wahrscheinlichkeit aller Knoten
-        if Base.get_debug()[0] and Base.get_debug()[1] < 3:
-            print('\n\n\nTest für Schritt 7 - Zusammengefasste Knoten:\n')
-            #   print alle Knoten in der 2D Liste
-            for index, row in enumerate(self.list_of_all_nodes):
-                print('Knoten der Ebene ', index, ':')
-                for j, node in enumerate(row):
-                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
-                    for k, edge in enumerate(node.list_incoming_edges):
-                        print('\t\tEingehende Kante ', k, ': ', edge.edge_weight)
-            # ---------
-        """
-
+            e = np.size(self.list_of_all_edges)
+            print('Number of all nodes:', n, ', number of all edges:', e, '\n')
 
     def calc_probabilities_if_vector(self):
 
@@ -281,18 +377,32 @@ class DecisionDiagram(Base):
         self.list_of_all_edges[0].calc_product_of_weights(1)
         self.set_is_calculated_false()
 
-            # ----------
         #   Ausgabe des Produktes aller Kantengewichte hoch zur Wurzelkante
-        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
-            print('\n\n\nTest Schritt 8 - Berechnete Produkte der Kantengewichte:\n')
-            #   print alle Knoten in der 2D Liste
+        if Base.get_debug() >= 3:
+            print('\n\nTest of step 8 - Calculated products of the edge weights:\n')
+
+            #   Ebenen im Entscheidungsdiagramm
             for index, row in enumerate(self.list_of_all_nodes):
-                print('Knoten der Ebene ', index, ':')
+                print('layer ', index, ':')
+
+                #   Knoten einer Ebene
                 for j, node in enumerate(row):
-                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
-                    for k, edge in enumerate(node.list_incoming_edges):
-                        print('\t\tEingehende Kante ', k, ': ', edge.edge_probability)
-            # ---------
+                    print('\tnode ', j, ':')
+
+                    if index == 0:
+                        #   print Eingehende Kante des Wurzelknotens
+                        print('\t\tincoming edge of root node:')
+                        print('\t\t\tproduct of edge weights\t', node.list_incoming_edges[0].edge_probability,
+                              '\n\t\t\ttarget node', node.list_incoming_edges[0].target_node.saved_value_on_node)
+
+                    #   print Ausgehende Kanten
+                    for k, edge in enumerate(node.list_outgoing_edges):
+                        print('\t\toutgoing edges', k, ':')
+                        print('\t\t\tproduct of edge weights\t', edge.edge_probability,
+                              '\n\t\t\ttarget node', edge.target_node.saved_value_on_node)
+
+            #   Leerzeile nach der Ausgabe
+            print('\n')
 
         """ SCHRITT 9 """
 
@@ -301,21 +411,33 @@ class DecisionDiagram(Base):
         self.list_of_all_edges[0].calc_edge_propability()
         self.set_is_calculated_false()
 
-            # ----------
         #   Ausgabe der Wahrscheinlichkeit aller Kanten
-        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
-            print('\n\n\nTest der berechneten Wahrscheinlichkeiten in Schritt 9:\n')
-            #   print alle Knoten in der 2D Liste
+        if Base.get_debug() >= 3:
+            print('\n\nTest of the calculated probabilities in step 9:\n')
+
+            #   Ebenen im Entscheidungsdiagramm
             for index, row in enumerate(self.list_of_all_nodes):
-                print('Knoten der Ebene ', index, ':')
+                print('layer ', index, ':')
                 sum_probability_per_level = 0
+
+                #   Knoten einer Ebene
                 for j, node in enumerate(row):
-                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
-                    for k, edge in enumerate(node.list_incoming_edges):
-                        print('\t\tKante ', k, ': ', edge.edge_probability)
+                    print('\tnode ', j, ':')
+
+                    if index == 0:
+                        #   print Eingehende Kante des Wurzelknotens
+                        print('\t\tincoming edge of root node:')
+                        print('\t\t\tedge probability\t', node.list_incoming_edges[0].edge_probability,
+                              '\n\t\t\ttarget node', node.list_incoming_edges[0].target_node.saved_value_on_node)
+
+                    #   print Ausgehende Kanten
+                    for k, edge in enumerate(node.list_outgoing_edges):
+                        print('\t\toutgoing edges', k, ':')
+                        print('\t\t\tedge probability\t', edge.edge_probability,
+                              '\n\t\t\ttarget node', edge.target_node.saved_value_on_node)
                         sum_probability_per_level += edge.edge_probability
-                print('Summe der Wahrscheinlichkeiten auf dieser Ebene:', sum_probability_per_level, '\n')
-            # ---------
+
+                print('Sum of the probabilities on this layer:', sum_probability_per_level, '\n')
 
         """ SCHRITT 10 """
 
@@ -324,23 +446,36 @@ class DecisionDiagram(Base):
         self.list_of_all_edges[0].calc_conditional_probabilities()
         self.set_is_calculated_false()
 
-            # ----------
         #   Ausgabe der berechneten bedingten Wahrscheinlichkeit für jede Kante
-        if Base.get_debug()[0] and Base.get_debug()[1] == 3:
-            print('\n\n\nTest der bedingten Wahrscheinlichkeiten in Schritt 10:\n(Diesmal werden die ausgehenden Kanten'
-                  ' anstatt die eingehenden Kanten gezeigt, letzte Ebene hat also keine Kanten)')
-            print('Kante 0:', self.list_of_all_nodes[0][0].list_incoming_edges[0].conditional_probability)
-            #   print alle Knoten in der 2D Liste
+        if Base.get_debug() >= 3:
+            print('\n\nTest the conditional probabilities in step 10:\n')
+
+            #   Ebenen im Entscheidungsdiagramm
             for index, row in enumerate(self.list_of_all_nodes):
-                print('Knoten der Ebene ', index, ':')
+                print('layer ', index, ':')
+
+                #   Knoten einer Ebene
                 for j, node in enumerate(row):
-                    print('\tKnoten ', j, ': ', node.saved_value_on_node)
-                    sum = 0
+                    print('\tnode ', j, ':')
+                    sum_probability_per_node = 0
+
+                    if index == 0:
+                        #   print Eingehende Kante des Wurzelknotens
+                        print('\t\tincoming edge of root node:')
+                        print('\t\t\tconditional probability\t', node.list_incoming_edges[0].conditional_probability,
+                              '\n\t\t\ttarget node', node.list_incoming_edges[0].target_node.saved_value_on_node)
+
+                    #   print Ausgehende Kanten
                     for k, edge in enumerate(node.list_outgoing_edges):
-                        sum += edge.conditional_probability
-                        print('\t\tKante ', k, ': ', edge.conditional_probability)
-                    print('\t\tSumme der Kanten:', sum)
-            # ---------
+                        print('\t\toutgoing edges', k, ':')
+                        print('\t\t\tconditional probability\t', edge.conditional_probability,
+                              '\n\t\t\ttarget node', edge.target_node.saved_value_on_node)
+                        sum_probability_per_node += edge.conditional_probability
+
+                    print('Sum of the conditional probabilities:', sum_probability_per_node, '\n')
+
+            print('Recursive call of edges and nodes of the decision diagram:\n'
+                  '(edge weight | saved value on node)\n', self.list_of_all_edges[0])
 
     def create_matrix(self):
         """
@@ -351,33 +486,122 @@ class DecisionDiagram(Base):
 
         return self.list_of_all_nodes[0][0].get_matrix(self.list_of_all_edges[0].edge_weight)
 
+    def merge_dd_step7(self):
+        #   Liste, in der die Indizes aller Knoten gespeichert werden, die anschließend gelöscht werden sollen
+        list_nodes_to_del = []
+
+        #   Fasse Knoten mit den selben gespeicherten Werten zusammen, wenn die ausgehenden Kanten die selben
+        #   Kantengewichte haben. Dazu muss in der untersten Ebene begonnen werden.
+        for i in range(Base.getnqubits() - 1, 0, -1):
+            for j, operating_node in enumerate(self.list_of_all_nodes[i]):
+                for k in range(j + 1, len(self.list_of_all_nodes[i])):
+
+                    #   Runde den in den Knoten gespeicherten Wert des Knotens j und des Knotens k,
+                    #   die miteinander verglichen werden sollen
+                    round_sv_1 = round(operating_node.saved_value_on_node, 6)
+                    round_sv_2 = round(self.list_of_all_nodes[i][k].saved_value_on_node, 6)
+
+                    #   Runde den Real- und Imaginärteil der linken ausgehenden Kante beider Knoten (0-Kante)
+                    #   und bilde wieder eine komplexe Zahl
+                    round_ew_1 = (round(operating_node.list_outgoing_edges[0].edge_weight.real, 6)
+                                  + round(operating_node.list_outgoing_edges[0].edge_weight.imag, 6) * 1j)
+                    round_ew_2 = (round(self.list_of_all_nodes[i][k].list_outgoing_edges[0].edge_weight.real, 6)
+                                  + round(self.list_of_all_nodes[i][k].list_outgoing_edges[0].edge_weight.imag, 6) * 1j)
+
+                    #   Runde den Real- und Imaginärteil der rechten ausgehenden Kante beider Knoten (1-Kante)
+                    #   und bilde wieder eine komplexe Zahl
+                    round_ew_3 = (round(operating_node.list_outgoing_edges[1].edge_weight.real, 6)
+                                  + round(operating_node.list_outgoing_edges[1].edge_weight.imag, 6) * 1j)
+                    round_ew_4 = (round(self.list_of_all_nodes[i][k].list_outgoing_edges[1].edge_weight.real, 6)
+                                  + round(self.list_of_all_nodes[i][k].list_outgoing_edges[1].edge_weight.imag, 6) * 1j)
+
+                    #   Sind ausgehende Kanten und Wert in den Knoten identisch, kann der Knoten zusammengefasst werden
+                    if round_sv_1 == round_sv_2 and round_ew_1 == round_ew_2 and round_ew_3 == round_ew_4:
+
+                        #   Der Knoten j soll gelöscht werden, ändere den Zielknoten aller eingehenden Kanten
+                        #   des Knoten j auf den Knoten k.
+                        for edge in operating_node.list_incoming_edges:
+                            edge.target_node = self.list_of_all_nodes[i][k]
+
+                        #   Die eingehenden Kanten des Knotens j werden dem Knoten k hinzugefügt
+                        #   (Vorgehen des Zusammenfassens)
+                        self.list_of_all_nodes[i][k].list_incoming_edges \
+                            = np.append(self.list_of_all_nodes[i][k].list_incoming_edges,
+                                        operating_node.list_incoming_edges)
+
+                        #   Der Liste mit den Indizes werden die Indizes der Ebene und des Knotens gespeichert, um
+                        #   diesen Knoten später zu löschen. Wird nicht sofort gelöscht, damit die Indizes gültig
+                        #   bleiben.
+                        list_nodes_to_del += [operating_node]
+
+        #   Die Knoten an den in der Liste gespeicherten Indizes werden gelöscht
+        for node in list_nodes_to_del:
+
+            #   delete_node() verlangt, dass die eingehenden Kanten bereits umgeleitet wurden, dh. sie zeigen nicht
+            #   mehr auf den Knoten, der gelöscht wird, oder die Liste muss leer sein.
+            #   Da in der Schleife oben in der untersten Ebene angefangen wurde Knoten zusammenzufassen, sind alle
+            #   Knoten die in der Liste der zu löschenden Knoten stehen, ohne eingehende Kanten, die auf den
+            #   jeweiligen Knoten zeigen.
+            node.delete_node()
+            if Base.get_debug() >= 3:
+                print('Deleting node in step 7 - Merging nodes')
+
+    def delete_edge_list_of_all_edges(self, edge_in):
+        index_list_x = np.where(self.list_of_all_edges == edge_in)[0]
+
+        #   Lösche diese Kante aus der Liste aller Kanten
+        if np.size(index_list_x) == 1:
+            self.list_of_all_edges = np.delete(self.list_of_all_edges, index_list_x[0])
+
+        #   Die Kante wurde in der Liste nicht gefunden, sie hätte aber drin sein müssen.
+        elif np.size(index_list_x) == 0:
+            raise Exception('Error when deleting an edge in the decision diagram.\n'
+                            'The List of all edges doesn\'t contain the edge', self,
+                            ',\nbut it was expected. Error in the list_of_all_edges.')
+
+        #   Die Kante ist doppelt, wenn sie mehfach vorkommt. Sollte auch nicht passieren.
+        else:
+            for i in index_list_x:
+                self.list_of_all_edges = np.delete(self.list_of_all_edges, index_list_x[i])
+
+            if Base.get_debug():
+                print('Error when deleting an edge in the decision diagram.\n'
+                      'The edge to be deleted should occur only once in list_of_all_edges.\n')
+
 
 def determine_nodes_on_level(dd_obj, n, matrix_in):
     """
     In jedem Knoten in der Liste list_of_nodes_per_level sind in saved_value_on_node die Matrizen gespeichert. Diese
     werden geteilt und die Teilmatrizen bilden die neue Ebene. Die Teilmatrizen werden auf Redundanzen überprüft und
     zusammengefasste Knoten erstellt, die in dd_obj unter list_of_nodes_per_level gespeichert sind.
-    :param dd_obj: Objekt, indem auf den selben Adressen gearbeitet wird und neue Ergebnisse gespeichert werden (wie Pointer)
+    :param dd_obj: Objekt, indem auf den selben Adressen gearbeitet wird und neue Ergebnisse gespeichert werden
+    (wie Pointer)
     :param n: Index der Ebene, auf dem der Knoten erstellt wird (zur Programm-Funktionsweise nicht benötigt)
     :param matrix_in: Matrix, die in Teilmatrizen geteilt werden soll
     :return:
     """
+
     #   Erstellen des Wurzelknotens mit Kante, Start des Entscheidunsdiagramms
     if n == 0:
         #   Erstelle die Wurzelkante mit einem Wurzelnkoten, indem die zu Beginn vorgegebene Matrix gespeichert ist.
         #   Leerer Knoten, der für die Kante benötigt wird:
         dd_obj.node_root = DDNode([], [], dd_obj)
+
         #   Die Kante hat nur einen Zielknoten, Quellknoten ist leer
         dd_obj.edge_root = DDEdge([], dd_obj.node_root, dd_obj)
+
         #   Die Kante wird dem neuen Knoten bei den eingehenden Kanten zugefügt
         dd_obj.node_root.list_incoming_edges = [dd_obj.edge_root]
-        #   Liste der Kanten ist neu, sie besitzt nur ein Element. Der Knoten wird weiter unten in list_of_nodes_per_level
+
+        #   Liste der Kanten ist neu, sie besitzt nur ein Element.
+        #   Der Knoten wird weiter unten in list_of_nodes_per_level
         #   gespeichert und dann außerhalb der Funktion, mit der gesamten Ebene, der Liste aller Knoten hinzugefügt.
         dd_obj.list_of_all_edges = np.array([dd_obj.edge_root])
 
         #   Speichere Matrix im Wurzelknoten, die im neuen Funktionsaufruf für n=1 geteilt wird und in
         #   zusammengefassten Knoten gespeichert wird
         dd_obj.node_root.saved_value_on_node = matrix_in
+
         #   Ebene 0 hat immer nur den Wurzelknoten gespeichert
         dd_obj.list_of_nodes_per_level = np.array([dd_obj.node_root])
 
@@ -390,7 +614,6 @@ def determine_nodes_on_level(dd_obj, n, matrix_in):
 
         #   Füge den 0-Endknoten der Liste aller Knoten in der letzten Ebene hinzu
         dd_obj.list_of_all_nodes[Base.getnqubits()] = [dd_obj.node_zero]
-
 
     #   Regelablauf für Ebenen ab dem Wurzelknoten
     if n > 0:
@@ -440,7 +663,6 @@ def determine_nodes_on_level(dd_obj, n, matrix_in):
                 create_node_if_new(dd_obj, matrix_out_0, n)
                 create_node_if_new(dd_obj, matrix_out_1, n)
 
-
         #   Alle Knoten einer Ebene wurden durchlaufen, für die nächste Ebene wird first_time wieder auf True gesetzt.
         #   Wird benötigt um beim ersten Knoten das numpyArray zu erstellen, bevor append genutzt werden kann
         dd_obj.first_time = True
@@ -465,12 +687,12 @@ def determine_nodes_on_level(dd_obj, n, matrix_in):
                 elif np.shape(node.saved_value_on_node) == (1, 1):
                     dd_obj.list_of_nodes_per_level[index].saved_value_on_node = node.saved_value_on_node[0][0]
                 else:
-                    print(
-                        'Fehler: In der Letzten Ebene des Entscheidungsdiagramms, sollten die Einträge der Matrix/Vektor'
-                        ' mit [[x]], [x] in saved_value_on_node gespeichert sein')
+                    raise Exception('Error: In the last level of the decision diagram,\n'
+                                    'the entries of the matrix/vector should be stored with [[x]] or [x]'
+                                    ' in saved_value_on_node')
 
         #   Die in den Knoten gespeicherten Matrizen werden in der vorherigen Ebene gelöscht
-        if n >= 1 and not Base.get_debug():
+        if n >= 1 and Base.get_debug() == 0:
             for node in dd_obj.list_of_all_nodes[n - 1]:
                 node.saved_value_on_node = None
 
@@ -485,7 +707,8 @@ def create_node_if_new(dd_obj, matrix_to_find, n):
             direkt verändert (wie Pointer)
     :param matrix_to_find: Eingegebene Teilmatrix, die mit Teilmatrizen verglichen wird, die in schon gespeicherten
             Knoten sind
-    :param n: Index der Ebene wird zur Berechnung der Anzahl der selben Kanten auf 0 benötigt. (geht von 0 bis n_qubits+1)
+    :param n: Index der Ebene wird zur Berechnung der Anzahl der selben Kanten auf 0 benötigt.
+    (geht von 0 bis n_qubits+1)
     :return:
     """
 
@@ -496,17 +719,23 @@ def create_node_if_new(dd_obj, matrix_to_find, n):
     if np.array_equal(matrix_to_find, np.zeros_like(matrix_to_find)):
         #   Neue Kante vom betrachteten Quellknoten bis zum 0-Endknoten
         new_edge = DDEdge(DDNode.remember_node, dd_obj.node_zero, dd_obj)
-        #   Anzahl der möglichen Äste x im Entscheidungsdiagramm, ab Quellknoten mit matrix_in bis Endknoten.
-        #   n_possible_paths_to_zero entspricht Anzahl der Kanten auf den 0-Knoten, es wird nur eine Kante erstellt,
-        #       welche die Anzahl der Möglichkeiten gespeichert hat.
-        #   n_possible_paths_to_zero berechnet sich mit 2^(Anzahl der verbleibenden Ebenen - 1) (Basis 2 oder 4, Vektor oder Matrix)
-        #   n hat die Werte 0,1,2,3 bei 3 Qubits. Die letzte Ebene 3 mit Endknoten hat keine Ausgehenden Kanten, daher ist der Wert 1/2 egal.
-        #   Für die Ebene 0 ergenen sich dann 4 Möglichkeiten, bei 1: 2, bei 2: 1. Bei 3:1/2 wird wie gesagt, nicht benötigt.
-        new_edge.n_possible_paths_to_zero = int(pow(2 * np.ndim(matrix_to_find), Base.getnqubits() - 1 - n))
+
+        #   Anzahl der möglichen Äste n im Entscheidungsdiagramm, ab Quellknoten mit matrix_in bis zum Endknoten, die
+        #   durch matrix_in darstellen. Diese Anzahl wird nur für die Kanten auf den 0-Knoten benötigt: Sie gibt die
+        #   Anzahl der Kanten auf 0 an, die durch diese eine Kante dargestellt werden.
+        #   n_possible_paths_to_zero berechnet sich mit 2^(Anzahl der verbleibenden Ebenen) (Basis 2 oder 4, Vektor
+        #   oder Matrix)
+        #   n hat die Werte 0,1,2,3 bei 3 Qubits und bezeichnet die Ebene der Knoten. Es werden immer die eingehenden
+        #   Kanten der Knoten betrachtet. Für die Wurzelkante (Ebene 0) ergenen sich dann 8 Möglichkeiten, bei 1: 4,
+        #   bei 2: 2 und bei 3:1.
+        new_edge.n_possible_paths_to_zero = int(pow(2 * np.ndim(matrix_to_find), Base.getnqubits() - n))
+
         #   Füge neue Kante der Liste aller Kanten hinzu
         dd_obj.list_of_all_edges = np.append(dd_obj.list_of_all_edges, [new_edge])
+
         #   Füge neue Kante der Liste des Elternknoten als ausgehende Kante hinzu
         DDNode.remember_node.list_outgoing_edges = np.append(DDNode.remember_node.list_outgoing_edges, [new_edge])
+
         #   Füge neue Kante der Liste des 0-Endknotens als eingehende Kante hinzu
         dd_obj.node_zero.list_incoming_edges = np.append(dd_obj.node_zero.list_incoming_edges, [new_edge])
 
@@ -514,15 +743,16 @@ def create_node_if_new(dd_obj, matrix_to_find, n):
         #   der Ebene n betrachtet
         return 0
 
-
     #   Falls die Funktion create_node_if_new das erste Mal für die Ebene n aufgerufen wird: Erstelle für die aktuelle
     #   Teilmatrix (matrix_to_find) einen Knoten, eine neue Kante und speichere diese in den jeweiligen Listen.
     if dd_obj.first_time:
+
         #   Ablauf zum erstellen eines neuen Knotens mit Kante (Erster Knoten ohne append)
-        #---   New_node_obj gehört noch mit dazu!
+        # ---   New_node_obj gehört noch mit dazu! ( # ---: ähnliche Codeabschnitte)
 
         #   Erstelle Kante mit gespeicherten Knoten und neuem Knoten als Zielknoten (enthält die erste Teilmatrix)
         new_edge_obj = DDEdge(DDNode.remember_node, new_node_obj, dd_obj)
+
         #   Die erstellte Kante wird in dem neuen Knoten gespeichert
         new_node_obj.list_incoming_edges = [new_edge_obj]
 
@@ -530,7 +760,8 @@ def create_node_if_new(dd_obj, matrix_to_find, n):
         new_node_obj.saved_value_on_node = matrix_to_find
 
         #   Die neue Kante wird dem gespeicherten Quellknoten hinzugefügt
-        DDNode.remember_node.list_outgoing_edges = np.append(DDNode.remember_node.list_outgoing_edges, [new_edge_obj], 0)
+        DDNode.remember_node.list_outgoing_edges = np.append(DDNode.remember_node.list_outgoing_edges, [new_edge_obj],
+                                                             0)
 
         #   Die neue Kante wird der Liste mit allen Kanten hinzugefügt
         dd_obj.list_of_all_edges = np.append(dd_obj.list_of_all_edges, [new_edge_obj], 0)
@@ -539,7 +770,7 @@ def create_node_if_new(dd_obj, matrix_to_find, n):
         #   Funktionsaufrufe der nächsten Teilmatrizen, aber auch die Teilmatrizen von anderen Quellvektoren der selben
         #   Ebene darauf zugreifen
         dd_obj.shared_memory_for_equivalence_check = np.array([new_node_obj])
-        #---
+        # ---
 
         dd_obj.first_time = False
 
@@ -549,40 +780,44 @@ def create_node_if_new(dd_obj, matrix_to_find, n):
         matrix_exists = False
         for node_obj in dd_obj.shared_memory_for_equivalence_check:
             if np.array_equal(node_obj.saved_value_on_node, matrix_to_find):
+
                 #   Falls Matrizen identisch sind wird ähnlich dem oberen ablauf, diesmal nur eine neue Kante zwischen
                 #   gespeichertem Quellknoten und vorhandenen Zielknoten erstellt.
-                #---
+                # ---
                 new_edge_obj = DDEdge(DDNode.remember_node, node_obj, dd_obj)
                 node_obj.list_incoming_edges = np.append(node_obj.list_incoming_edges, [new_edge_obj], 0)
 
                 #
 
-                DDNode.remember_node.list_outgoing_edges = np.append(DDNode.remember_node.list_outgoing_edges, [new_edge_obj], 0)
+                DDNode.remember_node.list_outgoing_edges = np.append(DDNode.remember_node.list_outgoing_edges,
+                                                                     [new_edge_obj], 0)
 
                 dd_obj.list_of_all_edges = np.append(dd_obj.list_of_all_edges, [new_edge_obj], 0)
 
                 #
 
-                #---
+                # ---
 
                 matrix_exists = True
                 break
 
         if not matrix_exists:
+
             #   Falls die Matrix nicht existiert, wird ähnlich wie zu Beginn, ein neuer Knoten mit Kante erzeugt.
             #   Jetzt wird append() verwendet, um die Liste zu erweitern
-            #---
+            # ---
             new_edge_obj = DDEdge(DDNode.remember_node, new_node_obj, dd_obj)
             new_node_obj.list_incoming_edges = [new_edge_obj]
 
             new_node_obj.saved_value_on_node = matrix_to_find
 
-            DDNode.remember_node.list_outgoing_edges = np.append(DDNode.remember_node.list_outgoing_edges, [new_edge_obj], 0)
+            DDNode.remember_node.list_outgoing_edges = np.append(DDNode.remember_node.list_outgoing_edges,
+                                                                 [new_edge_obj], 0)
 
             dd_obj.list_of_all_edges = np.append(dd_obj.list_of_all_edges, [new_edge_obj], 0)
 
             dd_obj.shared_memory_for_equivalence_check = np.append(dd_obj.shared_memory_for_equivalence_check,
                                                                    [new_node_obj], 0)
-            #---
+            # ---
 
     return 0

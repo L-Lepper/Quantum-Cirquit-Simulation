@@ -28,14 +28,92 @@ class DDNode(Base):
         self.list_incoming_edges = list_incoming_edges
         self.list_outgoing_edges = list_outgoing_edges
         self.is_calculated = False
+
+        #   wird zum löschen benötigt (in dd-obj sind die Listen gespeichert)
         self.dd_obj = dd_obj_in
         super().__init__()
 
-    def delete_node(self):
-        for edge in self.list_outgoing_edges:
-            edge.delete_edge(self.dd_obj)
+    def print_recursive(self, str_in):
+        str_in += '\t'
+        str_out = ''
 
-        #dd_obj.list_of_all_nodes.remove(self)
+        if any(self.list_outgoing_edges):
+            for edge in self.list_outgoing_edges:
+                str_out += str_in + edge.print_recursive(str_in)
+
+        return str_out
+
+    def delete_node(self):
+        """
+        Löscht den betreffenden Knoten und den gesamten nachfolgenden Baum, wenn dieser nicht durch andere Äste
+        erreicht wird.
+        Knoten wird aus der Liste aller Knoten entfernt.
+        Falls dieser Knoten eingehende Kanten hat, müssen sie erst entfernt werden, um sicher zu gehen, dass sie nicht
+        vergessen wurden. Funktion gibt sonst Fehler aus und bricht das Programm ab.
+        :return:
+        """
+
+        #   Prüfe Liste der eingehenden Kanten
+        #   Falls der Zielknoten einer Kante identisch mit dem jetzigen (self) ist, besteht die Gefahr, das die
+        #   eingehenden Kanten nicht gelöscht werden und noch auf diesen Knoten zeigen. Dadurch wird dieser nicht
+        #   durch die Garbage Collection entfernt und das DD nicht abgeschnitten, der Teilbaum ist über diese Kanten
+        #   weiter erreichbar, auch wenn er nicht meht in der Liste aller Knoten und Kanten vorkommt.
+        for edge in self.list_incoming_edges:
+            if edge.target_node == self:
+                raise Exception('Error by deleting node of decision diagram: List of incoming edges have to be empty\n'
+                                'or edge have to point on an other node to avoid edges without target node.')
+
+        #   Jede ausgehende Kante des Knotens wird gelöscht, damit alle Nachfolger aus den jeweiligen Listen
+        #   herausgenommen werden (rekursives Aufrufen von delete_node() )
+        for edge in self.list_outgoing_edges:
+            edge.delete_edge()
+
+        #   Dieser Knoten wird aus der Liste aller Knoten gelöscht
+        n = 0
+        for layer in self.dd_obj.list_of_all_nodes:
+
+            #   Prüfe Ebene für Ebene, ob Knoten enthalten ist (Kann in 2D Liste nicht einzeln gefunden werden)
+            #   Zähle Anzahl, wie oft er gefunden wurde, sollte nur einmal vorkommen.
+            try:
+                layer.remove(self)
+                n += 1
+
+            #   Gibt es einen ValueError, ist Knoten in dieser Ebene nicht vorhanden
+            except ValueError:
+                continue
+
+        if n != 1:
+            raise Exception('Error by deleting node in list of all nodes:', self,
+                            '\nNode have to exists exactly once, but fund', n, ' times.')
+
+    def delete_edge_in_incoming_list(self, edge_in):
+        #   list_incoming_edges hat nur eine Dimension, np.where gibt das Tuple (array([INDEX], dtype=int64),)
+        #   zurück. Dabei ist [INDEX] eine Liste mit Indizes, an denen das gesuchte Element gefunden wurde.
+        #   In einem 2D Array sähe das Tupel mit Listen für die x- und y-Komponente so aus:
+        #   (array([x1, x2, x3], dtype=int64), array([y1, y2, y3], dtype=int64))
+        #   Hier sollte index_list_x so aussehen: [1]
+        index_list_x = np.where(self.list_incoming_edges == edge_in)[0]
+
+        #   Es sollte nur ein Index gefunden werden, die Kante kann aus der Liste entfernt werden.
+        if np.size(index_list_x) == 1:
+            self.list_incoming_edges = np.delete(self.list_incoming_edges, index_list_x[0])
+
+        #   Die Kante wurde in der Liste nicht gefunden, sie hätte aber drin sein müssen,
+        #   da sie auf diesen Knoten zeigt
+        elif np.size(index_list_x) == 0:
+            raise Exception('Error when deleting an edge in the decision diagram.\n'
+                            'The List of incoming edges doesn\'t contain the edge', self,
+                            ',\nbut it was expected. Error in the Decision Diagram.')
+
+        #   Die Kante ist doppelt, wenn sie mehfach vorkommt. Sollte auch nicht passieren.
+        else:
+            for i in index_list_x:
+                self.list_incoming_edges = np.delete(self.list_incoming_edges, index_list_x[i])
+
+            if Base.get_debug():
+                print('Error when deleting an edge in the decision diagram.\n'
+                      'The edge to be deleted should occur only once in self.target_node.list_incoming_edges.\n'
+                      'Error in the Decision Diagram.')
 
     def get_max_value_of_target_nodes(self):
         """
@@ -135,9 +213,9 @@ class DDNode(Base):
                     subvector = self.list_outgoing_edges[i].target_node.get_matrix(upstream_ew)
 
                     #   Falls die Teilmatrix nur das Element 0 enthält, wird aus dem in der entsprechenden Kante
-                    #   gespeicherten Wert (Anzahl der verschiedenen Pfade auf den 0-Knoten, die durch diese Kante
-                    #   repräsentiert werden), die Matrix/der Vektor auf die entsprechende Größe erweitert. Selbe Größe,
-                    #   wie die anderen Teilmatrizen.
+                    #   gespeicherten Wert für die Anzahl der verschiedenen Pfade auf den 0-Knoten, die durch diese
+                    #   Kante repräsentiert werden, die Matrix/der Vektor auf die entsprechende Größe erweitert.
+                    #   Selbe Größe, wie die anderen Teilmatrizen.
                     if np.array_equal(subvector, [0]):
                         n = self.list_outgoing_edges[i].n_possible_paths_to_zero
                         subvector = np.zeros(n)
@@ -179,8 +257,8 @@ class DDNode(Base):
                 return matrix_out
 
             else:
-                print('Fehler beim Umwandeln des Entscheidungsdiagramms in einen Vektor oder Matrix.'
-                      '\nKnoten müssen entweder 2 oder 4 ausgehende Kanten haben, Vektor oder Matrix.')
+                raise Exception('Error when converting the decision diagram into a vector or matrix.\n'
+                                'Nodes must have either 2 or 4 outgoing edges, vector or matrix.')
 
         #   Falls Knoten keine ausgehenden Kanten hat, ist er ein Endknoten
         else:
@@ -188,7 +266,8 @@ class DDNode(Base):
             #   Es wird das Produkt aus dem im Knoten gespeicherten Wert und dem Upstream-Kantengewicht als Vektor oder
             #   Matrix zurückgegeben
             if self.dd_obj.is_vector:
+                #   Als Vektor
                 return np.array([self.saved_value_on_node * upstream_edge_weight])
             else:
+                #   Als Matrix
                 return np.array([[self.saved_value_on_node * upstream_edge_weight]])
-

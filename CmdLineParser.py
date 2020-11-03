@@ -1,17 +1,12 @@
-# Project:  SimulationQA-V1-ein_Qubit-X-Z; Projektarbeit am Fachgebiet Digitaltechnik der Universität Kassel
-# Author:   Lukas Lepper
-# Betreuer: Martin Hardieck
-# 
-#   hi.py; hi
-#   27.10.2020 12:45
-#   Version 0.3 lukas
+#   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
+#   Author: Lukas Lepper, 19.10.2020
+#   Betreuer: Martin Hardieck
+#   Dateiname: DDEdge.py
+#   Version: 0.5
 
 
 from Base import Base
 import argparse
-from pathlib import Path
-from copy import deepcopy
-import traceback
 
 
 class ValidateInitialization(argparse.Action, Base):
@@ -98,9 +93,3 @@ class CheckFilePath(argparse.Action):
 
         # ---4
         setattr(namespace, self.dest, values)
-
-        #else:
-         #   raise argparse.ArgumentError(self, 'Invalid file path, file can\'t be opened: {a!r}'.format(a=values))
-
-#   except Exception:
-#   traceback.print_exc()

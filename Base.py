@@ -13,7 +13,8 @@ class Base:
 
     #   Private Attribute: Zugriff über Funktion / Klassenmethode.
     __nqubits = 0
-    __debug_mode = (False, 0)  # Verbose-Level
+    #   Ist das Verbose-Level 0, ist der Debug-Modus deaktiviert
+    __debug_verbose_level = 0
 
     def __init__(self):
         pass
@@ -31,13 +32,13 @@ class Base:
     #   Aktiviere Debug-Mode
     @staticmethod
     def enable_debug(verbose_level):
-        Base.__debug_mode = (True, verbose_level)
+        Base.__debug_verbose_level = verbose_level
 
     #   Deaktiviere Debug-Mode
     @staticmethod
     def disable_debug():
-        Base.__debug_mode = (False, 0)
+        Base.__debug_verbose_level = 0
     #   get Debug-Mode
     @staticmethod
     def get_debug():
-        return Base.__debug_mode
+        return Base.__debug_verbose_level
