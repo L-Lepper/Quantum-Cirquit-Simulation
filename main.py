@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
 #   Author: Lukas Lepper, 21.10.2020
 #   Betreuer: Martin Hardieck
