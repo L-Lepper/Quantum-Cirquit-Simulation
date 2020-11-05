@@ -21,6 +21,7 @@ class QGate(QMatrix):
 
         :param list_affected_qubits: Index des zu verändernden Qubits
         """
+
         self.list_affected_qubits = list_affected_qubits
         super().__init__()
 
@@ -35,6 +36,7 @@ class QGate(QMatrix):
 
         #   Auffüllen mit Idenditätsmatrizen durch Kronecker-Produkt bis spezifischem Gatter
         expmatrix = np.kron(np.identity(pow(2, qubittochange)), self.general_matrix)
+
         #   Auffüllen mit Idenditätsmatrizen nach spez. Gatter bis zum letzten Qubit
         expmatrix = np.kron(expmatrix, np.identity(pow(2, n_qubits - qubittochange - 1)))
 

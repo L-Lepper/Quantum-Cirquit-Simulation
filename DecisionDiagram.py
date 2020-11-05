@@ -35,17 +35,22 @@ class DecisionDiagram(Base):
 
         #   Liste aller Kanten
         self.list_of_all_edges = np.array([])
+
         #   Leere Liste für alle Knoten: alle Knoten einer Ebene werden in einer eigenen Zeile gespeichert
         self.list_of_all_nodes = [[] for i in range(Base.getnqubits() + 1)]
+
         #   Variable wird benötigt, um das Entscheidungsdiagramm aufzubauen:
         #   Liste aller Knoten in der betrachteten Ebene
         self.list_of_nodes_per_level = np.array([])
+
         #   Objekte mit den Adressen, wo der Start und die Endknoten gespeichert sind
         self.node_root = None
         self.node_zero = None
         self.node_one = None
+
         #   Wird später in Funktion benötigt, um pro Ebene den ersten Knoten zu erstellen
         self.first_time = True
+
         #   In dieser Liste werden alle Knoten einer Ebene zwischengespeichert, und auf Redundanz überprüft.
         self.shared_memory_for_equivalence_check = np.array([])
 
@@ -55,11 +60,11 @@ class DecisionDiagram(Base):
         super().__init__()
 
     def __str__(self):
-        print('Print Decision Diagram:\n'
-              '(\'count to zero\' means the number of edges to zero represented by this edge.)\n')
+        print('Print Decision Diagram:\n')
 
         #   Debug Verbose-Level 3
-        if Base.get_debug() >= 3:
+        if Base.get_verbose() >= 3:
+            print('(\'count to zero\' means the number of edges to zero represented by this edge.)\n')
 
             #   Ebenen im Entscheidungsdiagramm
             for index, row in enumerate(self.list_of_all_nodes):
@@ -97,35 +102,35 @@ class DecisionDiagram(Base):
             e = np.size(self.list_of_all_edges)
             print('Number of all nodes:', n, ', number of all edges:', e, '\n')
 
-            #   Debug Verbose-Level 2
-            if Base.get_debug() == 2:
+        #   Debug Verbose-Level 2
+        if Base.get_verbose() == 2:
 
-                #   Ebenen im Entscheidungsdiagramm
-                for index, row in enumerate(self.list_of_all_nodes):
-                    print('layer ', index, ':')
+            #   Ebenen im Entscheidungsdiagramm
+            for index, row in enumerate(self.list_of_all_nodes):
+                print('layer ', index, ':')
 
-                    #   Knoten einer Ebene
-                    for j, node in enumerate(row):
-                        print('\tnode ', j, ': ', node.saved_value_on_node)
+                #   Knoten einer Ebene
+                for j, node in enumerate(row):
+                    print('\tnode ', j, ': ', node.saved_value_on_node)
 
-                        if index == 0:
-                            #   print Eingehende Kante des Wurzelknotens
-                            print('\t\tincoming edge of root node:')
-                            print('\t\t\tedge weight\t', node.list_incoming_edges[0].edge_weight)
+                    if index == 0:
+                        #   print Eingehende Kante des Wurzelknotens
+                        print('\t\tincoming edge of root node:')
+                        print('\t\t\tedge weight\t', node.list_incoming_edges[0].edge_weight)
 
-                        #   print Ausgehende Kanten
-                        for k, edge in enumerate(node.list_outgoing_edges):
-                            print('\t\toutgoing edges', k, ':')
-                            print('\t\t\tedge weight\t', edge.edge_weight,
-                                  '\n\t\t\ttarget node', edge.target_node.saved_value_on_node)
+                    #   print Ausgehende Kanten
+                    for k, edge in enumerate(node.list_outgoing_edges):
+                        print('\t\toutgoing edges', k, ':')
+                        print('\t\t\tedge weight\t', edge.edge_weight,
+                              '\n\t\t\ttarget node', edge.target_node.saved_value_on_node)
 
-                #   Berechne Anzahl aller Kanten und Knoten
-                n = 0
-                for level in self.list_of_all_nodes:
-                    n += len(level)
+            #   Berechne Anzahl aller Kanten und Knoten
+            n = 0
+            for level in self.list_of_all_nodes:
+                n += len(level)
 
-                e = np.size(self.list_of_all_edges)
-                print('Number of all nodes:', n, ', number of all edges:', e, '\n')
+            e = np.size(self.list_of_all_edges)
+            print('Number of all nodes:', n, ', number of all edges:', e, '\n')
 
         return '\n'
 
@@ -157,7 +162,7 @@ class DecisionDiagram(Base):
         """
 
         #   Debug Ausgabe für das erstellte Entscheidungsdiagramm
-        if Base.get_debug() >= 3:
+        if Base.get_verbose() >= 3:
             print('\n--------------------\t'
                   'Output all partial results of creating a decision diagram'
                   '\t--------------------\n')
@@ -174,7 +179,7 @@ class DecisionDiagram(Base):
 
         #   Ausgabe der Matrizen im vollständigen Diagramm, die momentan in den Knoten gespeichert sind, falls
         #   debug True. Ansprechen der Knoten über jede einzelne Kante
-        if Base.get_debug() >= 3:
+        if Base.get_verbose() >= 3:
             print(
                 '\nTest the structure of the decision diagram after steps 1 and 2 '
                 '(See instructions in documentation folder).\n'
@@ -222,7 +227,7 @@ class DecisionDiagram(Base):
         self.set_is_calculated_false()
 
         #   Ausgabe der übertragenen Werte
-        if Base.get_debug() >= 3:
+        if Base.get_verbose() >= 3:
             print('\n\nTest of step 3 with the values transferred to the parent nodes (max from successor nodes).\n'
                   'A zero ending node is always present here, even if no edge points to it:\n')
             #   print alle Knoten in der 2D Liste
@@ -265,7 +270,7 @@ class DecisionDiagram(Base):
         self.list_of_all_nodes[Base.getnqubits()] += [self.node_one]
 
         #   Ausgabe der übertragenen Werte
-        if Base.get_debug() >= 3:
+        if Base.get_verbose() >= 3:
             print('\n\nTest for step 4 and 5 - Decision diagram with edge weights:\n')
 
             #   Ebenen im Entscheidungsdiagramm
@@ -303,7 +308,7 @@ class DecisionDiagram(Base):
         self.set_is_calculated_false()
 
         #   Ausgabe der gewichteten Wahrscheinlichkeit aller Knoten
-        if Base.get_debug() >= 3:
+        if Base.get_verbose() >= 3:
             print('\n\nTest for step 6 - Weighted probability of all nodes:\n')
 
             #   Ebenen im Entscheidungsdiagramm
@@ -328,7 +333,7 @@ class DecisionDiagram(Base):
             print('\n')
 
         """ SCHRITT 7 """
-
+    """
         self.merge_dd_step7()
 
         #   Für jede Kante wird die Anzahl berechnet, wie häufig sie in den Ästen vorkommt
@@ -336,7 +341,7 @@ class DecisionDiagram(Base):
         self.set_is_calculated_false()
 
         #   Ausgabe der Häufigkeit der Kanten und Test für zusammengefasste Knoten
-        if Base.get_debug() >= 3:
+        if Base.get_verbose() >= 3:
             print('\n\nTest for step 7 - Merged nodes:\n')
 
             #   Ebenen im Entscheidungsdiagramm
@@ -368,7 +373,7 @@ class DecisionDiagram(Base):
 
             e = np.size(self.list_of_all_edges)
             print('Number of all nodes:', n, ', number of all edges:', e, '\n')
-
+    """
     def calc_probabilities_if_vector(self):
 
         """ SCHRITT 8 """
@@ -378,7 +383,7 @@ class DecisionDiagram(Base):
         self.set_is_calculated_false()
 
         #   Ausgabe des Produktes aller Kantengewichte hoch zur Wurzelkante
-        if Base.get_debug() >= 3:
+        if Base.get_verbose() >= 3:
             print('\n\nTest of step 8 - Calculated products of the edge weights:\n')
 
             #   Ebenen im Entscheidungsdiagramm
@@ -412,7 +417,7 @@ class DecisionDiagram(Base):
         self.set_is_calculated_false()
 
         #   Ausgabe der Wahrscheinlichkeit aller Kanten
-        if Base.get_debug() >= 3:
+        if Base.get_verbose() >= 3:
             print('\n\nTest of the calculated probabilities in step 9:\n')
 
             #   Ebenen im Entscheidungsdiagramm
@@ -447,7 +452,7 @@ class DecisionDiagram(Base):
         self.set_is_calculated_false()
 
         #   Ausgabe der berechneten bedingten Wahrscheinlichkeit für jede Kante
-        if Base.get_debug() >= 3:
+        if Base.get_verbose() >= 3:
             print('\n\nTest the conditional probabilities in step 10:\n')
 
             #   Ebenen im Entscheidungsdiagramm
@@ -543,7 +548,7 @@ class DecisionDiagram(Base):
             #   Knoten die in der Liste der zu löschenden Knoten stehen, ohne eingehende Kanten, die auf den
             #   jeweiligen Knoten zeigen.
             node.delete_node()
-            if Base.get_debug() >= 3:
+            if Base.get_verbose() >= 3:
                 print('Deleting node in step 7 - Merging nodes')
 
     def delete_edge_list_of_all_edges(self, edge_in):
@@ -564,7 +569,7 @@ class DecisionDiagram(Base):
             for i in index_list_x:
                 self.list_of_all_edges = np.delete(self.list_of_all_edges, index_list_x[i])
 
-            if Base.get_debug():
+            if Base.get_verbose():
                 print('Error when deleting an edge in the decision diagram.\n'
                       'The edge to be deleted should occur only once in list_of_all_edges.\n')
 
@@ -692,7 +697,7 @@ def determine_nodes_on_level(dd_obj, n, matrix_in):
                                     ' in saved_value_on_node')
 
         #   Die in den Knoten gespeicherten Matrizen werden in der vorherigen Ebene gelöscht
-        if n >= 1 and Base.get_debug() == 0:
+        if n >= 1 and Base.get_verbose() == 0:
             for node in dd_obj.list_of_all_nodes[n - 1]:
                 node.saved_value_on_node = None
 

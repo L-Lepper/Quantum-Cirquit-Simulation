@@ -23,7 +23,14 @@ class PauliX(QGate):
         :param list_affected_qubits: Index des Qubits, auf welches das Gatter angewendet wird
         """
 
+        #   list_affected_qubits wird in der Elternklasse in self.list_affected_qubits gespeichert
         super().__init__(list_affected_qubits)
+
+        #   Bezeichnung des Gatters
         self.type = 'x'
+
+        #   Spezifische Matrix des Gatters
         self.general_matrix = np.array([[0, 1], [1, 0]], dtype=complex)
+
+        #   Die Matrix wird auf die Größe der Quantenschaltung erweitert
         self.general_matrix = self.expandmatrix(self.getnqubits(), list_affected_qubits[0])

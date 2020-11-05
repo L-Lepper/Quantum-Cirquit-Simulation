@@ -51,6 +51,15 @@ class DDEdge(Base):
         return self.print_recursive('')
 
     def print_recursive(self, str_in):
+        """
+        Die Funktion wird anstatt __str__ verwendet, damit sie besser rekursiv aufgerufen werden kann. Zusammen mit der
+        print-Funktion in DDNOde, wird für jede neue Ebene, die ausgabe weiter eingerückt, sodass die Baumstrucktur
+        besser erkennbar wird. Das ist bei einer höheren Anzahl nicht mehr so übersichtlich!
+        :param str_in: Diesem Parameter wird durch den Nachfolgeknoten für jede Ebene ein Tabulator hinzugefügt.
+            Dadurch kann die Ausgabe-Zeile einer Kante richtig eingerückt werden.
+        :return:
+        """
+
         str_out = str_in + \
                   str(self.edge_weight) + ' ' + \
                   str(self.target_node.saved_value_on_node) + '\n' + \
@@ -67,7 +76,7 @@ class DDEdge(Base):
 
         #   Falls die Liste des Zielknotens nur eine eingehende Kante hat, wird der Knoten gelöscht.
         if np.size(self.target_node.list_incoming_edges) == 1:
-            self.target_node.delete_node(self.dd_obj)
+            self.target_node.delete_node()
 
         #   Andernfalls wird nur diese Kante, die gelöscht werden soll, aus der Liste der eingehenden Kanten entfernt
         #   und gelöscht
@@ -82,7 +91,8 @@ class DDEdge(Base):
     def calc_edge_weight(self):
         """
         Funktion berechnet das Kantengewicht der einzelnen Kanten. Zuvor muss Schritt 3 in
-        "Anleitung - Entscheidungsdiagramm und Messung - v4.pdf" ausgeführt worden sein, damit in den Knoten in saved_value_on_node die benötigten Werte stehen.
+        "Anleitung - Entscheidungsdiagramm und Messung - v4.pdf" ausgeführt worden sein, damit in den Knoten in
+        saved_value_on_node die benötigten Werte stehen.
         ToDo: Dateiname überprüfen
         :return:
         """
@@ -120,25 +130,34 @@ class DDEdge(Base):
         :return:
         """
 
-        #   Falls Funktion schon durch einen anderen Ast aufgerufen wurde, muss Berechnung nicht nochmal durchgeführt
-        #   werden
-        if self.is_calculated:
-            self.edge_probability += pow(abs(self.edge_weight), 2) * upstream_value
 
-            #   Für jede ausgehende Kante des Zielknotens wird wieder dieses Produkt berechnet
-            for edge in self.target_node.list_outgoing_edges:
-                edge.calc_product_of_weights(self.old_edge_probability)
+        #   Falls Funktion noch nicht berechnet wurde:
+        if not self.is_calculated:
 
-        else:
             #   In edge_probability wird das Produkt aus dem übergebenen Wert der vorherigen Kante und dem quadrierten
             #   Betrag des Kantengewichts der aktuellen Kante, gespeichert.
             self.edge_probability = pow(abs(self.edge_weight), 2) * upstream_value
+
+            #   Das berechnete Produkt wird unter old_edge_probability gespeichert, da die Kante durch einen
+            #   anderen Ast erneut aufgerufen werden kann, und sich dann durch die größere Häufigkeit, mit der die
+            #   Kante in allen Ästen vorkommt, auch dieses Produkt verändert (siehe unten bei else).
+            #   Zur Berechnung wird aber noch das Produkt benötigt, welches beim ersten Durchgang berechnet
+            #   wurde.
             self.old_edge_probability = self.edge_probability
             self.is_calculated = True
 
             #   Für jede ausgehende Kante des Zielknotens wird wieder dieses Produkt berechnet
             for edge in self.target_node.list_outgoing_edges:
                 edge.calc_product_of_weights(self.edge_probability)
+
+        #   Falls Funktion schon durch einen anderen Ast aufgerufen wurde, muss Berechnung nicht nochmal durchgeführt
+        #   werden
+        else:
+            self.edge_probability += pow(abs(self.edge_weight), 2) * upstream_value
+
+            #   Für jede ausgehende Kante des Zielknotens wird wieder dieses Produkt berechnet
+            for edge in self.target_node.list_outgoing_edges:
+                edge.calc_product_of_weights(self.old_edge_probability)
 
     def calc_edge_propability(self):
         """
@@ -207,11 +226,10 @@ class DDEdge(Base):
         :return:
         """
 
-        #   Falls die Anzahl noch nicht berechnet wurde, entspricht sie der Anzahl der Kanten auf den 0-Knoten, die
-        #   durch die betrachtete Kante dargestellt werden. (Ist bei Kanten die nicht auf den 0-Knoten zeigen 0)
+        #   Falls die Anzahl noch nicht berechnet wurde, wird sie auf 1 gesetzt. So kann die Anzahl auch noch mal neu
+        #   berechnet werden.
         if not self.is_calculated:
             self.count_of_paths = 1
-            #self.count_of_paths += self.n_possible_paths_to_zero
             self.is_calculated = True
 
         else:
@@ -220,5 +238,6 @@ class DDEdge(Base):
 
         #   Falls der Zielknoten ausgehende Kanten hat, wird die Funktion rekursiv für diese Kanten aufgerufen
         if any(self.target_node.list_outgoing_edges):
+
             for edge in self.target_node.list_outgoing_edges:
                 edge.calc_count_of_paths()

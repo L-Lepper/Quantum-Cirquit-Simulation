@@ -17,7 +17,7 @@ class QState(QMatrix):
     """
 
     #   Default-Konstruktor
-    def __init__(self):  # phi_in
+    def __init__(self):
         super().__init__()
 
     #   Über print(qstate_object) werden alle möglichen Zustände und Wahrscheinlichkeiten ausgegeben
@@ -25,6 +25,7 @@ class QState(QMatrix):
         """
         Ausgabe alle möglichen Zustände und zugehörigen Wahrscheinlichkeiten im Ausgabestring.
         ( print(QState-Obj) möglich)
+        ToDo: Möglichkeit als Vektor auszugeben
 
         :return return_str: Ausgabestring
         """
@@ -37,21 +38,28 @@ class QState(QMatrix):
         for value in self.general_matrix:
 
             if round(abs(value), 6) != 0.:  #ToDo Genauigkeit?
+
                 #   Umwandlung des Indexes in ein Bitmuster (3 --> 0011)
                 diracnotation = self.getdiracnotation(index, self.getnqubits())
+
                 #   Berechnung der Wahrscheinlichkeit in % ToDo: Genauigkeit?
                 probability = round(pow(abs(value), 2) * 100, 6)
 
-                if Base.get_debug() > 0:
+                #   Für die Ausgabe wird dem Ausgabestring für jeden Zustand eine neue Zeile Text hinzugefügt
+                if Base.get_verbose() >= 0:
                     return_str += 'The state {} has a probability of {}%.\n'.format(diracnotation, probability)
+
+                #   Für das Verbose-Level -1 (quiet) wird nur eine Liste ausgegeben.
                 else:
                     return_list += [diracnotation, probability]
 
             index += 1
 
-        if Base.get_debug() > 0:
+        if Base.get_verbose() >= 0:
+
             #   rstrip() entfernt den letzten Zeilenumbruch, der durch for-Schleife zu viel ist
             return return_str.rstrip()
+
         else:
             return str(return_list)
 
@@ -69,7 +77,7 @@ class QState(QMatrix):
         #   Umwandlung von int in binärcode, Abschneiden der Information des Vorzeichenbits ( 0b / 1b )
         str_var = bin(index)[2:]
 
-        if Base.get_debug() > 0:
+        if Base.get_verbose() >= 0:
             diracnotation = '|' + (n_qubits - len(str_var)) * '0' + str_var + ')'
         else:
             diracnotation = (n_qubits - len(str_var)) * '0' + str_var

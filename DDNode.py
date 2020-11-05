@@ -29,15 +29,27 @@ class DDNode(Base):
         self.list_outgoing_edges = list_outgoing_edges
         self.is_calculated = False
 
-        #   wird zum löschen benötigt (in dd-obj sind die Listen gespeichert)
+        #   wird zum löschen benötigt (in dd-obj sind die Listen aller Kanten und Knoten gespeichert)
         self.dd_obj = dd_obj_in
         super().__init__()
 
     def print_recursive(self, str_in):
+        """
+        Die Funktion wird anstatt __str__ verwendet, damit sie besser rekursiv aufgerufen werden kann. Zusammen mit der
+        print-Funktion in DDEdge, wird für jede neue Ebene, die ausgabe weiter eingerückt, sodass die Baumstrucktur
+        besser erkennbar wird. Das ist bei einer höheren Anzahl nicht mehr so übersichtlich!
+        :param str_in: Diesem Parameter wird durch jeden Aufruf ein Tabulator hinzugefügt. (Jeder Aufruf bedeutet eine
+            neue Ebene, die auch weiter eingerükt werden soll.
+        :return:
+        """
+
         str_in += '\t'
         str_out = ''
 
+        #   Falls der Knoten ausgehende Kanten hat, wird für jede Kante eine Ausgabezeile erzeugt, usammen mit dem
+        #   neuen Abstamd str_in
         if any(self.list_outgoing_edges):
+
             for edge in self.list_outgoing_edges:
                 str_out += str_in + edge.print_recursive(str_in)
 
@@ -58,10 +70,12 @@ class DDNode(Base):
         #   eingehenden Kanten nicht gelöscht werden und noch auf diesen Knoten zeigen. Dadurch wird dieser nicht
         #   durch die Garbage Collection entfernt und das DD nicht abgeschnitten, der Teilbaum ist über diese Kanten
         #   weiter erreichbar, auch wenn er nicht meht in der Liste aller Knoten und Kanten vorkommt.
-        for edge in self.list_incoming_edges:
-            if edge.target_node == self:
-                raise Exception('Error by deleting node of decision diagram: List of incoming edges have to be empty\n'
-                                'or edge have to point on an other node to avoid edges without target node.')
+        #for edge in self.list_incoming_edges:
+         #   if edge.target_node == self:
+          #      raise Exception('Error by deleting node of decision diagram: List of incoming edges have to be empty\n'
+           #                     'or edge have to point on an other node to avoid edges without target node.')
+
+
 
         #   Jede ausgehende Kante des Knotens wird gelöscht, damit alle Nachfolger aus den jeweiligen Listen
         #   herausgenommen werden (rekursives Aufrufen von delete_node() )
@@ -110,7 +124,7 @@ class DDNode(Base):
             for i in index_list_x:
                 self.list_incoming_edges = np.delete(self.list_incoming_edges, index_list_x[i])
 
-            if Base.get_debug():
+            if Base.get_verbose():
                 print('Error when deleting an edge in the decision diagram.\n'
                       'The edge to be deleted should occur only once in self.target_node.list_incoming_edges.\n'
                       'Error in the Decision Diagram.')

@@ -29,16 +29,17 @@ class Base:
     def set_n_qubits(n_qubits):
         Base.__nqubits = n_qubits
 
-    #   Aktiviere Debug-Mode
+    #   Aktiviere Verbose-Level
     @staticmethod
-    def enable_debug(verbose_level):
+    def set_verbose_level(verbose_level):
         Base.__debug_verbose_level = verbose_level
 
-    #   Deaktiviere Debug-Mode
+    #   Deaktiviere Verbose-Level
     @staticmethod
-    def disable_debug():
+    def reset_verbose_level():
         Base.__debug_verbose_level = 0
-    #   get Debug-Mode
+
+    #   get Verbose-Level
     @staticmethod
-    def get_debug():
+    def get_verbose():
         return Base.__debug_verbose_level

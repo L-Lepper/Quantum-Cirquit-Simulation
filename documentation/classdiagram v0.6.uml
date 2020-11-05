@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>Python</ID>
+  <OriginalElement>#C:/Users/lukas/PycharmProjects/SimulationQA-V1-ein_Qubit-X-Z/main.py</OriginalElement>
+  <nodes>
+    <node x="0.0" y="1062.0">PauliZ.PauliZ</node>
+    <node x="1067.0" y="1062.0">PauliX.PauliX</node>
+    <node x="788.0" y="467.0">QMatrix.QMatrix</node>
+    <node x="841.0" y="1062.0">HadarmardH.HadamardH</node>
+    <node x="1547.5" y="0.0">Base.Base</node>
+    <node x="971.0" y="467.0">Operation.Operation</node>
+    <node x="2342.0" y="269.0">QuantumSimulation.QuantumSimulation</node>
+    <node x="1641.0" y="357.0">DDNode.DDNode</node>
+    <node x="879.8846153846155" y="814.0">QState.QState</node>
+    <node x="1322.0" y="291.0">DDEdge.DDEdge</node>
+    <node x="590.8846153846155" y="836.0">QGate.QGate</node>
+    <node x="226.0" y="1007.0">Measurement.Measurement</node>
+    <node x="2042.0" y="313.0">DecisionDiagram.DecisionDiagram</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="PauliZ.PauliZ" target="QGate.QGate">
+      <point x="0.0" y="-49.5" />
+      <point x="103.0" y="977.0" />
+      <point x="624.5096153846155" y="977.0" />
+      <point x="-100.875" y="49.5" />
+    </edge>
+    <edge source="QState.QState" target="QMatrix.QMatrix">
+      <point x="0.0" y="-71.5" />
+      <point x="996.8846153846155" y="789.0" />
+      <point x="910.25" y="789.0" />
+      <point x="40.75" y="49.5" />
+    </edge>
+    <edge source="DDEdge.DDEdge" target="Base.Base">
+      <point x="0.0" y="-225.5" />
+      <point x="1471.5" y="249.0" />
+      <point x="1634.1666666666667" y="249.0" />
+      <point x="-17.333333333333258" y="104.5" />
+    </edge>
+    <edge source="Operation.Operation" target="Base.Base">
+      <point x="0.0" y="-49.5" />
+      <point x="1136.5" y="239.0" />
+      <point x="1599.5" y="239.0" />
+      <point x="-52.0" y="104.5" />
+    </edge>
+    <edge source="HadarmardH.HadamardH" target="QGate.QGate">
+      <point x="0.0" y="-49.5" />
+      <point x="944.0" y="987.0" />
+      <point x="759.0096153846155" y="987.0" />
+      <point x="33.625" y="49.5" />
+    </edge>
+    <edge source="QuantumSimulation.QuantumSimulation" target="Base.Base">
+      <point x="0.0" y="-247.5" />
+      <point x="2511.0" y="229.0" />
+      <point x="1738.1666666666667" y="229.0" />
+      <point x="86.66666666666674" y="104.5" />
+    </edge>
+    <edge source="PauliX.PauliX" target="QGate.QGate">
+      <point x="0.0" y="-49.5" />
+      <point x="1170.0" y="977.0" />
+      <point x="826.2596153846155" y="977.0" />
+      <point x="100.875" y="49.5" />
+    </edge>
+    <edge source="DecisionDiagram.DecisionDiagram" target="Base.Base">
+      <point x="0.0" y="-203.5" />
+      <point x="2182.0" y="239.0" />
+      <point x="1703.5" y="239.0" />
+      <point x="52.0" y="104.5" />
+    </edge>
+    <edge source="QMatrix.QMatrix" target="Base.Base">
+      <point x="0.0" y="-49.5" />
+      <point x="869.5" y="229.0" />
+      <point x="1564.8333333333333" y="229.0" />
+      <point x="-86.66666666666674" y="104.5" />
+    </edge>
+    <edge source="Measurement.Measurement" target="QGate.QGate">
+      <point x="0.0" y="-104.5" />
+      <point x="523.5" y="987.0" />
+      <point x="691.7596153846155" y="987.0" />
+      <point x="-33.625" y="49.5" />
+    </edge>
+    <edge source="DDNode.DDNode" target="Base.Base">
+      <point x="0.0" y="-159.5" />
+      <point x="1831.5" y="249.0" />
+      <point x="1668.8333333333333" y="249.0" />
+      <point x="17.333333333333258" y="104.5" />
+    </edge>
+    <edge source="QGate.QGate" target="QMatrix.QMatrix">
+      <point x="0.0" y="-49.5" />
+      <point x="725.3846153846155" y="789.0" />
+      <point x="828.75" y="789.0" />
+      <point x="-40.75" y="49.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="0.54" x="1340.0" y="608.0" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Methods</Category>
+    <Category>Inner Classes</Category>
+    <Category>Fields</Category>
+  </Categories>
+</Diagram>
+

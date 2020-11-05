@@ -12,7 +12,7 @@ from Base import Base
 class Operation(Base):
     """
     Diese Klasse enhält die Quantenschaltung in Form einer Operation_List: Reihenfolge in der Gatter angewendet werden.
-    Element ist Tupel mit Gatter und betreffendes Qbit.
+    Ein Element ist eine Liste mit Gatter und betreffenden Qbits.
     Die Funktion add_tuple_to_operation_list fügt weitere Elemente der Lliste hinzu.
     """
 
@@ -21,10 +21,6 @@ class Operation(Base):
         Konstruktor erstellt Vorlage für Operation_List, und legt Datentyp fest.
         """
 
-        #   Variable wird benötigt, um sich zu merken, ob die Funktion add_tuple_to_operation_list schon mal ausgeführt
-        #   wurde
-        self.call_function_first_time = True
-
         #   Erstelle Prototyp für die Liste
         self.list_tuple_operation_qubit_i = []
 
@@ -32,21 +28,16 @@ class Operation(Base):
 
     def add_tuple_to_operation_list(self, tuple_operation_qbit_i):
         """
-        Fügt der Liste list_tuple_operation_qubit_i ein Tuple mit einem Objekt aus der Unterklasse von QGate, und
-        dem Index von einem Qubit, auf das die Operation angewendet werden soll, hinzu. Die Unterklassen bestehen aus
-        den Klassen der verschiedenen Gatter und einer Klasse für die Messung.
+        Fügt der Liste list_tuple_operation_qubit_i eine weitere Liste hinzu. Haupsächlich besteht die Liste aus einem
+        Gatter und den betreffenden Qubits, sie kann aber auch weitere Befehle wie print enthalten, die nacheinander in
+        QuantumSimulation abgearbeitet werden.
 
-        :param tuple_operation_qbit_i: Tupel (Gatter/Messung , Index des betreffenden Qubits)
+        :param tuple_operation_qbit_i: Liste der einer Operation (Gatter/Messung/Print) und den Indizes der
+        betreffenden Qubits)
         :return self: Operation_Objekt indem die Liste gespeichert ist
         """
 
-        #   Wird die Funktion das erste Mal aufgerufen, wird das erste Element des Prototyps überschrieben, welches
-        #   den Datentyp festgelegt hat
-        #if self.call_function_first_time:
-        #    self.list_tuple_operation_qubit_i = np.array(tuple_operation_qbit_i)
-        #    self.call_function_first_time = False
-        #   Sonst wird einfach ein Tupel angehängt
-        #else:
+        #   Gültige Eingeben werden bereits im Parsor geprüft, die übergebene Liste sollte verarbeitet werden können.
         self.list_tuple_operation_qubit_i += tuple_operation_qbit_i
 
         return self
