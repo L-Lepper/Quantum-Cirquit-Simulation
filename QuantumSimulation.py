@@ -381,6 +381,18 @@ class QuantumSimulation(Base):
             if bool_a:
                 break
 
+            #   Entferne alle Gatter in der Liste aller Operationen, die ausgeführt werden sollen
+            #   (auch wenn mehrere Befehle hintereinander ausgeführt werden und der Arbeitsspeicher mit clear nicht
+            #   gelöscht werden soll, ist es sinnvoll, die bereits angenwndeten Gatter zu entfernen, damit sie nicht
+            #   doppelt aufgerufen werden. Außerdem kann bei einem neuen Befehl die Anzahl an Qubits verringert werden,
+            #   wodurch es zu einem Fehler kommt, wenn alte Gatter mit höheren Index noch in der Liste vorhanden sind.
+            self.operation_obj.list_tuple_operation_qubit_i = []
+
+            #   Ausgabe der Zustände nach der Simulation, falls vebose level 0 (nicht quiet)
+            if Base.get_verbose() >= 0:
+                print('\n---------------\t Simulation completed: \t---------------\n')
+            print(self.qstate_obj)
+
             #   Die Liste aller Gatter und der Initialzustand wird gelöscht, die Anzahl der Qubits wird auf 0 gesetzt
             #   (Falls -c --clear im eingegebenen Befehl)
             if self.clear_memory:
@@ -589,18 +601,6 @@ class QuantumSimulation(Base):
                     #   process_operation() fügt die Operation der Liste aller Operationen hinzu
                     self.process_operation(gate_in, list_affected_qubits)
 
-        # ToDo Soll anders erfolgen
-   #     if args.list_to_print:
-    #        for element in args.list_to_print:
-     #           #   7
-      #          if element == 'gates':
-       #             self.print_list_of_operations()
-#
- #               elif element == 'state':
-  #                  if Base.get_verbose() > 0:
-   #                     print('Output actual state:')
-    #                print(self.qstate_obj)
-
     def process_file(self, args):
         """
         Diese Funktion wird vom Parsor aufgerufen, wenn der Teilbefehl file aufgerufen wurde.
@@ -623,41 +623,51 @@ class QuantumSimulation(Base):
         """
 
         #   Falls der neue Wert größer ist als der bisherige Wert für die Qubits, wird die neue Anzahl
-        #   gespeichert.
+        #   gespeichert. Wird der Befehl interaktiv hintereinander aufgerufen, kann die Anzahl für jede Simulation
+        #   geändert werden.
         if n_qubits >= Base.getnqubits():
+
+            #   Anzahl an Qubits wird gespeichert
             self.set_n_qubits(n_qubits)
 
             #   In der Liste phi_in wird für jedes neue Qubit eine 0 hinzugefügt.
             self.phi_in += (Base.getnqubits() - len(self.phi_in)) * [0]
 
-        #   Dieser Fall sollte nach dem Parser nicht vorkommen, kann aber bei der interaktiven abfrage vorkommen
-        else:
-            raise ValueError('Number of qubits have to be greater than 0:', Base.getnqubits())
+        #   Falls es bereits mehr Qubits gibt, als in dem Befehl vorgegeben (und n_qubits in args existiert), wird eine
+        #   Warnung ausgegeben und alle darüberliegenden Qubits gelöscht
+        elif n_qubits:
 
-        #   Falls es bereits mehr Qubits gibt, als in dem Befehl vorgegeben, wird eine Warnung ausgegeben
-        #   und alle darüberliegenden Qubits gelöscht
+            #raise ValueError('Number of qubits have to be greater than 0:', Base.getnqubits())
+            print('\nWarning!\n\tThe number of qubits was', Base.getnqubits(),
+                  'but should be set to', n_qubits, '\n\tThe number of qubits was set to', n_qubits,
+                  'and all qubits above were deleted! Output vector is now the initial state,\n\t'
+                  'because the previous state vector does not match the number of qubits anymore.')
 
-    #        else:
-    #           print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber sollte auf',
-    #                n_qubits, 'gesetzt werden.\n\tDie Anzahl an Qubits wurde auf', n_qubits,
-    #               'geändert und alle darüber liegenden Qubits und deren Gatter wurden gelöscht!\n')
-    #        self.set_n_qubits(n_qubits)
+            #   Speichere die Anzahl der Qubits
+            self.set_n_qubits(n_qubits)
 
-    #   Prüfen, dass Index wirklich weiter geht, als die neue Anzahl der Qubits
-    #            if len(self.phi_in) > n_qubits:
-    #               del self.phi_in[n_qubits:]
+            #   Der aktuelle Zustandsvektor wird gelöscht, da sich die Anzahl der Qubits verändert hat
+            self.qstate_obj.general_matrix = np.array([])
 
-    #   Speichere die Operationen, die auf Qubits oberhalb von n_qubits angewendet werden
-    #          list_of_elements = []
-    #         for element in self.operation_obj.list_tuple_operation_qubit_i:
-    #            if any(element):
-    #               if max(element[1:]) >= n_qubits:
-    #                  list_of_elements += [element]
+            #   Prüfen, dass Index wirklich weiter geht, als die neue Anzahl der Qubits
+            if len(self.phi_in) > n_qubits:
+                del self.phi_in[n_qubits:]
 
-    #   Entferne alle Gatter in der Liste aller Operationen, die auf Qubits angewendet werden sollen,
-    #   die oben gelöscht wurden
-    #            for element in list_of_elements:
-    #               self.operation_obj.list_tuple_operation_qubit_i.remove(element)
+    """Wird nicht mehr benötigt, da die Liste der Gatter nach einer Simulation immer gelöscht wird. Nur Zustand wird 
+    beibehalten, wenn er nicht extra gelöscht wird -c.  """
+            #   Speichere die Operationen, die auf Qubits oberhalb von n_qubits angewendet werden
+#            list_of_elements = []
+
+ #           for element in self.operation_obj.list_tuple_operation_qubit_i:
+  #              if any(element):
+   #                 if max(element[1:]) >= n_qubits:
+    #                    list_of_elements += [element]
+
+            #   Entferne alle Gatter in der Liste aller Operationen, die auf Qubits angewendet werden sollen, die oben
+            #   gelöscht wurden
+     #       for element in list_of_elements:
+      #          self.operation_obj.list_tuple_operation_qubit_i.remove(element)
+
 
     #   2
     def initialize_qubits(self, index, value):
@@ -676,9 +686,9 @@ class QuantumSimulation(Base):
         #               'geändert!\n')
         #        Base.set_n_qubits(index + 1)
 
-        #   Die Anzahl der Qubits soll nicht automatisch festgelegt werden, sondern manuell mit -n
+        #   Die Anzahl der Qubits soll nicht automatisch festgelegt werden
         if index >= Base.getnqubits():
-            raise IndexError
+            raise IndexError('The Index of a Qubit is aut of range. It does\'t fit to the number of Qubits.')
 
         #   Der Liste der initialen Zustände der Qubits wird mit 0en für die neuen Qubits erweitert
         self.phi_in += (Base.getnqubits() - len(self.phi_in)) * [0]
@@ -711,7 +721,7 @@ class QuantumSimulation(Base):
 
             #   Wird ein Gatter auf ein Index über der Anzahl an Qubits angewendet, soll es einen Fehler geben
             if max(list_affected_qubits) >= Base.getnqubits():
-                raise IndexError
+                raise IndexError('The Index of a gate is aut of range. It does\'t fit to the number of Qubits.')
 
             #   Der Operationen-Liste wird über die Funktion aus dem Operation-Objekt ein Tupel aus Gatter und
             #   betreffendem Qubit hinzugefügt.
@@ -732,23 +742,29 @@ class QuantumSimulation(Base):
         """
         if Base.getnqubits() > 0 and self.operation_obj.list_tuple_operation_qubit_i:
 
-            #   Das Bitmuster für den initialen Zustand, wird aus der Liste in einem String gespeichert
-            phi_str = ""
-            for value in self.phi_in:
-                phi_str += str(value)
+            #   Falls im QState Objekt noch kein Vektor self.general_matrix existiert, wird der neue Initialzustand
+            #   verwendet
+            if not any(self.qstate_obj.general_matrix):
 
-            #   Diese Funktion wandelt das Bitmuster 0011 in eine 3 um, und ruft dann die Funktion
-            #   init_vec_with_bitsequence(self, int_in) in QState auf, die den zugehörigen Vektor im
-            #   jeweiligen Objekt erzeugt
-            self.init_qbit_sequence_to_statevec(phi_str)
+                #   Das Bitmuster für den initialen Zustand, wird aus der Liste in einem String gespeichert
+                phi_str = ""
+                for value in self.phi_in:
+                    phi_str += str(value)
+
+                #   Diese Funktion wandelt das Bitmuster 0011 in eine 3 um, und ruft dann die Funktion
+                #   init_vec_with_bitsequence(self, int_in) in QState auf, die den zugehörigen Vektor im
+                #   jeweiligen Objekt erzeugt
+                self.init_qbit_sequence_to_statevec(phi_str)
+
+            #   Falls im QState Objekt bereits ein Vektor self.general_matrix existiert, wird dieser als aktueller
+            #   Zustandsvektor verwendet, auf den alle Operationen angewendet werden
+            else:
+                if Base.get_verbose() >= 0:
+                    print('Using previous state vector instead of a new base state / initial state...\n'
+                          '(use -c to start a completely new simulation)')
 
             #   Führe Berechnung der eingelesenen Eingabe durch
             self.qstate_obj = self.calculate()
-
-            #   Ausgabe der Zustände nach der Simulation, falls vebose level 0 (nicht quiet)
-            if Base.get_verbose() >= 0:
-                print('\n---------------\t Simulation completed: \t---------------\n')
-            print(self.qstate_obj)
 
         else:
             if Base.get_verbose() >= 0:
@@ -825,6 +841,9 @@ class QuantumSimulation(Base):
 
         #   Lösche die Initialisierung aller Qubits
         del self.phi_in[:]
+
+        #   Lösche den aktuellen Zustandsvektor
+        self.qstate_obj.general_matrix = np.array([])
 
     def execute_cmd(self, cmd_input):
         """

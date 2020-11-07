@@ -190,7 +190,8 @@ class Measurement(QGate):
         self.state_dd_object.list_of_all_edges[0].calc_count_of_paths()
         self.state_dd_object.set_is_calculated_false()
 
-        #   ToDo Berechnungsschritte für die Wahrscheinlichkeiten!
+        #   Berechne alle Kanten-Wahrscheinlichkeiten neu
+        self.state_dd_object.calc_probabilities_if_vector()
 
         if Base.get_verbose() >= 2:
             print('\nDecision Diagram after measurement\n', self.state_dd_object)
@@ -236,8 +237,9 @@ class Measurement(QGate):
 
         """ Schritt 12 """
 
-        #   Durch die Messung hat die linke Kante die Wahrscheinlichkeit 1
-        staying_edge.edge_probability = 1  # ToDo: Die Wahrscheinlichkeit ist nicht 1, sie muss neu berechnet werden!
+        #   Durch die Messung hat die linke Kante die bedingte Wahrscheinlichkeit 1, die Kantenwahrscheinlichkeit wird
+        #   später neu berechnet
+        staying_edge.edge_probability = 1
         staying_edge.conditional_probability = 1
 
         #   Die nicht gemessene Kante wird auf den 0-Knoten gezogen, und ihre Eigenschaften entsprechend
@@ -336,18 +338,24 @@ class Measurement(QGate):
             for parent_edge in node.list_incoming_edges:
 
                 if parent_edge.source_node:
-                    #   Index dieser Kante, bei welcher der Spezialfall zum tragen kommt
-                    i_of_edge_to_zero = np.where(parent_edge.source_node.list_outgoing_edges, parent_edge)[0][0]
+                    #   Index dieser Kante in der Liste der ausgehenden Kanten vom Quellknoten dieser Kante
+                    #   (parent_edge), die auf 0 gezogen werden soll, weil ihr Zielknoten durch den Spezialfall
+                    #   wegfällt.
+                    i_of_edge_to_zero = np.where(parent_edge.source_node.list_outgoing_edges == parent_edge)[0][0]
 
                     #   Rufe die Funktion rekursiv für die nächste Kante auf. Alle Knoten und Kanten auf dem Pfad
                     #   dorthin, werden am Ende der Rekursion gelöscht
                     self.pull_edge_to_zero_and_check_source_node(parent_edge.source_node, i_of_edge_to_zero, value_for_normalizing)
 
                 else:
-                    #   ToDo: Fehlermeldung, wenn dieser Fall wirklich nicht eintreten kann
+                    #   Fehler, wenn Kante keinen Quellknoten hat. Im Wurzelknoten kann der Spezialfall nicht auftreten,
+                    #   da er der einzige Knoten der Ebene ist und somit kann die Kante mit Wahrscheinlichkeit 0 auch
+                    #   nicht gemessen werden. documentation "Spezialfall bei Messung.pdf"
                     if Base.get_verbose() > 0:
-                        print('\nIn measurement.py pull_edge_to_zero_and_check_source_node() a outgoing edge of the root-node was deleted. Now all '
-                              'edges goes to zero. May there be an error!\n')
+                        print('\nIn measurement.py by treating a special case: In '
+                              'pull_edge_to_zero_and_check_source_node() a outgoing edge of the root-node was deleted.\n'
+                              'Because of the special case (p_left=0, p_right=1, measurement to 0) all '
+                              'edges goes to zero. This is not possible.\nError by handling this special case.')
 
                     #   Zielknoten ist jetzt der 0-Endknoten, wenn node keine ausgehenden Kanten auf einen anderen
                     #   Knoten hat

@@ -21,7 +21,7 @@ class QMatrix(Base):
         könnte aber gemacht werden. Hier wird dann ein Numpy Array verwendet.
         """
 
-        self.general_matrix = None
+        self.general_matrix = np.array([])
         super().__init__()
 
     def __mul__(self, qstate_obj):
