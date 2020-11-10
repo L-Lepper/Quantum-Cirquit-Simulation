@@ -333,12 +333,13 @@ class DecisionDiagram(Base):
             print('\n')
 
         """ SCHRITT 7 """
-    """
+
         self.merge_dd_step7()
 
         #   Für jede Kante wird die Anzahl berechnet, wie häufig sie in den Ästen vorkommt
         self.list_of_all_edges[0].calc_count_of_paths()
         self.set_is_calculated_false()
+
 
         #   Ausgabe der Häufigkeit der Kanten und Test für zusammengefasste Knoten
         if Base.get_verbose() >= 3:
@@ -373,7 +374,7 @@ class DecisionDiagram(Base):
 
             e = np.size(self.list_of_all_edges)
             print('Number of all nodes:', n, ', number of all edges:', e, '\n')
-    """
+
     def calc_probabilities_if_vector(self):
 
         """ SCHRITT 8 """
@@ -481,6 +482,7 @@ class DecisionDiagram(Base):
 
             print('Recursive call of edges and nodes of the decision diagram:\n'
                   '(edge weight | saved value on node)\n', self.list_of_all_edges[0])
+        a = 2
 
     def create_matrix(self):
         """

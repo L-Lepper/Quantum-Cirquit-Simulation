@@ -11,12 +11,16 @@
 #   werden daher Objekte der untersten Ebene erzeugt. Die Klassen dieser Ebene erben von den darüber liegenden Klassen,
 #   sodass alle Funktionen/Variablen in der Hauptklasse erreichbar sind.
 from QuantumSimulation import QuantumSimulation
+
+# Modul sys wird importiert:
+import sys
+
 from Base import Base
 
 
-#   QuantumSimulation Objekt erstellen
-q_sim = QuantumSimulation()
+if __name__ == '__main__':
+    #   QuantumSimulation Objekt erstellen
+    q_sim = QuantumSimulation()
 
-
-#   Starte Eingabeaufforderung für Parameter der Klasse QuantumSimulation
-q_sim.cmd_input_for_qsim()
+    #   Starte Eingabeaufforderung für Parameter der Klasse QuantumSimulation
+    q_sim.cmd_line_parser(sys.argv)

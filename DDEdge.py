@@ -74,8 +74,9 @@ class DDEdge(Base):
         :return:
         """
 
-        #   Falls die Liste des Zielknotens nur eine eingehende Kante hat, wird der Knoten gelöscht.
-        if np.size(self.target_node.list_incoming_edges) == 1:
+        #   Falls die Liste des Zielknotens nur eine eingehende Kante hat und er nicht der 0-Knozen ist, wird der Knoten gelöscht.
+        if np.size(self.target_node.list_incoming_edges) == 1 and self.target_node.saved_value_on_node != 0:
+            self.target_node.list_incoming_edges = np.array([])
             self.target_node.delete_node()
 
         #   Andernfalls wird nur diese Kante, die gelöscht werden soll, aus der Liste der eingehenden Kanten entfernt

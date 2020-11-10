@@ -70,10 +70,10 @@ class DDNode(Base):
         #   eingehenden Kanten nicht gelöscht werden und noch auf diesen Knoten zeigen. Dadurch wird dieser nicht
         #   durch die Garbage Collection entfernt und das DD nicht abgeschnitten, der Teilbaum ist über diese Kanten
         #   weiter erreichbar, auch wenn er nicht meht in der Liste aller Knoten und Kanten vorkommt.
-        #for edge in self.list_incoming_edges:
-         #   if edge.target_node == self:
-          #      raise Exception('Error by deleting node of decision diagram: List of incoming edges have to be empty\n'
-           #                     'or edge have to point on an other node to avoid edges without target node.')
+        for edge in self.list_incoming_edges:
+            if edge.target_node == self:
+                raise Exception('Error by deleting node of decision diagram: List of incoming edges have to be empty\n'
+                                'or edge have to point on an other node to avoid edges without target node.')
 
 
 

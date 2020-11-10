@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SimulationQA-V1-ein_Qubit-X-Z.iml" filepath="$PROJECT_DIR$/.idea/SimulationQA-V1-ein_Qubit-X-Z.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/QuantumSimulation.iml" filepath="$PROJECT_DIR$/.idea/QuantumSimulation.iml" />
     </modules>
   </component>
 </project>

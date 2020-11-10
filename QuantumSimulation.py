@@ -268,7 +268,7 @@ class QuantumSimulation(Base):
                         print(self.qstate_obj, '\n')
 
                     #   Bei der Messung wird anstatt der Multiplikation unten, die Funktion measure() aufgerufen.
-                    self.qstate_obj.general_matrix = measure_obj.measure
+                    self.qstate_obj.general_matrix = measure_obj.measure()
 
                     #   gebe Zustände des Zustandsvektors nach der Messung aus
                     if Base.get_verbose() > 0:
@@ -287,9 +287,9 @@ class QuantumSimulation(Base):
                     #   Falls die Anzahl an Qubits, der Anzahl aus dem gespeicherten Vektor entspricht, wird dieser
                     #   verwendet
                     if Base.getnqubits() == 5:
-                        self.qstate_obj.general_matrix = np.array([0.080396894, 0.037517934, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0.143565882, 0.066997412, 0j, 0j, 0j, 0j, 0j, 0j, 0.777808047, 0j, 0.601700565, 0j, 0j, 0j, 0j, 0j])
+                        #self.qstate_obj.general_matrix = np.array([0.080396894, 0.037517934, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0.143565882, 0.066997412, 0j, 0j, 0j, 0j, 0j, 0j, 0.777808047, 0j, 0.601700565, 0j, 0j, 0j, 0j, 0j])
                         #self.qstate_obj.general_matrix = np.array([1, 1, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 1, 1, 0j, 0j, 0j, 0j, 0j, 0j, 1, 0j, 1, 0j, 0j, 0j, 0j, 0j])
-
+                        self.qstate_obj.general_matrix = np.array([0, 0, 0.00752268163518088, 0, 0, 0, 0, 0, 0, 0, 0.306489370178815, 0.353641580975556, 0, 0, 0, 0, 0, 0, 0.286171213985822, 0.330197554599025, 0, 0, 0, 0, 0, 0.523233828563029, 0, 0.391028839851374, 0.283219972790003, 0.288323035362795, 0, 0])
                     else:
                         self.qstate_obj.general_matrix = np.zeros(Base.getnqubits())
                         self.qstate_obj.general_matrix[0] = 1

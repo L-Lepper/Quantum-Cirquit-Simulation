@@ -40,7 +40,6 @@ class Measurement(QGate):
 
         super().__init__(list_affected_qubits)
 
-    @property
     def measure(self):
         """
         Die Funktion misst das Qubit state_vec_to_measure.
@@ -79,11 +78,12 @@ class Measurement(QGate):
                   '\n')
 
         #   Erzeuge eine Zufallszahl zwischen 0 und 1 mit 6 Nachkommastellen
-        random_value = random.randint(0, 1000000) / 1000000
+        random_value = 0.05  #random.randint(0, 1000000) / 1000000
 
         #   Für jeden Knoten auf der Ebene des zu messenden Qubits, wird das Entscheidungsdiagramm durch die
         #   Messung angepasst (Messung 0 oder 1)
         node_to_delete = []
+        list_inidzes_of_nodes_for_normalization = []
         for node in self.state_dd_object.list_of_all_nodes[self.qubit_to_measure]:
 
             #   Spezialfall:
@@ -109,14 +109,26 @@ class Measurement(QGate):
                 #   ToDo: Genauigkeit
                 if round(edge.conditional_probability, 13) == 0 and i == 0 and p_0 >= random_value \
                         or round(edge.conditional_probability, 13) == 0 and i == 1 and p_0 < random_value:
+
+                    #   Index der jeweils anderen Kante. Diese hatte vorher die bedingte Wahrs. von 1 und hat ein
+                    #   Kantengewicht, welches zur neuen Normierung benötigt wird, wenn diese Kante wegfällt
+                    j = (i - 1) * -1
+
+                    #   Speichere die Wurzel der bedingten Wahrsch. der anderen Kante des Knotens in der ersten
+                    #   Schleife, zum normieren
+                    #sum = 0
+                    #for x in node.get_matrix(1):
+                     #   sum += cmath.sqrt(abs(x))
+                    #value_for_normalizing = sum
+                    #value_for_normalizing = node.list_outgoing_edges[j].conditional_probability
+
                     d = True
 
-                    #   Falls für diese Kante der Spezialfall aufgetreten ist und ob das Qubit so gemessen wurde, dass der aktuelle Knoten
-                    #   wegfällt (p_links = 0, p_rechts = 1; aber p_links wurde gemessen --> p_links = 0, p_rechts = 0)
-                    for parent_edge in edge.source_node.list_incoming_edges:
 
+
+                    """
                         #   Index dieser Kante, bei welcher der Spezialfall zum tragen kommt
-                        i_of_edge_to_zero = i
+                        i_of_edge_to_zero = np.where()
 
                         #   Index der jeweils anderen Kante. Diese hatte vorher die bedingte Wahrs. von 1 und hat ein
                         #   Kantengewicht, welches zur neuen Normierung benötigt wird, wenn diese Kante wegfällt
@@ -127,8 +139,17 @@ class Measurement(QGate):
                         value_for_normalizing = cmath.sqrt(node.list_outgoing_edges[j].conditional_probability)
 
                         self.pull_edge_to_zero_and_check_source_node(parent_edge.source_node, i_of_edge_to_zero, value_for_normalizing)
+                        """
             if d:
-                pass
+
+                for index_of_layer, layer in enumerate(self.state_dd_object.list_of_all_nodes):
+                    try:
+                        index_of_node = layer.index(node)
+                        nodes_del, list_indizes = self.process_special_case(self.state_dd_object.list_of_all_nodes[index_of_layer][index_of_node], p_0, random_value)
+                        node_to_delete += nodes_del
+                        list_inidzes_of_nodes_for_normalization += list_indizes
+                    except ValueError:
+                        continue
 
             # Falls p_0 größer gleich wie die Zufallszahl ist, wurde das Qubit zu 0 gemessen.
             elif p_0 >= random_value:
@@ -174,6 +195,22 @@ class Measurement(QGate):
                 #   Die neuen Kanten werden wieder den betreffenden Kanten zugewiesen.
                 node.list_outgoing_edges[0] = edge_measured_to_0
                 node.list_outgoing_edges[1] = edge_measured_to_1
+
+
+        if list_inidzes_of_nodes_for_normalization:
+            value_for_normalisation = 0
+            k, l, i, j = [0, 0, 0, 0]
+            for list_i in list_inidzes_of_nodes_for_normalization:
+                k, l, i, j = list_i
+                upstream_value = self.state_dd_object.list_of_all_edges[0].edge_weight
+                asd = self.state_dd_object.list_of_all_nodes[0][0].get_matrix(upstream_value)
+                for x in asd:
+                    value_for_normalisation += pow(abs(x), 2)
+
+                value_for_normalisation = cmath.sqrt(value_for_normalisation)
+                self.state_dd_object.list_of_all_nodes[k][l].list_outgoing_edges[i].edge_weight /= value_for_normalisation
+                break
+
 
         # Lösche den abgeschnittenen Baum, falls node_to_delete einen Knoten gespeichert hat
         if node_to_delete:
@@ -282,7 +319,6 @@ class Measurement(QGate):
             #   Falls sich der Knoten in der letzten Ebene befindet, muss er nicht gelöscht werden, da er
             #   entweder der 0 oder 1 Endknoten ist.
             if i == Base.getnqubits() or np.size(self.state_dd_object.list_of_all_nodes[i][j].list_incoming_edges) > 1:
-                node_to_delete = None
                 self.state_dd_object.list_of_all_nodes[i][j].delete_edge_in_incoming_list(edge_pull_to_zero)
 
             #   Speichere den gefundenen Knoten mit neuen Namen (aber gleicher Adresse im Speicher), damit er
@@ -307,11 +343,8 @@ class Measurement(QGate):
 
         return [edge_pull_to_zero, staying_edge]
 
-    def check(self, node, random_value, p_0):
-        pass
-
-    def pull_edge_to_zero_and_check_source_node(self, node, i_of_edge_to_zero, value_for_normalizing):
-        """
+#    def pull_edge_to_zero_and_check_source_node(self, node, i_of_edge_to_zero, value_for_normalizing):
+    """
         Diese Funktion funktioniert noch nicht so, wie sie soll. Das Entscheidungsdigramm ist unnötig groß, aber das
         Ergebniss ist eigentlich richtig
 
@@ -321,6 +354,7 @@ class Measurement(QGate):
         :param value_for_normalizing:
         :return:
         """
+    """
         node_to_delete = []
 
         #   Index der anderen ausgehenden Kante von node, die nicht auf 0 gezogen wird (Es gibt zwei ausgehende Kanten)
@@ -380,3 +414,104 @@ class Measurement(QGate):
         if node_to_delete:
             for node in node_to_delete:
                 node.delete_node()
+    """
+
+    def process_special_case(self, node, p_0, random_value):
+        node_to_delete = []
+        d = False
+        list_inidzes_of_nodes_for_normalization = []
+
+        for edge in node.list_incoming_edges:
+            #   Es wird geprüft, ob der Spezialfall an diesem Knoten zum tragen kommt (das eine Kante mit
+            #   Wahrscheinlichkeit 0 gemessen wird)
+            for i, outgoing_edge in enumerate(edge.source_node.list_outgoing_edges):
+
+                #   Für jede ausgehende Kante speichert is_special_case True, falls die bedingte Wahrscheinlichkeit
+                #   der linken Kante 0 ist und 0 gemessen wurde(linke Kante) oder falls die bedingte Wahrscheinlichkeit
+                #   der rechten Kante 0 ist und 1 gemessen wurde(rechte Kante). Also das eine Kante mit
+                #   Wahrscheinlichkeit 0 gemessen wurde. In den anderen Fällen, kann normal weiter gemacht werden.
+                #   ToDo: Genauigkeit
+                if round(outgoing_edge.conditional_probability, 13) == 0 and i == 0 and p_0 >= random_value \
+                        or round(outgoing_edge.conditional_probability, 13) == 0 and i == 1 and p_0 < random_value:
+                    d = True
+
+                    #   Index der jeweils anderen Kante. Diese hatte vorher die bedingte Wahrs. von 1 und hat ein
+                    #   Kantengewicht, welches zur neuen Normierung benötigt wird, wenn diese Kante wegfällt
+                    j = (i - 1) * -1
+
+                    #   Speichere die Wurzel der bedingten Wahrsch. der anderen Kante des Knotens in der ersten
+                    #   Schleife, zum normieren
+                    #new_value = value_for_normalizing * cmath.sqrt(abs(edge.source_node.list_outgoing_edges[j].edge_weight))
+
+            if d:
+
+                for index_of_layer, layer in enumerate(self.state_dd_object.list_of_all_nodes):
+                    try:
+                        index_of_node = layer.index(edge.source_node)
+                        nodes_del, list_indizes = self.process_special_case(
+                            self.state_dd_object.list_of_all_nodes[index_of_layer][index_of_node], p_0,
+                            random_value)
+                        node_to_delete += nodes_del
+
+                        #if list_indizes:
+                        list_inidzes_of_nodes_for_normalization = list_indizes
+
+                    except ValueError:
+                        continue
+
+            else:
+                index_edge_to_del_node = np.where(edge.source_node.list_outgoing_edges == edge)[0][0]
+                index_edge_not_to_del_node = (index_edge_to_del_node - 1) * -1
+
+                for index_k, layer in enumerate(self.state_dd_object.list_of_all_nodes):
+
+                    try:
+                        index_l = layer.index(edge.source_node)
+
+                        #self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[
+                         #   index_edge_not_to_del_node].edge_weight *= \
+                          #  cmath.sqrt(abs(self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[
+                           #                    index_edge_to_del_node].conditional_probability))
+                        #upstream_value = self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[index_edge_not_to_del_node].edge_weight
+                        #value = self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[index_edge_not_to_del_node].target_node.get_matrix(upstream_value)
+                        #new_value = 0
+                        #for x in value:
+                         #   new_value += pow(x, 2)
+                        list_inidzes_of_nodes_for_normalization += [[index_k, index_l, index_edge_not_to_del_node, index_edge_to_del_node]]
+
+
+                        #value_for_normalizing = cmath.sqrt(abs(self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[index_edge_not_to_del_node].edge_weight))
+                        #value_for_normalizing = cmath.sqrt(new_value)
+                        #self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[index_edge_not_to_del_node].edge_weight /= value_for_normalizing
+
+                        #   Anzahl der Kanten, die durch diese Kante dargestellt wird, wird berechnet
+                        self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[
+                            index_edge_to_del_node].n_possible_paths_to_zero = pow(2,
+                                                                                   Base.getnqubits() - index_k - 1) # index_k bezeichnet die aktuelle Ebene
+                        self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[
+                            index_edge_to_del_node].edge_probability = 0
+                        self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[
+                            index_edge_to_del_node].conditional_probability = 0
+                        self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[
+                            index_edge_to_del_node].edge_weight = 0
+
+                        self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[
+                            index_edge_to_del_node].target_node = self.state_dd_object.node_zero
+                    except ValueError:
+                        continue
+
+                    for index_m, layer in enumerate(self.state_dd_object.list_of_all_nodes):
+
+                        try:
+                            index_n = layer.index(self.state_dd_object.node_zero)
+                            self.state_dd_object.list_of_all_nodes[index_m][index_n].list_incoming_edges = \
+                                np.append(
+                                    self.state_dd_object.list_of_all_nodes[index_m][index_n].list_incoming_edges,
+                                    [self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[
+                                         index_edge_to_del_node]])
+                        except ValueError:
+                            continue
+
+                node_to_delete += [node]
+
+        return [node_to_delete, list_inidzes_of_nodes_for_normalization]
