@@ -34,7 +34,7 @@ class Operation(Base):
 
         :param tuple_operation_qbit_i: Liste der einer Operation (Gatter/Messung/Print) und den Indizes der
         betreffenden Qubits)
-        :return self: Operation_Objekt indem die Liste gespeichert ist
+        :return qsim_obj: Operation_Objekt indem die Liste gespeichert ist
         """
 
         #   Gültige Eingeben werden bereits im Parsor geprüft, die übergebene Liste sollte verarbeitet werden können.

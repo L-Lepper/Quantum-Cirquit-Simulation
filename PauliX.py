@@ -11,7 +11,7 @@ from QGate import QGate
 
 class PauliX(QGate):
     """
-    Klasse für das Pauli-X Gatter. Speichert den Typ und erweitert die Matrix dieses Gatters auf Größe des
+    Klasse für das Pauli-X Gatter. Basiswechsel zwischen +/-. Speichert den Typ und erweitert die Matrix dieses Gatters auf Größe des
     Zustandsvektors.
     """
 
@@ -23,7 +23,7 @@ class PauliX(QGate):
         :param list_affected_qubits: Index des Qubits, auf welches das Gatter angewendet wird
         """
 
-        #   list_affected_qubits wird in der Elternklasse in self.list_affected_qubits gespeichert
+        #   list_affected_qubits wird in der Elternklasse in qsim_obj.list_affected_qubits gespeichert
         super().__init__(list_affected_qubits)
 
         #   Bezeichnung des Gatters

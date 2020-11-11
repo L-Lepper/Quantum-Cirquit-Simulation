@@ -138,7 +138,7 @@ class Measurement(QGate):
                         #   Schleife, zum normieren
                         value_for_normalizing = cmath.sqrt(node.list_outgoing_edges[j].conditional_probability)
 
-                        self.pull_edge_to_zero_and_check_source_node(parent_edge.source_node, i_of_edge_to_zero, value_for_normalizing)
+                        qsim_obj.pull_edge_to_zero_and_check_source_node(parent_edge.source_node, i_of_edge_to_zero, value_for_normalizing)
                         """
             if d:
 
@@ -220,7 +220,7 @@ class Measurement(QGate):
         #   Möglicherweise kann jetzt das Entscheidungsdiagramm noch mal zusammengefasst werden
         #   ToDo: Vielleicht lohnt sich der aufwand nicht
         #   ToDo: Fehler in der Zusammenfassung (Kanten und Wert im Knoten ist gleich, aber nicht der gesamte nachfogende Ast)
-        #self.state_dd_object.merge_dd_step7()
+        #qsim_obj.state_dd_object.merge_dd_step7()
 
         #   Für jede Kante wird die Anzahl berechnet, wie häufig sie in den Ästen vorkommt
         #   Dieser Wert muss jetzt aktualisiert werden, da das DD verändert wurde
@@ -343,7 +343,7 @@ class Measurement(QGate):
 
         return [edge_pull_to_zero, staying_edge]
 
-#    def pull_edge_to_zero_and_check_source_node(self, node, i_of_edge_to_zero, value_for_normalizing):
+#    def pull_edge_to_zero_and_check_source_node(qsim_obj, node, i_of_edge_to_zero, value_for_normalizing):
     """
         Diese Funktion funktioniert noch nicht so, wie sie soll. Das Entscheidungsdigramm ist unnötig groß, aber das
         Ergebniss ist eigentlich richtig
@@ -379,7 +379,7 @@ class Measurement(QGate):
 
                     #   Rufe die Funktion rekursiv für die nächste Kante auf. Alle Knoten und Kanten auf dem Pfad
                     #   dorthin, werden am Ende der Rekursion gelöscht
-                    self.pull_edge_to_zero_and_check_source_node(parent_edge.source_node, i_of_edge_to_zero, value_for_normalizing)
+                    qsim_obj.pull_edge_to_zero_and_check_source_node(parent_edge.source_node, i_of_edge_to_zero, value_for_normalizing)
 
                 else:
                     #   Fehler, wenn Kante keinen Quellknoten hat. Im Wurzelknoten kann der Spezialfall nicht auftreten,
@@ -393,7 +393,7 @@ class Measurement(QGate):
 
                     #   Zielknoten ist jetzt der 0-Endknoten, wenn node keine ausgehenden Kanten auf einen anderen
                     #   Knoten hat
-                    parent_edge.target_node = self.state_dd_object.node_zero
+                    parent_edge.target_node = qsim_obj.state_dd_object.node_zero
 
                     #   Gibt es keinen Elternknoten, hat der Knoten auch nur eine eingehende Kante, die gelöscht werden
                     #   kann
@@ -408,7 +408,7 @@ class Measurement(QGate):
         else:
             staying_edge = node.list_outgoing_edges[j_other_edge]
             edge_pull_to_zero = node.list_outgoing_edges[i_of_edge_to_zero]
-            node.list_outgoing_edges[j_other_edge], temp = self.update_decision_diagram(staying_edge, edge_pull_to_zero, value_for_normalizing, node_to_delete)
+            node.list_outgoing_edges[j_other_edge], temp = qsim_obj.update_decision_diagram(staying_edge, edge_pull_to_zero, value_for_normalizing, node_to_delete)
 
         # Lösche den abgeschnittenen Baum, falls node_to_delete einen Knoten gespeichert hat
         if node_to_delete:
@@ -468,21 +468,21 @@ class Measurement(QGate):
                     try:
                         index_l = layer.index(edge.source_node)
 
-                        #self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[
+                        #qsim_obj.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[
                          #   index_edge_not_to_del_node].edge_weight *= \
-                          #  cmath.sqrt(abs(self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[
+                          #  cmath.sqrt(abs(qsim_obj.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[
                            #                    index_edge_to_del_node].conditional_probability))
-                        #upstream_value = self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[index_edge_not_to_del_node].edge_weight
-                        #value = self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[index_edge_not_to_del_node].target_node.get_matrix(upstream_value)
+                        #upstream_value = qsim_obj.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[index_edge_not_to_del_node].edge_weight
+                        #value = qsim_obj.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[index_edge_not_to_del_node].target_node.get_matrix(upstream_value)
                         #new_value = 0
                         #for x in value:
                          #   new_value += pow(x, 2)
                         list_inidzes_of_nodes_for_normalization += [[index_k, index_l, index_edge_not_to_del_node, index_edge_to_del_node]]
 
 
-                        #value_for_normalizing = cmath.sqrt(abs(self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[index_edge_not_to_del_node].edge_weight))
+                        #value_for_normalizing = cmath.sqrt(abs(qsim_obj.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[index_edge_not_to_del_node].edge_weight))
                         #value_for_normalizing = cmath.sqrt(new_value)
-                        #self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[index_edge_not_to_del_node].edge_weight /= value_for_normalizing
+                        #qsim_obj.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[index_edge_not_to_del_node].edge_weight /= value_for_normalizing
 
                         #   Anzahl der Kanten, die durch diese Kante dargestellt wird, wird berechnet
                         self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[

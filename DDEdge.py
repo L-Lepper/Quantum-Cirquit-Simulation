@@ -83,7 +83,7 @@ class DDEdge(Base):
         #   und gelöscht
         else:
 
-            #   Lösche diese Kante self in der Liste der eingehenden Kanten des Zielknotens
+            #   Lösche diese Kante qsim_obj in der Liste der eingehenden Kanten des Zielknotens
             self.target_node.delete_edge_in_incoming_list(self)
 
         #   Suche nun die zu löschende Kante in der Liste aller Kanten, um sie auch dort zu löschen.

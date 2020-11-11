@@ -23,7 +23,7 @@ class PauliZ(QGate):
         :param list_affected_qubits: Index des Qubits, auf welches das Gatter angewendet wird
         """
 
-        #   list_affected_qubits wird in der Elternklasse in self.list_affected_qubits gespeichert
+        #   list_affected_qubits wird in der Elternklasse in qsim_obj.list_affected_qubits gespeichert
         super().__init__(list_affected_qubits)
 
         #   Bezeichnung des Gatters

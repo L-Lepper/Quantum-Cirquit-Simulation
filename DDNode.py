@@ -66,7 +66,7 @@ class DDNode(Base):
         """
 
         #   Prüfe Liste der eingehenden Kanten
-        #   Falls der Zielknoten einer Kante identisch mit dem jetzigen (self) ist, besteht die Gefahr, das die
+        #   Falls der Zielknoten einer Kante identisch mit dem jetzigen (qsim_obj) ist, besteht die Gefahr, das die
         #   eingehenden Kanten nicht gelöscht werden und noch auf diesen Knoten zeigen. Dadurch wird dieser nicht
         #   durch die Garbage Collection entfernt und das DD nicht abgeschnitten, der Teilbaum ist über diese Kanten
         #   weiter erreichbar, auch wenn er nicht meht in der Liste aller Knoten und Kanten vorkommt.
@@ -126,7 +126,7 @@ class DDNode(Base):
 
             if Base.get_verbose():
                 print('Error when deleting an edge in the decision diagram.\n'
-                      'The edge to be deleted should occur only once in self.target_node.list_incoming_edges.\n'
+                      'The edge to be deleted should occur only once in qsim_obj.target_node.list_incoming_edges.\n'
                       'Error in the Decision Diagram.')
 
     def get_max_value_of_target_nodes(self):
