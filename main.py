@@ -262,8 +262,8 @@ def cmd_line_parser(q_sim, cmd_in):
     subparsers = parser.add_subparsers(title='sub-commands',
                                        description='read quantum circuit from file or from command '
                                                    'line interface input',
-                                       dest='subparser_name',
-                                       required=True)
+                                       dest='subparser_name')
+                                       #required=True)
 
     #   Gruppe aus nicht kompatiblen Parametern: Verbose-Level einstellen oder quite, um Ausgabe auf Ergebnisse zu
     #   beschränken
