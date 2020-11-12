@@ -16,7 +16,6 @@ from Base import Base
 import sys
 import argparse
 
-
 """
 Die Klassen ValidateInitialization, ValidateGate, ValidatePrint und CheckFilePath definieren benutzerdefinierte Aktionen 
 für den Parser.
@@ -26,38 +25,74 @@ Danach folgt der Programmstart mit if __name__ == '__main__': (siehe ganz unten)
 """
 
 
-class ValidateInitialization(argparse.Action, Base):
-    """
-    Klasse mit einer benutzerdefinierten Argparse Akion, um zu Prüfen, ob die Eingabe für die Initialisierung der
-    Qubits -i 2 1 gültig ist. Die eingegebenen Initialisierungen werden in einer Liste im namespace gespeichert.
-    """
+#class ValidateInitialization(argparse.Action, Base):
+#    """
+#    Klasse mit einer benutzerdefinierten Argparse Akion, um zu Prüfen, ob die Eingabe für die Initialisierung der
+#    Qubits -i 2 1 gültig ist. Die eingegebenen Initialisierungen werden in einer Liste im namespace gespeichert.
+#    """
 
-    def __call__(self, parser, namespace, values, option_string=None):
+#    def __call__(self, parser, namespace, values, option_string=None):
         #   Tupel mit den gültigen Werten, die für state in -i INDEX STATE erlaubt sind
-        valid_states = (0, 1)
+#        valid_states = (0, 1)
 
         #   Speichere die eingegebenen Parameter
-        index, state = values
+#        index, state = values
 
         #   Falls der Wert nicht in dem Tupel mit den gültigen Eingaben vorkommt, wird eine Fehlermeldung ausgegeben
-        if state not in valid_states:
-            raise argparse.ArgumentError(self, 'Invalid state for initializing the qubit '
-                                               'with index {r!r}: {s!r}'.format(r=index, s=state))
+#        if state not in valid_states:
+#            raise argparse.ArgumentError(self, 'Invalid state for initializing the qubit '
+#                                               'with index {r!r}: {s!r}'.format(r=index, s=state))
 
         #   In Items wird die Liste gespeichert, die bisher in dem Parsor in namespace unter qsim_obj.dest gespeichert war.
-        items = getattr(namespace, self.dest, None)
+#        items = getattr(namespace, self.dest, None)
 
         #   Falls vorher Elemente in der Liste gespeichert waren, werden die neuen Werte value=[Index, State]
         #   der Liste hinzugefügt
-        if items:
-            items.append(values)
+#        if items:
+#            items.append(values)
 
         #   War die Liste leer, wird eine neue Liste mit dem neuen Element erstellt
-        else:
-            items = [values]
+#        else:
+#            items = [values]
 
         #   In namespace von dem aktuellen Parsor wird die neue Liste Items an der Stelle der alten Liste gespeichert
-        setattr(namespace, self.dest, items)
+#        setattr(namespace, self.dest, items)
+#
+
+class ValidateInitialization(argparse.Action, Base):
+    """
+    Klasse mit einer benutzerdefinierten Argparse Akion, um zu Prüfen, ob die Eingabe für die Initialisierung der
+    Qubits -i 0011010 gültig ist. Die eingegebenen Initialisierung wird als int umgewandelt im namespace gespeichert.
+    """
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        #   Tupel mit den gültigen Werten, die für die Zustände der Qubits erlaubt sind
+        valid_states = (0, 1)
+
+        #   Speichere die länge des Bitmusters, um die Anzahl der mindestens verwendeten Qubits festzustellen
+        j = len(values)
+
+        #   Wandle Bitmuster in int um 0*2^3 + 1*2^2 + 1*2^1 + 0*2^0
+        index_in_vec = 0
+        for i, x in enumerate(values):
+            try:
+                #   Ist x 0 oder 1 wird Index im Zustandsvektor wie oben berechnet (j - 1, da von 0-2 statt 1-3
+                if int(x) in valid_states:
+                    index_in_vec += int(x) * pow(2, j - i - 1)
+
+                #   Falls x eine andere Zahl ist --> Fehler
+                else:
+                    raise argparse.ArgumentError(message='Only 0 and 1 are allowed for the states in the bit pattern.'
+                                                         ' Got {}.'.format(values),
+                                                 argument=self)
+            #   Falls x nicht in int konvertiert werden kann --> Fehler
+            except ValueError:
+                raise argparse.ArgumentError(message='Only 0 and 1 are allowed for the states in the bit pattern.'
+                                                         ' Got {}.'.format(values),
+                                             argument=self)
+
+        #   In namespace von dem aktuellen Parsor wird die neue Liste Items an der Stelle der alten Liste gespeichert
+        setattr(namespace, self.dest, index_in_vec)
 
 
 class ValidateGate(argparse.Action):
@@ -103,6 +138,12 @@ class ValidateGate(argparse.Action):
             #   x das Element selber
             for i, x in enumerate(list_of_arguments):
 
+                #   Fehlermeldung, wenn mehr Indizes eingegeben wurden
+                if len(list_of_arguments) != 1:
+                    raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
+                                                       'number of this gate ({s!r}: 1). Example: -g {s} INDEX'
+                                                 .format(r=len(list_of_arguments), s=gate))
+
                 #   Versuche das aktuelle Element x in Integer zu konvertieren, sonst gebe eine Fehlermeldung aus
                 #   Als Eingabe werden ganze Zahlen erwartet.
                 try:
@@ -111,17 +152,10 @@ class ValidateGate(argparse.Action):
                     raise argparse.ArgumentError(self, 'Value Error: {a!r} can\'t be converted to integer, for index'
                                                        ' of the qubit an integer was expected.'.format(a=x))
 
-
                 #   Falls die Zahl negativ ist, wird ebenfalls ein Fehler ausgegeben
                 if list_of_arguments[0] < 0:
                     raise argparse.ArgumentError(self, 'Value Error: the index for a qubit must be positive: {a!r}'
                                                  .format(a=list_of_arguments[i]))
-
-            #   Fehlermeldung, wenn mehr Indizes eingegeben wurden
-            if len(list_of_arguments) != 1:
-                raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
-                                                   'number of this gate ({s!r}: 1).'
-                                             .format(r=len(list_of_arguments), s=gate))
 
             #   Nach der Prüfung wird der Liste der Indizes die Elemente der Liste der Argumente hinzugefügt. Jetzt ist
             #   dort lediglich 1 Index gespeichert.
@@ -138,8 +172,8 @@ class ValidateGate(argparse.Action):
             #   Fehlermelduung, wenn mehr Indizes/Argumente eingegeben wurden
             if len(list_of_arguments) != 2:
                 raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
-                                                   'number of this gate ({s!r}: 2).'
-                                             .format(r=len(list_of_arguments), s=gate))
+                                                   'number of this gate ({s!r}: 2). Example: -g {s} INDEX PARAM'
+                                             .format(r=len(list_of_arguments), s=str(gate)))
 
             #   Versuche die Argumente in Float oder Integer zu konvertieren, sonst gebe eine Fehlermeldung aus.
             #   Als Eingabe werden ganze Zahlen für Indizes und Fließkommazahlen für Parameter von Gattern erwartet.
@@ -196,21 +230,30 @@ class CheckFilePath(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
 
-        #   Öffne die Datei, wenn möglich, und Schließe sie wieder am Ende der Umgebung. Ansonsten wird automatisch
-        #   eine Fehlermeldung ausgegeben.
-        with open(values) as file:
+        list_of_cmds = []
 
-            #   Lese die gesammte Datei, Zeile für Zeile ein, und Speichere sie in einer Liste
-            list_of_cmds = file.readlines()
+        try:
+            #   Öffne die Datei, wenn möglich, und Schließe sie wieder am Ende der Umgebung. Ansonsten wird automatisch
+            #   eine Fehlermeldung ausgegeben.
+            with open(values) as file:
+
+                #   Lese die gesammte Datei, Zeile für Zeile ein, und Speichere sie in einer Liste
+                list_of_cmds = file.readlines()
+        except FileNotFoundError:
+            raise argparse.ArgumentError(self, 'FileNotFoundError: The following file could not be opened: {a!r}'
+                                         .format(a=values))
+        except OSError:
+            raise argparse.ArgumentError(self, 'OSError: The following file could not be opened: {a!r}'
+                                         .format(a=values))
+
 
         #   Erstelle eine neue Liste, in der gleich die eingelesenen Parameter gespeichert werden. Sie beginnt mit
         #   'cli', da diese Liste nach dem ArgParse aufruf in einen neuen Parser eingegeben wird. (Aktuell erfolgt die
         #   Eingabe des Schaltungsaufbaus entweder in der Datei, oder in dim Command Line Interface)
-        args_list_from_file = ['cli']
+        args_list_from_file = []
 
         #   Zeile für Zeile werden die Parameter eingelesen und in der Liste oben angehängt
         for cmd in list_of_cmds:
-
             #   rstrip() entfernt Leerzeichen und Zeilenumbrüche am Ende eines Strings
             #   split() trennt String nach den Leerzeichen --> Aus Parameter mit Argumenten pro Zeile / Element in
             #   der Liste wird Liste mit neuen Elementen für jedes Argument
@@ -251,34 +294,45 @@ class ValidatePrint(argparse.Action):
         setattr(namespace, self.dest, items)
 
 
+def exit_interactiv_in(q_sim, args):
+    q_sim.interactive_input = False
+
+
 def cmd_line_parser(q_sim, cmd_in):
     #   Parser-Objekt erstellen
-    parser = argparse.ArgumentParser(description='Simulation of Quantum Algorithm\nExample:\n'
+    parser = argparse.ArgumentParser(description='Simulation of Quantum Algorithm. Commands to get parameters for '
+                                                 'simulation from file or from comand line interface. \nExample:\n'
                                                  '-v 3 --interactive_input cli 3 -i 0 1 -g h 0 -g z 0 -p state_vec '
                                                  '-g r_phi 0 1.570796327 -p gates -g m 0',
                                      epilog='by Lukas Lepper')
 
+    parser.set_defaults(function=None)
+
     #   Subparser-Objekt erstellen
     subparsers = parser.add_subparsers(title='sub-commands',
-                                       description='read quantum circuit from file or from command '
+                                       description='Read parameters of the quantum circuit from file or from command '
                                                    'line interface input',
                                        dest='subparser_name')
-                                       #required=True)
+    # required=True)
 
     #   Gruppe aus nicht kompatiblen Parametern: Verbose-Level einstellen oder quite, um Ausgabe auf Ergebnisse zu
     #   beschränken
     verbose_groupe = parser.add_mutually_exclusive_group()
 
     #   Teilbefehl, der den Schaltungsaufbau aus der Eingabe ausliest
-    parser_from_cli = subparsers.add_parser('cli', help='Input parameters from Commandline Interface')
+    parser_from_cli = subparsers.add_parser('cli',
+                                            description='Input parameters from commandline interface. '
+                                                        'Example: cli -n 3 -i 101 -g h 0 -g r_phi 1 3.14159 -g m 0 -p gates',
+                                            help='Input parameters from commandline interface')
 
-    #   im Argumlent_Objekt des Parser wird an der Stelle function 'qsim_obj.process_cli' gespeichert. Damit wird später
-    #   der Funktionsaufruf args.function(args) zu qsim_obj.process_cli(args), wenn der Teilbefehl cli aufgerufen wurde.
+    #   im Argumlent_Objekt des Parser wird an der Stelle function 'process_cli' gespeichert. Damit wird später
+    #   der Funktionsaufruf args.function(q_sim, args) zu process_cli(q_sim, args), wenn der Teilbefehl cli aufgerufen
+    #   wurde.
     parser_from_cli.set_defaults(function=process_cli)
 
     # Argumente für den Teilbefehl cli
     #   1: positional Argument für die Anzahl der Qubits
-    parser_from_cli.add_argument('n_qubits',
+    parser_from_cli.add_argument('--n_qubits', '-n',
                                  action='store',
                                  type=int,
                                  default=Base.getnqubits(),
@@ -286,14 +340,22 @@ def cmd_line_parser(q_sim, cmd_in):
                                       'Index for inizializing or for the gates have to be in range of this number.')
 
     #   2: Argument um Qubits zu initialisieren
-    parser_from_cli.add_argument('--init_qubit', '-i',
-                                 dest='arg_phi_in',
+    # parser_from_cli.add_argument('--init_qubit', '-i',
+    #                             dest='arg_phi_in',
+    #                             action=ValidateInitialization,
+    #                             type=int,
+    #                             nargs=2,
+    #                             metavar=('INDEX', 'STATE'),
+    #                             help='Initialize qubit INDEX with STATE = {0|1}.'
+    #                             )
+
+    #   2: Argument um Qubits zu initialisieren
+    parser_from_cli.add_argument('--initial_state', '-i',
+                                 dest='index_in_vec',
                                  action=ValidateInitialization,
-                                 type=int,
-                                 nargs=2,
-                                 metavar=('INDEX', 'STATE'),
-                                 help='Initialize qubit INDEX with STATE = {0|1}.'
-                                 )
+                                 metavar='STATE',
+                                 help='Initialize qubits with bit pattern like 010011 '
+                                      '(from left: q_0 to the right: q_n).')
 
     #   3: Argument um Gatter einzulesen
     parser_from_cli.add_argument('--gate', '-g',
@@ -301,23 +363,29 @@ def cmd_line_parser(q_sim, cmd_in):
                                  action=ValidateGate,
                                  nargs='+',
                                  metavar=('GATE', 'INDEX_1'),
-                                 help='Gate and indices of the affected qubits.'
-                                 )
+                                 help='Gate and indices of the affected qubits. Some Gates needs additional parameters.'
+                                      ' | -g {x, z, y, h, s, s*, t, t*} INDEX'
+                                      ' | -g {r_phi} INDEX PARAM |')
 
     #   7: Argument um die Liste der Gatter oder den aktuellen Zustand auszugeben (Wird auch in der Liste der
     #   Operationen gespeichert)
     parser_from_cli.add_argument('--print', '-p',
                                  dest='list_of_operations',
-                                 choices=['states', 'state_vec', 'gates'],
+                                 choices=['states', 'state_vec', 'init_state', 'gates'],
                                  action=ValidatePrint,
                                  help='Print the state vector or the list of gates')
 
     #   Teilbefehl, der den Schaltungsaufbau aus einer Datei ausliest
-    parser_from_file = subparsers.add_parser('file', help='Input parameters from file')
+    parser_from_file = subparsers.add_parser('file',
+                                             description='Read simulation parameters from file. One argument per line, '
+                                                         'syntax is the cli command. Example: -v 1 file '
+                                                         r'C:\Users\Lukas\Documents\test.txt'
+                                                         r'; test.txt: cli\n -n 3\n -i 0011\n -g h 1\n -g m 1',
+                                             help='Input parameters from file')
 
-    #   im Argumlent_Objekt des Parser wird an der Stelle function 'qsim_obj.process_file' gespeichert. Damit wird
-    #   später der Funktionsaufruf args.function(args) zu qsim_obj.process_file(args), wenn der Teilbefehl file
-    #   aufgerufen wurde.
+    #   im Argumlent_Objekt des Parser wird an der Stelle function 'process_file' gespeichert. Damit wird
+    #   später der Funktionsaufruf args.function(q_sim, args) zu process_file(q_sim, args), wenn der Teilbefehl
+    #   file aufgerufen wurde.
     parser_from_file.set_defaults(function=process_file)
 
     # Argumente für den Teilbefehl file
@@ -354,7 +422,18 @@ def cmd_line_parser(q_sim, cmd_in):
     #   9: Argument um meine erste Eingabe zu vewerwenden
     parser.add_argument('--interactive_input',
                         action='store_true',
-                        help='Enter parameters one by one.')
+                        help='Activates the input of different commands one after the other, which are applied to the '
+                             'same state vector. Then -n and -i have no effect.')
+
+    #   Teilbefehl, der die interaktive Eingabe deaktiviert
+    parser_exit = subparsers.add_parser('exit',
+                                        description='Exit from command input loop: --interactive_input.',
+                                        help='Deaktivate interactive input from commandline interface')
+
+    #   im Argumlent_Objekt des Parser wird an der Stelle function 'exit_interactiv_in' gespeichert. Damit wird
+    #   später der Funktionsaufruf args.function(q_sim, args) zu exit_interactiv_in(q_sim, args), wenn der Teilbefehl
+    #   exit aufgerufen wurde.
+    parser_exit.set_defaults(function=exit_interactiv_in)
 
     #   Parsor wird mit dem Eingegebenen Befehl aufgerufen (cmd_input ist bereits über split() in Argumente pro
     #   Zeile aufgeteilt)
@@ -364,7 +443,8 @@ def cmd_line_parser(q_sim, cmd_in):
     #   unterscheidet. Für cli ist funcion = qsim_obj.process_cli, für file, qsim_obj.process_file. Somit werden je nach
     #   verwendetem Teilbefehl, verschiedene Funktionen aufgerufen.
     #   https://docs.python.org/3/library/argparse.html#sub-commands
-    args.function(q_sim, args)
+    if args.function:
+        args.function(q_sim, args)
 
     #   5   Das Verboselevel, bzw quiet wird verarbeitet (die betreffenden Variablen gesetzt)
     if args.quiet:
@@ -374,8 +454,13 @@ def cmd_line_parser(q_sim, cmd_in):
     else:
         Base.set_verbose_level(args.verbose_level)
 
-    #   Starte die Simulation
-    q_sim.start_simulation()
+    #   Die Simulation wird gestartet wenn der cli-Befehl geparst wurde, aber nicht wenn der file oder exit Befehl
+    #   abgearbeitet wurde. Letztendlich werden nur mit dem cli-Befehl die Parameter eingelesen, file ruft mit den
+    #   aus der Datei eingelesenen Argumenten den cli-Parser auf
+    if args.function == process_cli:
+
+        #   Starte die Simulation
+        q_sim.start_simulation()
 
     #   Entferne alle Gatter in der Liste aller Operationen, die ausgeführt werden sollen
     #   (auch wenn mehrere Befehle hintereinander ausgeführt werden und der Arbeitsspeicher mit clear nicht
@@ -383,11 +468,6 @@ def cmd_line_parser(q_sim, cmd_in):
     #   doppelt aufgerufen werden. Außerdem kann bei einem neuen Befehl die Anzahl an Qubits verringert werden,
     #   wodurch es zu einem Fehler kommt, wenn alte Gatter mit höheren Index noch in der Liste vorhanden sind.
     q_sim.operation_obj.list_of_operations = []
-
-    #   Ausgabe der Zustände nach der Simulation, falls vebose level 0 (nicht quiet)
-    if Base.get_verbose() >= 0:
-        print('\n---------------\t Simulation completed: \t---------------\n')
-    print(q_sim.qstate_obj)
 
     #   Die Liste aller Gatter und der Initialzustand wird gelöscht, die Anzahl der Qubits wird auf 0 gesetzt
     #   (Falls -c --clear im eingegebenen Befehl)
@@ -398,9 +478,9 @@ def cmd_line_parser(q_sim, cmd_in):
     #       Wurde dieses Argument übergeben, gibt die Funktion cmd_line_parser() True zurück, ansonsten False
     #       Entsprechend wird diese Funktion in einer Schleife aufgerufen oder nicht.
     if args.interactive_input:
-        return True
+        q_sim.interactive_input = True
 
-    return False
+    return q_sim.interactive_input
 
 
 def process_cli(qsim_obj, args):
@@ -416,23 +496,24 @@ def process_cli(qsim_obj, args):
     #   1: Setzte die Anzahl der Qubits
     qsim_obj.process_n_qubits(args.n_qubits)
 
+#   Alte Initilisierung -i 0 1
     #   Falls eine Initialisierung der Qubits eingegeben wurde, wird im phi_in Vektor das entsprechende Element
     #   auf 0 oder 1 gesetzt.
-    if args.arg_phi_in:
-        for element in args.arg_phi_in:
-            index, value = element
-
+    #if args.arg_phi_in:
+     #   for element in args.arg_phi_in:
+      #      index, value = element
             #   2
-            qsim_obj.initialize_qubits(index, value)
+       #     qsim_obj.initialize_qubits(index, value)
+
+    if args.index_in_vec:
+        q_sim.index_of_basis_state = args.index_in_vec
 
     #   Falls Operationen (Gatter oder Befehle wie der print state_vec Befehl) eingegeben wurden, werden diese über
     #   die Funktion process_operation() der Liste aller Operationen hinzugefügt
     if args.list_of_operations:
         for operation in args.list_of_operations:
-
             #   process_operation() fügt die Operation der Liste aller Operationen hinzu
             qsim_obj.process_operation(operation)
-
 
 
 def process_file(q_sim, args):
@@ -446,7 +527,11 @@ def process_file(q_sim, args):
     """
 
     #   Der Parsor wird erneut aufgerufen, diesmal mit den Argumenten, die aus der Datei eingelesen wurden
-    cmd_line_parser(q_sim, args.file)
+    try:
+        cmd_line_parser(q_sim, args.file)
+    except argparse.ArgumentError:
+        print('Argument error')
+        a = input()
 
 
 if __name__ == '__main__':
@@ -454,30 +539,34 @@ if __name__ == '__main__':
     #   QuantumSimulation Objekt erstellen
     q_sim = QuantumSimulation()
 
-    input_1 = []
+    #   Falls in den Parametern, die mit dem Programmaufruf übergeben wurden nur ein Element ist, ist das der
+    #   Programmpfad, der nicht Teil des Befehls ist. Dann wird eine Hilfenachricht ausgegeben.
+    #   Wenn mehr Argumente übergeben wurden, werden die Nachfolgenden Elemente für den Parser gespeichert.
+    start_arguments = []
     if len(sys.argv) <= 1:
-        input_1 = input().split()
+        print('No command entered, type -h or SUBCOMMAND -h to display help.')
     else:
-        input_1 = sys.argv[1:]
+        start_arguments = sys.argv[1:]
 
-    #   Führe Simulation mit übergebenen Start-Parametern aus. Das Parsen, das Verabreiten der Eingabe, die Simulation
-    #   und die bereinigung des Arbeitsspeichers erfolgt durch die Funktion q_sim.cmd_line_parser() der Klasse
-    #   QuantumSimulation
-    #
-    #   Der Parser ist extra in der Funktion cmd_line_parser(), da er für eine Eingabe zweilmal aufgerufen
-    #   werden soll, wenn Argumente aus einer Datei eingelesen werden sollen. Die Funktion gibt True oder False zurück,
-    #   je nachdem, ob im Befehl mit --interactive_input das Ausführen von mehreren Befehlen hintereinander gefordert
-    #   war, oder nicht.
-    loop_for_cli = cmd_line_parser(q_sim, input_1)
+        #   Führe Simulation mit übergebenen Start-Parametern aus. Das Parsen, das Verabreiten der Eingabe, die Simulation
+        #   und die bereinigung des Arbeitsspeichers erfolgt durch die Funktion q_sim.cmd_line_parser() der Klasse
+        #   QuantumSimulation
+        #
+        #   Der Parser ist extra in der Funktion cmd_line_parser(), da er für eine Eingabe zweilmal aufgerufen
+        #   werden soll, wenn Argumente aus einer Datei eingelesen werden sollen. Die Funktion gibt True oder False zurück,
+        #   je nachdem, ob im Befehl mit --interactive_input das Ausführen von mehreren Befehlen hintereinander aktiviert
+        #   wurde, oder nicht. (self.interactive_input in q_sim)
+        loop_for_cli = cmd_line_parser(q_sim, start_arguments)
 
-    #   Gibt der Parser q_sim.cmd_line_parser() True zurück, wird auf eine neue Konsoleneingabe gewartet.
-    #   Die Schleife ist solange aktiv, bis ein erneuter aufruf des Parsers in der Schleife False zurück gibt.
-    while loop_for_cli:
+        #   Gibt der Parser q_sim.cmd_line_parser() True zurück, wird auf eine neue Konsoleneingabe gewartet.
+        #   Die Schleife ist solange aktiv, bis ein erneuter aufruf des Parsers in der Schleife False zurück gibt.
+        while loop_for_cli:
 
-        #   Speichere die neue Eingabe
-        cmd_input = input().split()
+            #   Speichere die neue Eingabe
+            cmd_input = input('QuantumSimulation: ').split()
 
-        #   Parse den eingegebenen Befehl, verarbeite die eingegebenen Parameter.
-        #   Speichere den zurückgegebenen Wert. split() zerlegt den eingegebenen Befehl in die Einzelnen Argumente
-        #   pro Zeile. Es wird nach Leerzeichen getrennt.
-        loop_for_cli = cmd_line_parser(q_sim, cmd_input)
+            if any(cmd_input):
+                #   Parse den eingegebenen Befehl, verarbeite die eingegebenen Parameter.
+                #   Speichere den zurückgegebenen Wert. split() zerlegt den eingegebenen Befehl in die Einzelnen Argumente
+                #   pro Zeile. Es wird nach Leerzeichen getrennt.
+                loop_for_cli = cmd_line_parser(q_sim, cmd_input)

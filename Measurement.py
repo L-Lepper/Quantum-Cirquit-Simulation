@@ -53,7 +53,7 @@ class Measurement(QGate):
 
         #   Ausgabe des Entscheidungsdiagramms vor der Messung
         if Base.get_verbose() >= 2:
-            print('Decision Diagram before measurement', self.state_dd_object)
+            print('Decision Diagram before measurement\n', self.state_dd_object)
 
         p_0 = 0
         p_1 = 0
@@ -237,6 +237,24 @@ class Measurement(QGate):
         #   Aus dem neuen Entscheidungsdiagramm wird ein Vektor ausgelesen
         output_state_vec = self.state_dd_object.create_matrix()
 
+        #   Ausgabe mit welchem Zustand das Qubit gemessen wurde
+        if Base.get_verbose() >= 0:
+            if p_0 >= random_value:
+
+                print('Qubit', self.qubit_to_measure, 'was measured to 0.')
+
+            else:
+
+                print('Qubit', self.qubit_to_measure, 'was measured to 1.')
+        else:
+            if p_0 >= random_value:
+
+                print(str([self.qubit_to_measure, 0]))
+
+            else:
+
+                print(str([self.qubit_to_measure, 1]))
+
         #   Ausgabe der Summe aus den gadrierten Beträgen der Elemente aus dem Zustandsvektor
         #   Damit wird die Normiertheit gepfüft, diese Summe muss 1 ergeben
         if Base.get_verbose() == 3:
@@ -245,16 +263,8 @@ class Measurement(QGate):
             for x in output_state_vec:
                 sum_entries += pow(abs(x), 2)
 
-            print('Check normalization:')
+            print('\n\nCheck normalization:')
 
-            #   Ausgabe mit welchem Zustand das Qubit gemessen wurde
-            if p_0 >= random_value:
-
-                print('Qubit', self.qubit_to_measure, 'was measured to 0.')
-
-            else:
-
-                print('Qubit', self.qubit_to_measure, 'was measured to 1.')
             print('Sum of the squared magnitudes of the state vector:', sum_entries, '\n')
 
             #   Ausgabe des Entscheidungsdiagramms rekursiv über die Wurzelkante

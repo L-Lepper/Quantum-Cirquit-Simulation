@@ -84,7 +84,7 @@ class QState(QMatrix):
 
         return diracnotation
 
-    def init_vec_with_bitsequence(self, int_in):
+    def init_vec_from_index(self, int_in):
         """
         Initialisiert den Zustandsvektor aus dieser Klasse mit einem Basiszustand. general_matrix ist hier ein Vektor.
         Das Bitmuster des Basiszustandes kann als binäre Zahl in int umgewandelt werden, und wieder zurück. Vorgehen
