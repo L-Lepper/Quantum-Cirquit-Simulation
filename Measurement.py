@@ -78,7 +78,7 @@ class Measurement(QGate):
                   '\n')
 
         #   Erzeuge eine Zufallszahl zwischen 0 und 1 mit 6 Nachkommastellen
-        random_value = 0.05  #random.randint(0, 1000000) / 1000000
+        random_value = random.randint(0, 1000000) / 1000000
 
         #   Für jeden Knoten auf der Ebene des zu messenden Qubits, wird das Entscheidungsdiagramm durch die
         #   Messung angepasst (Messung 0 oder 1)
