@@ -76,12 +76,15 @@ class ValidateGate(argparse.Action):
         #   Speicher den ersten Parameter, der eingegeben wurde. Er bezeichnet das Gatter
         gate = values[0]
 
-        #   Speichere die eingegebenen Indizes in einer Liste
-        indices_of_qbits = values[1:]
+        #   Speichere die eingegebenen Argumente in einer Liste
+        list_of_arguments = values[1:]
+
+        list_of_indizes = []
+        list_of_parameters = []
 
         #   Tupel mit allen möglichen Parametern, die für Gatter stehen, welche auf ein einzelnes Qubit angewendet
         #   werden und daher nur einen Index-Parameter benötigen
-        valid_gates = ('x', 'h', 'z', 'm', 'custm', 'r_phi', 'y')
+        valid_gates = ('x', 'h', 'z', 'm', 'custm', 'r_phi', 'y', 's', 's*', 't', 't*')
 
         #   Prüfe, ob das eingegebene Gatter in dem Tupel der möglichen Gatter vorkommt.
         #   Falls nein, wird eine Fehlermeldung ausgegeben und das Programm abgebrochen
@@ -91,40 +94,38 @@ class ValidateGate(argparse.Action):
         #   Gates that change 1 qubit and need only one argument:
         #   Tupel mit allen möglichen Parametern, die für Gatter stehen, welche auf ein einzelnes Qubit angewendet
         #   werden und daher nur einen Index-Parameter benötigen
-        gates_1_qb = ('x', 'h', 'z', 'm', 'custm', 'y')
+        gates_1_qb = ('x', 'h', 'z', 'm', 'custm', 'y', 's', 's*', 't', 't*')
 
         #   Falls das aktuelle Gatter in dieser Liste vorkommt, sollte es nur einen Index haben:
         if gate in gates_1_qb:
 
             #   Gehe die Liste der Indizes nacheinander durch. i ist der Index des aktuellen Elements in der Liste,
             #   x das Element selber
-            for i, x in enumerate(indices_of_qbits):
+            for i, x in enumerate(list_of_arguments):
 
                 #   Versuche das aktuelle Element x in Integer zu konvertieren, sonst gebe eine Fehlermeldung aus
                 #   Als Eingabe werden ganze Zahlen erwartet.
                 try:
-                    indices_of_qbits[i] = int(x)
+                    list_of_arguments[i] = int(x)
                 except ValueError:
+                    raise argparse.ArgumentError(self, 'Value Error: {a!r} can\'t be converted to integer, for index'
+                                                       ' of the qubit an integer was expected.'.format(a=x))
 
-                    #   Versuche das aktuelle Element x in Float zu konvertieren, sonst gebe eine Fehlermeldung aus
-                    #   Als Eingabe werden ganze Zahlen für Indizes und Fließkommazahlen für Parameter von Gattern erwartet.
-                    try:
-                        indices_of_qbits[i] = float(x)
-                    except ValueError:
-                        raise argparse.ArgumentError(self, 'Value Error: {a!r} can\'t be converted to float, for index'
-                                                           ' of the qubit an integer and for gate arguments float '
-                                                           'was expected.'.format(a=x))
 
                 #   Falls die Zahl negativ ist, wird ebenfalls ein Fehler ausgegeben
-                if indices_of_qbits[0] < 0:
+                if list_of_arguments[0] < 0:
                     raise argparse.ArgumentError(self, 'Value Error: the index for a qubit must be positive: {a!r}'
-                                                 .format(a=indices_of_qbits[i]))
+                                                 .format(a=list_of_arguments[i]))
 
-            #   Fehlermelduung, wenn mehr Indizes eingegeben wurden
-            if len(indices_of_qbits) != 1:
+            #   Fehlermeldung, wenn mehr Indizes eingegeben wurden
+            if len(list_of_arguments) != 1:
                 raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
                                                    'number of this gate ({s!r}: 1).'
-                                             .format(r=len(indices_of_qbits), s=gate))
+                                             .format(r=len(list_of_arguments), s=gate))
+
+            #   Nach der Prüfung wird der Liste der Indizes die Elemente der Liste der Argumente hinzugefügt. Jetzt ist
+            #   dort lediglich 1 Index gespeichert.
+            list_of_indizes = list_of_arguments
 
         #   Gates that needs one index and one argument (gate change 1 Qubits and need 1 additional parameter):
         #   Tupel mit allen möglichen Parametern, die für Gatter stehen, welche auf zwei Qubits angewendet
@@ -134,14 +135,41 @@ class ValidateGate(argparse.Action):
         #   Falls das aktuelle Gatter in dieser Liste vorkommt, sollte es nur einen Index haben:
         if gate in gates_2_arg:
 
-            #   Fehlermelduung, wenn mehr Indizes eingegeben wurden
-            if len(indices_of_qbits) != 2:
+            #   Fehlermelduung, wenn mehr Indizes/Argumente eingegeben wurden
+            if len(list_of_arguments) != 2:
                 raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
                                                    'number of this gate ({s!r}: 2).'
-                                             .format(r=len(indices_of_qbits), s=gate))
+                                             .format(r=len(list_of_arguments), s=gate))
 
-        #   Ein neues Element wird aus dem geprüften Gatter und der Liste der Indizes erstellt. Ist identisch mit value
-        new_item = [gate] + indices_of_qbits
+            #   Versuche die Argumente in Float oder Integer zu konvertieren, sonst gebe eine Fehlermeldung aus.
+            #   Als Eingabe werden ganze Zahlen für Indizes und Fließkommazahlen für Parameter von Gattern erwartet.
+            try:
+                list_of_arguments[0] = int(list_of_arguments[0])
+            except ValueError:
+                raise argparse.ArgumentError(self, 'Value Error: {a!r} can\'t be converted to integer, for index'
+                                                   ' of the qubit an integer was expected.'
+                                                   ''.format(a=list_of_arguments[0]))
+
+            try:
+                list_of_arguments[1] = float(list_of_arguments[1])
+            except ValueError:
+                raise argparse.ArgumentError(self, 'Value Error: {a!r} can\'t be converted to float, for index'
+                                                   ' of the qubit an integer and for gate arguments float '
+                                                   'was expected.'.format(a=list_of_arguments[1]))
+
+            #   Falls der Index negativ ist, wird ebenfalls ein Fehler ausgegeben
+            if list_of_arguments[0] < 0:
+                raise argparse.ArgumentError(self, 'Value Error: the index for a qubit must be positive: {a!r}'
+                                             .format(a=list_of_arguments[0]))
+
+            #   Nach der Prüfung wird der eine Index und der eine Parameter jeweils der Liste hinzugefügt
+            list_of_indizes = [list_of_arguments[0]]
+            list_of_parameters = [list_of_arguments[1]]
+
+        #   Ein neues Element wird aus dem geprüften Gatter und der Liste der Indizes erstellt. Das Element besteht aus
+        #   der bezeichnung für das Gatter, einer Liste mit Indizes der Qubits, auf die das Gatter angewendet wird,
+        #   und eine Liste mit Parametern, die für die Gatter benötigt werden
+        new_item = [gate, list_of_indizes, list_of_parameters]
 
         #   Die alte Liste der bisherigen Gatter/Operationen wird gespeichert
         items = getattr(namespace, self.dest, None)
@@ -206,7 +234,9 @@ class ValidatePrint(argparse.Action):
         items = getattr(namespace, self.dest, None)
 
         str_out = 'print_' + values
-        new_item = [str_out]
+        #   new_item wird der Liste der Operationen hinzugefügt, jedes Element hat dann eine Bezeichnung für das Gatter
+        #   oder den Befehl wie print, eine Liste mit Indizes und eine Liste mit Parametern
+        new_item = [str_out, [], []]
 
         #   Falls in dieser Liste bereits Operationen enthalten sind, wird das neue Element ['print', 'STATE|GATE']
         #   der Liste angehängt.
@@ -223,7 +253,9 @@ class ValidatePrint(argparse.Action):
 
 def cmd_line_parser(q_sim, cmd_in):
     #   Parser-Objekt erstellen
-    parser = argparse.ArgumentParser(description='Simulation of Quantum Algorithm',
+    parser = argparse.ArgumentParser(description='Simulation of Quantum Algorithm\nExample:\n'
+                                                 '-v 3 --interactive_input cli 3 -i 0 1 -g h 0 -g z 0 -p state_vec '
+                                                 '-g r_phi 0 1.570796327 -p gates -g m 0',
                                      epilog='by Lukas Lepper')
 
     #   Subparser-Objekt erstellen
@@ -350,7 +382,7 @@ def cmd_line_parser(q_sim, cmd_in):
     #   gelöscht werden soll, ist es sinnvoll, die bereits angenwndeten Gatter zu entfernen, damit sie nicht
     #   doppelt aufgerufen werden. Außerdem kann bei einem neuen Befehl die Anzahl an Qubits verringert werden,
     #   wodurch es zu einem Fehler kommt, wenn alte Gatter mit höheren Index noch in der Liste vorhanden sind.
-    q_sim.operation_obj.list_tuple_operation_qubit_i = []
+    q_sim.operation_obj.list_of_operations = []
 
     #   Ausgabe der Zustände nach der Simulation, falls vebose level 0 (nicht quiet)
     if Base.get_verbose() >= 0:
@@ -398,26 +430,9 @@ def process_cli(qsim_obj, args):
     if args.list_of_operations:
         for operation in args.list_of_operations:
 
-            #   Falls gate nur 1 Element hat, ist die Operation kein Gatter, da Gatter mindestens 2 Elemente haben
-            #   ['m', 1]. Nur Befehle wie ['print_state'] haben nur ein Element.
-            if len(operation) == 1:
+            #   process_operation() fügt die Operation der Liste aller Operationen hinzu
+            qsim_obj.process_operation(operation)
 
-                #   3
-                #   process_operation() nimmt als Operation den Befehl und fügt ihn der Liste an Operationen hinzu,
-                #   die Liste mit den Indizes bleibt leer.
-                qsim_obj.process_operation(operation[0], [])
-
-            #   Ansonsten ist es ein Gatter mit mindestens einem Index
-            else:
-                #   Die Indizes, von denen das Gatter abhängig ist, sind in der Liste am Ende gespeichert
-                list_affected_qubits = operation[1:]
-
-                #   Das erste Element in der Liste bezeichnet das Gatter (m, h, z, x, ...)
-                gate_in = operation[0]
-
-                #   3
-                #   process_operation() fügt die Operation der Liste aller Operationen hinzu
-                qsim_obj.process_operation(gate_in, list_affected_qubits)
 
 
 def process_file(q_sim, args):

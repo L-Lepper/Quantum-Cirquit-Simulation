@@ -17,6 +17,7 @@ from Measurement import Measurement
 from PauliY import PauliY
 from GateRphi import GateRphi
 from pathlib import Path
+import cmath
 
 #   wird nur für den custm Zustandsvektor benötigt
 import numpy as np
@@ -54,16 +55,17 @@ class QuantumSimulation(Base):
         #   Index in der operation_list
         i = 0
 
-        #   Führe nacheinander die Operationen aus operation_obj.list_tuple_operation_qubit_i
-        for operation in self.operation_obj.list_tuple_operation_qubit_i:
+        #   Führe nacheinander die Operationen aus operation_obj.list_of_operations
+        for operation in self.operation_obj.list_of_operations:
 
-            #   Falls ein Element der Liste mehr als 2 Elemente hat, handelt es sich um ein Gatter, ansonsten um einen
-            #   Befehl, wie print state (in der Form 'state')
-            if len(operation) >= 2:
-                #   In der 2-Dimensionalen Liste list_tuple_operation_qubit_i wird aus dem Element mit dem aktuellen Index
+            #   Falls ein Element der Liste Indizes in der Liste operation[1] gespeichert hat, handelt es sich um ein
+            #   Gatter, ansonsten um einen Befehl, wie print state (in der Form 'state')
+            if operation[1]:
+                #   In der mehr-Dimensionalen Liste list_of_operations wird aus dem Element mit dem aktuellen Index
                 #   i, die Liste mit den Indizes der Qubits, auf welche das Gatter angewendet wird, ausgelesen.
-                #   [['h', 1], ['cx', 0, 3, 6]]
-                list_affected_qubits = operation[1:]
+                #   [ ['h', [1], []], ['cx', [0, 3, 6], [], [print_gates, [], []] ]
+                list_affected_qubits = operation[1]
+                list_of_parameters = operation[2]
 
                 #   Erzeugen des benötigten Objekt für das Gatter (Gatter werden durch Konstruktor automatisch auf richtige
                 #   Größe erweitert.
@@ -73,10 +75,18 @@ class QuantumSimulation(Base):
                     self.qgate_obj = PauliZ(list_affected_qubits)
                 elif operation[0] == 'h':
                     self.qgate_obj = HadamardH(list_affected_qubits)
-            #    elif operation[0] == 'y':
-             #       self.qgate_obj = PauliY(list_affected_qubits)
-              #  elif operation[0] == 'r_phi':
-               #     self.qgate_obj = GateRphi(list_affected_qubits)
+                elif operation[0] == 'y':
+                    self.qgate_obj = PauliY(list_affected_qubits)
+                elif operation[0] == 'r_phi':
+                    self.qgate_obj = GateRphi(list_affected_qubits, list_of_parameters)
+                elif operation[0] == 's':
+                    self.qgate_obj = GateRphi(list_affected_qubits, [cmath.pi/2])
+                elif operation[0] == 's*':
+                    self.qgate_obj = GateRphi(list_affected_qubits, [-cmath.pi/2])
+                elif operation[0] == 't':
+                    self.qgate_obj = GateRphi(list_affected_qubits, [cmath.pi/4])
+                elif operation[0] == 't*':
+                    self.qgate_obj = GateRphi(list_affected_qubits, [cmath.pi/4])
                 elif operation[0] == 'm':
 
                     #   Erstelle Objekt für die Messung, dabei wird auch ein Objekt für das Entscheidungsdiagramm
@@ -239,42 +249,25 @@ class QuantumSimulation(Base):
         self.phi_in[index] = value
 
     #   3
-    def process_operation(self, operation_in, list_affected_qubits):
+    def process_operation(self, operation_in):
         """
         Fügt die Gatter der Liste an Operationen hinzu.
-        :param operation_in: Gatter, Befehl, welches der Liste an Operationen hinzugefügt wird
-        :param list_affected_qubits: Indizes der Qubits, die das Gatter beeinflussen.
+        :param operation_in: Liste mit 0: Bezeichnung des Gatters/Befehl, 1: Liste der Indizes der Qubits, die das
+         Gatter beeinflussen, 2: Liste der Parameter, die für das Gatter notwendig sind. Liste, die der Liste aller
+         Operationen hinzugefügt wird
         :return:
         """
 
         #   Falls Operation ein Gatter ist, gibt es in der Liste mindestens 1 Index.
-        if list_affected_qubits:
-
-            #   Falls die Anzahl der Qubits kleiner ist, als der Index des Qubits welches initialisiert wird, wird
-            #   eine Warnung ausgegeben und die Anzahl angepasst. Die restlichen neuen Qubits haben den Zustand 0.
-            #        if max(list_affected_qubits) >= Base.getnqubits():
-            #           print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber das Qubit mit Index',
-            #                max(list_affected_qubits), 'liegt darüber.\n\tDie Anzahl an Qubits wurde auf',
-            #               max(list_affected_qubits) + 1,
-            #              'geändert!\n')
-            #       Base.set_n_qubits(max(list_affected_qubits) + 1)
-            #      qsim_obj.phi_in += (Base.getnqubits() - len(qsim_obj.phi_in)) * [0]
-
+        if operation_in[1]:
 
             #   Wird ein Gatter auf ein Index über der Anzahl an Qubits angewendet, soll es einen Fehler geben
-            if max(list_affected_qubits) >= Base.getnqubits():
+            if max(operation_in[1]) >= Base.getnqubits():
                 raise IndexError('The Index of a gate is aut of range. It does\'t fit to the number of Qubits.')
 
-            #   Der Operationen-Liste wird über die Funktion aus dem Operation-Objekt ein Tupel aus Gatter und
-            #   betreffendem Qubit hinzugefügt.
-            temp = [operation_in] + list_affected_qubits  # ToDo: Funktion add_tuple... überarbeiten
-            self.operation_obj.add_tuple_to_operation_list([temp])
-
-        #   Ist die Liste leer, hatte das Element in der Liste aller Operationen nur 1 Element, als war es ein Befehl:
-        #   Print-Befehl, welcher der Liste hinzugefügt werden soll. Kann auch ein anderer Befehl sein, es sind aber
-        #   sonst keine Befehle als Operation implementiert.
-        else:
-            self.operation_obj.add_tuple_to_operation_list([[operation_in]])
+        #   Der Operationen-Liste wird über die Funktion aus dem Operation-Objekt ein Tupel aus Gatter, Liste der
+        #   betreffendem Qubits und Liste der Parameter hinzugefügt.
+        self.operation_obj.add_operation_to_list([operation_in])
 
     def start_simulation(self):
         """
@@ -282,7 +275,7 @@ class QuantumSimulation(Base):
         und startet anschließend die Simulation.
         :return:
         """
-        if Base.getnqubits() > 0 and self.operation_obj.list_tuple_operation_qubit_i:
+        if Base.getnqubits() > 0 and self.operation_obj.list_of_operations:
 
             #   Falls im QState Objekt noch kein Vektor qsim_obj.general_matrix existiert, wird der neue Initialzustand
             #   verwendet
@@ -323,15 +316,15 @@ class QuantumSimulation(Base):
             print('List of operations:')
 
             #   Falls in der Liste der Operationen Elemente vorhanden sind:
-            if self.operation_obj.list_tuple_operation_qubit_i:
-                print('\tGates\t| Index of qubits to which the gate is applied')
+            if self.operation_obj.list_of_operations:
+                print('\tGate/Command\t| Indices\t| Parameters')
 
-                for operation in self.operation_obj.list_tuple_operation_qubit_i:
+                for operation in self.operation_obj.list_of_operations:
                     str_out = ''
-                    if len(operation) >= 2:
-                        str_out += '\t\t' + operation[0] + '\t|\t' + str(operation[1]) + '\n'
+                    if operation[1]:
+                        str_out += '\t  ' + operation[0] + '\t\t|  ' + str(operation[1]) + '\t\t|  ' + str(operation[2]) + '\n'
                     else:
-                        str_out += '\t\t' + operation[0] + '\n'
+                        str_out += '\t ' + operation[0] + '\n'
 
                     print(str_out.rstrip())
                 print('')
@@ -339,7 +332,7 @@ class QuantumSimulation(Base):
                 print('The list is empty.\n')
 
         else:
-            print(self.operation_obj.list_tuple_operation_qubit_i)
+            print(self.operation_obj.list_of_operations)
 
     #   7 ToDo: Möglichkeit als Vektor auszugeben
     def print_actual_states(self, as_vector):
@@ -376,7 +369,7 @@ class QuantumSimulation(Base):
         """
 
         #   Entferne alle Gatter in der Liste aller Operationen, die ausgeführt werden sollen
-        self.operation_obj.list_tuple_operation_qubit_i = []
+        self.operation_obj.list_of_operations = []
 
         #   Setze die Anzahl der Qubits auf 0
         self.set_n_qubits(0)

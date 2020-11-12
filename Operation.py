@@ -13,7 +13,7 @@ class Operation(Base):
     """
     Diese Klasse enhält die Quantenschaltung in Form einer Operation_List: Reihenfolge in der Gatter angewendet werden.
     Ein Element ist eine Liste mit Gatter und betreffenden Qbits.
-    Die Funktion add_tuple_to_operation_list fügt weitere Elemente der Lliste hinzu.
+    Die Funktion add_operation_to_list fügt weitere Elemente der Lliste hinzu.
     """
 
     def __init__(self):
@@ -22,22 +22,22 @@ class Operation(Base):
         """
 
         #   Erstelle Prototyp für die Liste
-        self.list_tuple_operation_qubit_i = []
+        self.list_of_operations = []
 
         super().__init__()
 
-    def add_tuple_to_operation_list(self, tuple_operation_qbit_i):
+    def add_operation_to_list(self, operation_element):
         """
-        Fügt der Liste list_tuple_operation_qubit_i eine weitere Liste hinzu. Haupsächlich besteht die Liste aus einem
+        Fügt der Liste list_of_operations eine weitere Liste hinzu. Haupsächlich besteht die Liste aus einem
         Gatter und den betreffenden Qubits, sie kann aber auch weitere Befehle wie print enthalten, die nacheinander in
         QuantumSimulation abgearbeitet werden.
 
-        :param tuple_operation_qbit_i: Liste der einer Operation (Gatter/Messung/Print) und den Indizes der
+        :param operation_element: Liste der einer Operation (Gatter/Messung/Print) und den Indizes der
         betreffenden Qubits)
         :return qsim_obj: Operation_Objekt indem die Liste gespeichert ist
         """
 
         #   Gültige Eingeben werden bereits im Parsor geprüft, die übergebene Liste sollte verarbeitet werden können.
-        self.list_tuple_operation_qubit_i += tuple_operation_qbit_i
+        self.list_of_operations += operation_element
 
         return self
