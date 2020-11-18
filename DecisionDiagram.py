@@ -334,7 +334,7 @@ class DecisionDiagram(Base):
 
         """ SCHRITT 7 """
 
-        self.merge_dd_step7()
+        #self.merge_dd_step7()
 
         #   Für jede Kante wird die Anzahl berechnet, wie häufig sie in den Ästen vorkommt
         self.list_of_all_edges[0].calc_count_of_paths()
@@ -539,6 +539,7 @@ class DecisionDiagram(Base):
                         #   Der Liste mit den Indizes werden die Indizes der Ebene und des Knotens gespeichert, um
                         #   diesen Knoten später zu löschen. Wird nicht sofort gelöscht, damit die Indizes gültig
                         #   bleiben.
+                        operating_node.list_incoming_edges = np.array([])
                         list_nodes_to_del += [operating_node]
 
         #   Die Knoten an den in der Liste gespeicherten Indizes werden gelöscht
@@ -554,7 +555,12 @@ class DecisionDiagram(Base):
                 print('Deleting node in step 7 - Merging nodes')
 
     def delete_edge_list_of_all_edges(self, edge_in):
-        index_list_x = np.where(self.list_of_all_edges == edge_in)[0]
+        #   numpy.where() funktioniert nicht, die Kante wird dann nicht gefunden
+        #index_list_x = np.where(self.list_of_all_edges == edge_in)[0]
+        new_list = []
+        for element in self.list_of_all_edges:
+            new_list += [element]
+        index_list_x = [new_list.index(edge_in)]
 
         #   Lösche diese Kante aus der Liste aller Kanten
         if np.size(index_list_x) == 1:

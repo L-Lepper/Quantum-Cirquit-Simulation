@@ -16,7 +16,6 @@ from HadarmardH import HadamardH
 from Measurement import Measurement
 from PauliY import PauliY
 from GateRphi import GateRphi
-from pathlib import Path
 import cmath
 
 #   wird nur für den custm Zustandsvektor benötigt
@@ -128,7 +127,7 @@ class QuantumSimulation(Base):
                     #   Falls die Anzahl an Qubits, der Anzahl aus dem gespeicherten Vektor entspricht, wird dieser
                     #   verwendet
                     if Base.getnqubits() == 5:
-                        #qsim_obj.qstate_obj.general_matrix = np.array([0.080396894, 0.037517934, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0.143565882, 0.066997412, 0j, 0j, 0j, 0j, 0j, 0j, 0.777808047, 0j, 0.601700565, 0j, 0j, 0j, 0j, 0j])
+                        #self.qstate_obj.general_matrix = np.array([0.080396894, 0.037517934, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0.143565882, 0.066997412, 0j, 0j, 0j, 0j, 0j, 0j, 0.777808047, 0j, 0.601700565, 0j, 0j, 0j, 0j, 0j])
                         #qsim_obj.qstate_obj.general_matrix = np.array([1, 1, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 1, 1, 0j, 0j, 0j, 0j, 0j, 0j, 1, 0j, 1, 0j, 0j, 0j, 0j, 0j])
                         self.qstate_obj.general_matrix = np.array([0, 0, 0.00752268163518088, 0, 0, 0, 0, 0, 0, 0, 0.306489370178815, 0.353641580975556, 0, 0, 0, 0, 0, 0, 0.286171213985822, 0.330197554599025, 0, 0, 0, 0, 0, 0.523233828563029, 0, 0.391028839851374, 0.283219972790003, 0.288323035362795, 0, 0])
                     else:
@@ -176,24 +175,6 @@ class QuantumSimulation(Base):
 
         return self.qstate_obj
 
-    #   Bitmuster kann als binäre Zahl in int umgewandelt werden, und wieder zurück. Vorgehen ist effizienter als
-    #   String. Integer Zahl entspricht dann dem Index im Zustandsvektor, beginnend bei 0. Dadurch erfolgt leichtere
-    #   Vektorzuordnung.
-    #   Funktion erzeugt aus initialem Bitmuster im qstate_obj den zugehörigen Zustandsvektor
-    #def init_qbit_sequence_to_statevec(self, bit_seq_as_str):
-    #    """
-    #    Funktion erzeugt aus dem eingelesenen Initalzustand den zugehörigen Zustandsvektor im QState-Objekt, welches
-    #    in dieser Klasse enthalten ist. Der Initalzustand wird als String aus 0en und 1en übergeben.
-
-    #    :param bit_seq_as_str: Der String des Initialzustandes kann als binäre Zahl in eine Dezimalzahl umgewandelt
-    #    werden. Diese entspricht genau dem Index des Zustandes im Zustandsvektor. Dieses Vorgehen ist effizienter als
-    #    die Verwendung des Strings.
-    #    :return: void.
-    #    """
-
-    #    bit_seq_as_int = int(bit_seq_as_str, 2)
-    #    self.qstate_obj = self.qstate_obj.init_vec_from_index(bit_seq_as_int)
-
     #   1
     def process_n_qubits(self, n_qubits):
         """
@@ -218,52 +199,6 @@ class QuantumSimulation(Base):
         elif n_qubits != Base.getnqubits():
             print('Due to the previous setting the number of qubits is', Base.getnqubits(),
                   '. The new input of', n_qubits, 'qubits is ignored. Use --clear to delete memory.')
-
-        #   Falls es bereits mehr Qubits gibt, wird eine Warnung ausgegeben und alle darüberliegenden Qubits gelöscht
-
-        #    raise ValueError('Number of qubits have to be greater than 0:', Base.getnqubits())
-        #    print('\nWarning!\n\tThe number of qubits was', Base.getnqubits(),
-        #          'but should be set to', n_qubits, '\n\tThe number of qubits was set to', n_qubits,
-        #          'and all qubits above were deleted! Output vector is now the initial state,\n\t'
-        #          'because the previous state vector does not match the number of qubits anymore.')
-
-            #   Speichere die Anzahl der Qubits
-        #    self.set_n_qubits(n_qubits)
-
-            #   Der aktuelle Zustandsvektor wird gelöscht, da sich die Anzahl der Qubits verändert hat
-        #    self.qstate_obj.general_matrix = np.array([])
-
-            #   Prüfen, dass Index wirklich weiter geht, als die neue Anzahl der Qubits
-        #    if len(self.phi_in) > n_qubits:
-        #        del self.phi_in[n_qubits:]
-
-    #   2
-    #def initialize_qubits(self, index, value):
-    #    """
-    #    Initialisiert ein Qubit mit dem Zustand 0 oder 1.
-    #    :param index: Index des Qubits
-    #    :param value: Zustand 0 oder 1
-    #    :return:
-    #    """
-
-        #   Falls der Index des zu initialisierenden Qubits aus dem Bereich der Anzahl an Qubits hinaus geht,
-        #   wird eine Warnung ausgegeben und die Anzahl angepasst.
-        #        if index >= Base.getnqubits():
-        #           print('\nWarnung!\n\tAnzahl der Qubits war', Base.getnqubits(), ', aber das Qubit mit Index',
-        #                index, 'liegt darüber.\n\tDie Anzahl an Qubits wurde auf', index + 1,
-        #               'geändert!\n')
-        #        Base.set_n_qubits(index + 1)
-
-        #   Der Liste der initialen Zustände der Qubits wird mit 0en für die neuen Qubits erweitert
-        #   (Da die Anzahl jetzt beim ersten Mal festgelegt wird, ist len(phi_in) immer 0)
-    #    self.phi_in += (Base.getnqubits() - len(self.phi_in)) * [0]
-
-        #   Die Anzahl der Qubits soll nicht automatisch festgelegt werden
-    #    if index >= Base.getnqubits():
-    #        raise IndexError('The Index of a Qubit is aut of range. It does\'t fit to the number of Qubits.')
-
-        #   Der Zustand wird in der Liste phi_in gespeichert
-    #    self.phi_in[index] = value
 
     #   3
     def process_operation(self, operation_in):
@@ -299,16 +234,6 @@ class QuantumSimulation(Base):
             if not any(self.qstate_obj.general_matrix):
 
                 self.qstate_obj.init_vec_from_index(self.index_of_basis_state)
-
-                #   Das Bitmuster für den initialen Zustand, wird aus der Liste in einem String gespeichert
-                #phi_str = ""
-                #for value in self.phi_in:
-                #    phi_str += str(value)
-
-                #   Diese Funktion wandelt das Bitmuster 0011 in eine 3 um, und ruft dann die Funktion
-                #   init_vec_from_index(qsim_obj, int_in) in QState auf, die den zugehörigen Vektor im
-                #   jeweiligen Objekt erzeugt
-                #self.init_qbit_sequence_to_statevec(phi_str)
 
             #   Falls im QState Objekt bereits ein Vektor qsim_obj.general_matrix existiert, wird dieser als aktueller
             #   Zustandsvektor verwendet, auf den alle Operationen angewendet werden

@@ -28,7 +28,7 @@ class DDEdge(Base):
 
         self.edge_weight = 1
         self.edge_probability = 0
-        self.old_edge_probability = 0
+        self.old_edge_probability = 1
         self.conditional_probability = 0
         self.source_node = source_node
         self.target_node = target_node
@@ -50,6 +50,27 @@ class DDEdge(Base):
     def __str__(self):
         return self.print_recursive('')
 
+    def print_upstream(self, str_in):
+        """
+        Die Funktion wird anstatt __str__ verwendet, damit sie besser rekursiv aufgerufen werden kann. Zusammen mit der
+        print-Funktion in DDNOde, wird für jede neue Ebene, die ausgabe weiter eingerückt, sodass die Baumstrucktur
+        besser erkennbar wird. Das ist bei einer höheren Anzahl nicht mehr so übersichtlich!
+        :param str_in: Diesem Parameter wird durch den Nachfolgeknoten für jede Ebene ein Tabulator hinzugefügt.
+            Dadurch kann die Ausgabe-Zeile einer Kante richtig eingerückt werden.
+        :return:
+        """
+
+        str_out = ''
+        if self.source_node:
+            str_out = str_in + \
+                  str(self.edge_weight) + ' ' + \
+                  str(self.source_node.saved_value_on_node) + '\n' + \
+                  self.source_node.print_recursive(str_in)
+        else:
+            str_out = str_in + \
+                      str(self.edge_weight) + ' ' + '\n'
+        return str_out
+
     def print_recursive(self, str_in):
         """
         Die Funktion wird anstatt __str__ verwendet, damit sie besser rekursiv aufgerufen werden kann. Zusammen mit der
@@ -66,6 +87,14 @@ class DDEdge(Base):
                   self.target_node.print_recursive(str_in)
         return str_out
 
+    #   test
+    def del_edge_rec(self):
+        if any(self.target_node.list_outgoing_edges):
+            for ed in self.target_node.list_outgoing_edges:
+                ed.del_edge_rec()
+
+        index = np.where(self.dd_obj.list_of_all_edges == self)
+        self.dd_obj.list_of_all_edges = np.delete(self.dd_obj.list_of_all_edges, index)
 
     def delete_edge(self):
         """
@@ -83,7 +112,7 @@ class DDEdge(Base):
         #   und gelöscht
         else:
 
-            #   Lösche diese Kante qsim_obj in der Liste der eingehenden Kanten des Zielknotens
+            #   Lösche diese Kante in der Liste der eingehenden Kanten des Zielknotens
             self.target_node.delete_edge_in_incoming_list(self)
 
         #   Suche nun die zu löschende Kante in der Liste aller Kanten, um sie auch dort zu löschen.
@@ -123,42 +152,33 @@ class DDEdge(Base):
     def calc_product_of_weights(self, upstream_value):
         """
         Die Funktion berechnet als Zwischenergebniss das Produkt aller Kantengewichte, von der betrachteten Kante, hoch
-        zur Wurzelkante. Zuvor muss Schritt 6 in "Anleitung - Entscheidungsdiagramm und Messung - v4.pdf" ausgeführt worden sein,
-        damit in den Knoten in saved_value_on_node die benötigten Werte stehen.
+        zur Wurzelkante. Zuvor muss Schritt 6 in "Anleitung - Entscheidungsdiagramm und Messung - v4.pdf" ausgeführt
+        worden sein, damit in den Knoten in saved_value_on_node die benötigten Werte stehen.
+        Außerdem muss die Anzahl count_of_paths bereits berechnet worden sein.
         ToDo: Dateiname überprüfen
         :param upstream_value: Bei Funktionsaufruf der Wurzelkante muss diesem Parameter 1 übergeben werden. Jede Kante
         ruft diese Funktion rekursiv für Nachfolgekanten auf, diese Verwenden den berechneten Wert aus der Elternkante.
         :return:
         """
 
-
-        #   Falls Funktion noch nicht berechnet wurde:
+        #   Falls Funktion noch nicht berechnet wurde, wird die Wahrscheinlichkeit auf 0 zurückgesetzt
+        #   (Falls das Diagramm später neu berechnet wird und der Ausgangswert nicht 0 ist):
         if not self.is_calculated:
-
-            #   In edge_probability wird das Produkt aus dem übergebenen Wert der vorherigen Kante und dem quadrierten
-            #   Betrag des Kantengewichts der aktuellen Kante, gespeichert.
-            self.edge_probability = pow(abs(self.edge_weight), 2) * upstream_value
-
-            #   Das berechnete Produkt wird unter old_edge_probability gespeichert, da die Kante durch einen
-            #   anderen Ast erneut aufgerufen werden kann, und sich dann durch die größere Häufigkeit, mit der die
-            #   Kante in allen Ästen vorkommt, auch dieses Produkt verändert (siehe unten bei else).
-            #   Zur Berechnung wird aber noch das Produkt benötigt, welches beim ersten Durchgang berechnet
-            #   wurde.
-            self.old_edge_probability = self.edge_probability
+            self.edge_probability = 0
             self.is_calculated = True
 
-            #   Für jede ausgehende Kante des Zielknotens wird wieder dieses Produkt berechnet
-            for edge in self.target_node.list_outgoing_edges:
-                edge.calc_product_of_weights(self.edge_probability)
+        #   In old_edge_probability wird das Produkt aus dem übergebenen Wert der vorherigen Kante und dem quadrierten
+        #   Betrag des Kantengewichts der aktuellen Kante gespeichert. Dieser Wert wird an die nachfolgenden Kanten
+        #   übergeben. Somit wird im Falle mehrerer eingehenden Kanten bei jedem Aufruf die Wahrscheinlichkeit durch den
+        #   neuen Ast, der nachfolgenden Kantenwahrscheinlichkeiten hinzuaddiert.
+        self.old_edge_probability = pow(abs(self.edge_weight), 2) * upstream_value
 
-        #   Falls Funktion schon durch einen anderen Ast aufgerufen wurde, muss Berechnung nicht nochmal durchgeführt
-        #   werden
-        else:
-            self.edge_probability += pow(abs(self.edge_weight), 2) * upstream_value
+        #   Die neue Kantenwahrscheinlichkeit des aktuellen Funktionsaufrufs wird dem bisherigen Wert hinzuaddiert
+        self.edge_probability += self.old_edge_probability
 
-            #   Für jede ausgehende Kante des Zielknotens wird wieder dieses Produkt berechnet
-            for edge in self.target_node.list_outgoing_edges:
-                edge.calc_product_of_weights(self.old_edge_probability)
+        #   Für jede ausgehende Kante des Zielknotens wird wieder dieses Produkt berechnet
+        for edge in self.target_node.list_outgoing_edges:
+            edge.calc_product_of_weights(self.old_edge_probability)
 
     def calc_edge_propability(self):
         """

@@ -33,6 +33,29 @@ class DDNode(Base):
         self.dd_obj = dd_obj_in
         super().__init__()
 
+    def call_upstream(self, str_in):
+        """
+        Die Funktion wird anstatt __str__ verwendet, damit sie besser rekursiv aufgerufen werden kann. Zusammen mit der
+        print-Funktion in DDEdge, wird für jede neue Ebene, die ausgabe weiter eingerückt, sodass die Baumstrucktur
+        besser erkennbar wird. Das ist bei einer höheren Anzahl nicht mehr so übersichtlich!
+        :param str_in: Diesem Parameter wird durch jeden Aufruf ein Tabulator hinzugefügt. (Jeder Aufruf bedeutet eine
+            neue Ebene, die auch weiter eingerükt werden soll.
+        :return:
+        """
+
+        str_in += '\t'
+        str_out = ''
+
+        #   Falls der Knoten ausgehende Kanten hat, wird für jede Kante eine Ausgabezeile erzeugt, zusammen mit dem
+        #   neuen Abstand str_in
+        if any(self.list_incoming_edges):
+
+            for edge in self.list_incoming_edges:
+                str_out += str_in + edge.print_upstream(str_in)
+
+        return str_out
+
+
     def print_recursive(self, str_in):
         """
         Die Funktion wird anstatt __str__ verwendet, damit sie besser rekursiv aufgerufen werden kann. Zusammen mit der
@@ -46,8 +69,8 @@ class DDNode(Base):
         str_in += '\t'
         str_out = ''
 
-        #   Falls der Knoten ausgehende Kanten hat, wird für jede Kante eine Ausgabezeile erzeugt, usammen mit dem
-        #   neuen Abstamd str_in
+        #   Falls der Knoten ausgehende Kanten hat, wird für jede Kante eine Ausgabezeile erzeugt, zusammen mit dem
+        #   neuen Abstand str_in
         if any(self.list_outgoing_edges):
 
             for edge in self.list_outgoing_edges:
@@ -66,21 +89,74 @@ class DDNode(Base):
         """
 
         #   Prüfe Liste der eingehenden Kanten
-        #   Falls der Zielknoten einer Kante identisch mit dem jetzigen (qsim_obj) ist, besteht die Gefahr, das die
-        #   eingehenden Kanten nicht gelöscht werden und noch auf diesen Knoten zeigen. Dadurch wird dieser nicht
-        #   durch die Garbage Collection entfernt und das DD nicht abgeschnitten, der Teilbaum ist über diese Kanten
-        #   weiter erreichbar, auch wenn er nicht meht in der Liste aller Knoten und Kanten vorkommt.
-        for edge in self.list_incoming_edges:
-            if edge.target_node == self:
-                raise Exception('Error by deleting node of decision diagram: List of incoming edges have to be empty\n'
-                                'or edge have to point on an other node to avoid edges without target node.')
-
-
+        #   Falls der Knoten noch eingehende Kanten gespeichert hat, besteht die Gefahr, das die Kanten nicht gelöscht
+        #   werden und noch auf diesen Knoten zeigen. Dadurch wird dieser nicht durch die Garbage Collection entfernt
+        #   und das DD nicht abgeschnitten, der Teilbaum ist über diese Kanten weiter erreichbar, auch wenn er nicht
+        #   mehr in der Liste aller Knoten und Kanten vorkommt.
+        #if not any(self.list_incoming_edges):
+         #   raise Exception('Error by deleting node of decision diagram: List of incoming edges have to be empty\n'
+          #                  'or edge have to point on an other node to avoid edges without target node.')
 
         #   Jede ausgehende Kante des Knotens wird gelöscht, damit alle Nachfolger aus den jeweiligen Listen
         #   herausgenommen werden (rekursives Aufrufen von delete_node() )
         for edge in self.list_outgoing_edges:
-            edge.delete_edge()
+
+            #   suche diesen Knoten in der Liste aller Knoten, und aktualisiere dort die Liste der eingehenden Kanten
+            for index_layer, layer in enumerate(self.dd_obj.list_of_all_nodes):
+                try:
+                    index_node = layer.index(edge.target_node)
+
+                    #   Suche den Index der Kante in der Liste der eingehenden Kanten
+                    #   list_incoming_edges hat nur eine Dimension, np.where gibt das Tuple (array([INDEX], dtype=int64),)
+                    #   zurück. Dabei ist [INDEX] eine Liste mit Indizes, an denen das gesuchte Element gefunden wurde.
+                    #   In einem 2D Array sähe das Tupel mit Listen für die x- und y-Komponente so aus:
+                    #   (array([x1, x2, x3], dtype=int64), array([y1, y2, y3], dtype=int64))
+                    #   Hier sollte index_list_x so aussehen: [1]
+                    #   np.where funktioniert nicht, edge wird nicht gefunden
+                    #index_incoming_list = np.where(edge.target_node.list_incoming_edges == edge)[0]
+                    new_list = []
+                    for element in edge.target_node.list_incoming_edges:
+                        new_list += [element]
+                    index_incoming_list = [new_list.index(edge)]
+
+                    #   Es sollte nur ein Index gefunden werden, die Kante kann aus der Liste entfernt werden.
+                    if np.size(index_incoming_list) == 1:
+                        self.dd_obj.list_of_all_nodes[index_layer][index_node].list_incoming_edges = np.delete(
+                            self.dd_obj.list_of_all_nodes[index_layer][index_node].list_incoming_edges,
+                            index_incoming_list[0])
+
+                        #   Falls der Zielknoten jetzt keine eingehenden Kanten mehr hat und er nicht der 0 oder 1
+                        #   Knoten in der letzten Ebene ist, wird er gelöscht
+                        if not any(self.dd_obj.list_of_all_nodes[index_layer][index_node].list_incoming_edges) \
+                                and index_layer != Base.getnqubits():
+                            self.dd_obj.list_of_all_nodes[index_layer][index_node].delete_node()
+
+                    #   Die Kante wurde in der Liste nicht gefunden, sie hätte aber drin sein müssen,
+                    #   da sie auf diesen Knoten zeigt
+                    elif np.size(index_incoming_list) == 0:
+                        raise Exception('Error when deleting an edge in the decision diagram.\n'
+                                        'The List of incoming edges doesn\'t contain the edge', edge,
+                                        ',\nbut it was expected. Error in the Decision Diagram.')
+
+                    #   Die Kante ist doppelt, wenn sie mehfach vorkommt. Sollte auch nicht passieren.
+                    else:
+                        for i in index_incoming_list:
+                            self.dd_obj.list_of_all_nodes[index_layer][index_node].list_incoming_edges = np.delete(
+                                self.dd_obj.list_of_all_nodes[index_layer][index_node].list_incoming_edges,
+                                index_incoming_list[i])
+
+                        if Base.get_verbose() >= 0:
+                            print('Error when deleting an edge in the decision diagram.\n'
+                                  'The edge to be deleted should occur only once in qsim_obj.target_node.list_incoming_edges.\n'
+                                  'Error in the Decision Diagram.')
+
+                    #   Lösche die Kante in der Liste aller Kanten
+                    self.dd_obj.delete_edge_list_of_all_edges(edge)
+
+                    break
+
+                except ValueError:
+                    continue
 
         #   Dieser Knoten wird aus der Liste aller Knoten gelöscht
         n = 0
@@ -91,6 +167,7 @@ class DDNode(Base):
             try:
                 layer.remove(self)
                 n += 1
+                break
 
             #   Gibt es einen ValueError, ist Knoten in dieser Ebene nicht vorhanden
             except ValueError:
@@ -101,33 +178,43 @@ class DDNode(Base):
                             '\nNode have to exists exactly once, but fund', n, ' times.')
 
     def delete_edge_in_incoming_list(self, edge_in):
-        #   list_incoming_edges hat nur eine Dimension, np.where gibt das Tuple (array([INDEX], dtype=int64),)
-        #   zurück. Dabei ist [INDEX] eine Liste mit Indizes, an denen das gesuchte Element gefunden wurde.
-        #   In einem 2D Array sähe das Tupel mit Listen für die x- und y-Komponente so aus:
-        #   (array([x1, x2, x3], dtype=int64), array([y1, y2, y3], dtype=int64))
-        #   Hier sollte index_list_x so aussehen: [1]
-        index_list_x = np.where(self.list_incoming_edges == edge_in)[0]
 
-        #   Es sollte nur ein Index gefunden werden, die Kante kann aus der Liste entfernt werden.
-        if np.size(index_list_x) == 1:
-            self.list_incoming_edges = np.delete(self.list_incoming_edges, index_list_x[0])
+        #   suche diesen Knoten in der Liste aller Knoten, und aktualisiere dort die Liste der eingehenden Kanten
+        for index_layer, layer in enumerate(self.dd_obj.list_of_all_nodes):
+            try:
+                index_node = layer.index(self)
 
-        #   Die Kante wurde in der Liste nicht gefunden, sie hätte aber drin sein müssen,
-        #   da sie auf diesen Knoten zeigt
-        elif np.size(index_list_x) == 0:
-            raise Exception('Error when deleting an edge in the decision diagram.\n'
-                            'The List of incoming edges doesn\'t contain the edge', self,
-                            ',\nbut it was expected. Error in the Decision Diagram.')
+                #   list_incoming_edges hat nur eine Dimension, np.where gibt das Tuple (array([INDEX], dtype=int64),)
+                #   zurück. Dabei ist [INDEX] eine Liste mit Indizes, an denen das gesuchte Element gefunden wurde.
+                #   In einem 2D Array sähe das Tupel mit Listen für die x- und y-Komponente so aus:
+                #   (array([x1, x2, x3], dtype=int64), array([y1, y2, y3], dtype=int64))
+                #   Hier sollte index_list_x so aussehen: [1]
+                index_list_x = np.where(self.list_incoming_edges == edge_in)[0]
 
-        #   Die Kante ist doppelt, wenn sie mehfach vorkommt. Sollte auch nicht passieren.
-        else:
-            for i in index_list_x:
-                self.list_incoming_edges = np.delete(self.list_incoming_edges, index_list_x[i])
+                #   Es sollte nur ein Index gefunden werden, die Kante kann aus der Liste entfernt werden.
+                if np.size(index_list_x) == 1:
+                    self.dd_obj.list_of_all_nodes[index_layer][index_node].list_incoming_edges = np.delete(self.list_incoming_edges, index_list_x[0])
 
-            if Base.get_verbose():
-                print('Error when deleting an edge in the decision diagram.\n'
-                      'The edge to be deleted should occur only once in qsim_obj.target_node.list_incoming_edges.\n'
-                      'Error in the Decision Diagram.')
+                #   Die Kante wurde in der Liste nicht gefunden, sie hätte aber drin sein müssen,
+                #   da sie auf diesen Knoten zeigt
+                elif np.size(index_list_x) == 0:
+                    raise Exception('Error when deleting an edge in the decision diagram.\n'
+                                    'The List of incoming edges doesn\'t contain the edge', self,
+                                    ',\nbut it was expected. Error in the Decision Diagram.')
+
+                #   Die Kante ist doppelt, wenn sie mehfach vorkommt. Sollte auch nicht passieren.
+                else:
+                    for i in index_list_x:
+                        self.list_incoming_edges = np.delete(self.list_incoming_edges, index_list_x[i])
+
+                    if Base.get_verbose() >= 0:
+                        print('Error when deleting an edge in the decision diagram.\n'
+                              'The edge to be deleted should occur only once in qsim_obj.target_node.list_incoming_edges.\n'
+                              'Error in the Decision Diagram.')
+                break
+
+            except ValueError:
+                continue
 
     def get_max_value_of_target_nodes(self):
         """
