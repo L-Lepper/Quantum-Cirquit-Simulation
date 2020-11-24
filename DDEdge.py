@@ -1,8 +1,8 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 19.10.2020
+#   Author: Lukas Lepper, 24.11.2020
 #   Betreuer: Martin Hardieck
 #   Dateiname: DDEdge.py
-#   Version: 0.5
+#   Version: 0.6
 
 
 from Base import Base
@@ -25,11 +25,13 @@ class DDEdge(Base):
         :param dd_obj_in: Objekt des Entscheidungsdiagramms, zudem diese Kante gehört.
         """
 
-
         self.edge_weight = 1
         self.edge_probability = 0
         self.old_edge_probability = 1
         self.conditional_probability = 0
+
+        #   Wird benötigt, um identische Äste bei den Knoten zusammenzufassen.
+        self.unique_value = [0, 0]
         self.source_node = source_node
         self.target_node = target_node
 
@@ -63,9 +65,9 @@ class DDEdge(Base):
         str_out = ''
         if self.source_node:
             str_out = str_in + \
-                  str(self.edge_weight) + ' ' + \
-                  str(self.source_node.saved_value_on_node) + '\n' + \
-                  self.source_node.print_recursive(str_in)
+                      str(self.edge_weight) + ' ' + \
+                      str(self.source_node.saved_value_on_node) + '\n' + \
+                      self.source_node.print_recursive(str_in)
         else:
             str_out = str_in + \
                       str(self.edge_weight) + ' ' + '\n'
@@ -87,23 +89,14 @@ class DDEdge(Base):
                   self.target_node.print_recursive(str_in)
         return str_out
 
-    #   test
-    def del_edge_rec(self):
-        if any(self.target_node.list_outgoing_edges):
-            for ed in self.target_node.list_outgoing_edges:
-                ed.del_edge_rec()
-
-        index = np.where(self.dd_obj.list_of_all_edges == self)
-        self.dd_obj.list_of_all_edges = np.delete(self.dd_obj.list_of_all_edges, index)
-
     def delete_edge(self):
         """
         Funktion löscht nachfolgende Kanten und Knoten, welche nicht mehr benötigt werden.
-        :param dd_obj:
         :return:
         """
 
-        #   Falls die Liste des Zielknotens nur eine eingehende Kante hat und er nicht der 0-Knozen ist, wird der Knoten gelöscht.
+        #   Falls die Liste des Zielknotens nur eine eingehende Kante hat und er nicht der 0-Knoten ist, wird der
+        #   Knoten gelöscht.
         if np.size(self.target_node.list_incoming_edges) == 1 and self.target_node.saved_value_on_node != 0:
             self.target_node.list_incoming_edges = np.array([])
             self.target_node.delete_node()
@@ -262,3 +255,45 @@ class DDEdge(Base):
 
             for edge in self.target_node.list_outgoing_edges:
                 edge.calc_count_of_paths()
+
+    def calc_unique_value(self):
+        """
+        Diese Funktion berechnet für eine Kante eine Liste mit einem bestimmten Wert für jede ausgehende Kante des Ziel-
+        Knotens. Dadurch sollen beim Zusammenfassen von Knoten identische Äste erkannt werden. Die getrennte Information
+        über den Linken oder rechten Ast ist notwendig, um Äste zu unterscheiden bei denen das Kantengewicht rechts und
+        links einfach nur vertauscht ist, und der Wert saved_value im Knoten dadurch auch identisch ist. Dieser Wert
+        kann alleine nicht verwendet werden, um gleiche Äste/Knoten zu erkennen.
+        Da Äste nur zusammengefasst werden können, die in der untersten Ebene schon gleich sind, sollten mit diesem Wert
+        gleiche Äste richtig erkannt werden können. unique_value enthält nur Infomationen zu der nächst unteren Ebene
+        und nicht immer über den gesammten Ast (Beispiel: Wenn in 2 Ebenen weiter unten Kantengewichte vertauscht
+        werden, ist oben dieser Wert trotzdem gleich)
+        ToDo: falls notwendig, muss dieser Wert noch anders berechnet werden
+        :return: unique_value der aktuellen Kante
+        """
+
+        #   Der Wert wird nur einmal berechnet, wenn Funktion für ein Objekt mehrmals aufgerufen wird
+        if not self.is_calculated:
+            self.unique_value = [1, 1]
+
+            #   Falls es ausgehende Kanten am Zielknoten gibt, wird der unique_value einer ausgehenden Kante zusammen
+            #   addiert und mit dem Wert der jeweiligen Seite i multipliziert (eine Seite der Liste für jede ausgehende
+            #   Kante des Zielknotens der aktuellen Kante)
+            if any(self.target_node.list_outgoing_edges):
+                for i, edge in enumerate(self.target_node.list_outgoing_edges):
+
+                    #   Speichern der zwei Werte in der Liste unique_value der aktuellen ausgehenden Kante
+                    value_l, value_r = edge.calc_unique_value()
+
+                    #   Multiplikation der Addition beider Werte mit dem aktuellen Kantengewicht
+                    self.unique_value[i] *= (value_l + value_r) * self.edge_weight
+
+            #   Falls der Zielknoten keine ausgehenden Kanten hat, wird in der Liste einfach das aktuelle Kantengewicht
+            #   gespeichert
+            else:
+                self.unique_value = [self.edge_weight, self.edge_weight]
+
+            #   Es wird sich gemerkt, dass diese Kante schon berechnet wurde
+            self.is_calculated = True
+
+        #   Die Funktion gibt die berechnete Liste zurück
+        return self.unique_value

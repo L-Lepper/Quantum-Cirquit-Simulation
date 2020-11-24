@@ -1,8 +1,8 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 25.08.2020
+#   Author: Lukas Lepper, 24.11.2020
 #   Betreuer: Martin Hardieck
-#   Dateiname: PauliX.py
-#   Version: 0.3
+#   Dateiname: G_PauliX.py
+#   Version: 0.6
 
 
 import numpy as np
@@ -11,8 +11,8 @@ from QGate import QGate
 
 class PauliX(QGate):
     """
-    Klasse für das Pauli-X Gatter. Basiswechsel zwischen +/-. Speichert den Typ und erweitert die Matrix dieses Gatters auf Größe des
-    Zustandsvektors.
+    Klasse für das Pauli-X Gatter. Basiswechsel zwischen +/-. Speichert den Typ und erweitert die Matrix dieses Gatters
+    auf Größe des Zustandsvektors.
     """
 
     def __init__(self, list_affected_qubits):

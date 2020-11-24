@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 21.10.2020
+#   Author: Lukas Lepper, 24.11.2020
 #   Betreuer: Martin Hardieck
 #   Dateiname: main.py
-#   Version: 0.5
+#   Version: 0.6
 
 #   Klassen importieren, mit deren Memberfunktionen gearbeitet werden muss.
 #   Die Klasse QuantumSimulation bietet die Hauptfunktionen für die Simulation an, die in der main gesteuert wird.
@@ -24,40 +24,6 @@ Funktionen process_cli() oder process_file() aufgerufen, welche danach implement
 Danach folgt der Programmstart mit if __name__ == '__main__': (siehe ganz unten).
 """
 
-
-#class ValidateInitialization(argparse.Action, Base):
-#    """
-#    Klasse mit einer benutzerdefinierten Argparse Akion, um zu Prüfen, ob die Eingabe für die Initialisierung der
-#    Qubits -i 2 1 gültig ist. Die eingegebenen Initialisierungen werden in einer Liste im namespace gespeichert.
-#    """
-
-#    def __call__(self, parser, namespace, values, option_string=None):
-        #   Tupel mit den gültigen Werten, die für state in -i INDEX STATE erlaubt sind
-#        valid_states = (0, 1)
-
-        #   Speichere die eingegebenen Parameter
-#        index, state = values
-
-        #   Falls der Wert nicht in dem Tupel mit den gültigen Eingaben vorkommt, wird eine Fehlermeldung ausgegeben
-#        if state not in valid_states:
-#            raise argparse.ArgumentError(self, 'Invalid state for initializing the qubit '
-#                                               'with index {r!r}: {s!r}'.format(r=index, s=state))
-
-        #   In Items wird die Liste gespeichert, die bisher in dem Parsor in namespace unter qsim_obj.dest gespeichert war.
-#        items = getattr(namespace, self.dest, None)
-
-        #   Falls vorher Elemente in der Liste gespeichert waren, werden die neuen Werte value=[Index, State]
-        #   der Liste hinzugefügt
-#        if items:
-#            items.append(values)
-
-        #   War die Liste leer, wird eine neue Liste mit dem neuen Element erstellt
-#        else:
-#            items = [values]
-
-        #   In namespace von dem aktuellen Parsor wird die neue Liste Items an der Stelle der alten Liste gespeichert
-#        setattr(namespace, self.dest, items)
-#
 
 class ValidateInitialization(argparse.Action, Base):
     """
@@ -98,7 +64,8 @@ class ValidateInitialization(argparse.Action, Base):
 class ValidateGate(argparse.Action):
     """
     Klasse mit einer benutzerdefinierten Argparse Akion, um zu Prüfen, ob die Eingabe für das Gatter gültig ist.
-    -g GATE INDEX Die beiden Parameter werden in der Liste der eingegebenen Gatter qsim_obj.dest gespeichert.
+    -g GATE INDEX [INDEX ... PARAMETER ...] Die beiden Parameter werden in der Liste der eingegebenen Gatter
+    qsim_obj.dest gespeichert.
     """
 
     def __call__(self, parser, namespace, values, option_string=None):
@@ -119,17 +86,17 @@ class ValidateGate(argparse.Action):
 
         #   Tupel mit allen möglichen Parametern, die für Gatter stehen, welche auf ein einzelnes Qubit angewendet
         #   werden und daher nur einen Index-Parameter benötigen
-        valid_gates = ('x', 'h', 'z', 'm', 'custm', 'r_phi', 'y', 's', 's*', 't', 't*')
+        valid_gates = ('x', 'h', 'z', 'm', 'custm', 'r_phi', 'y', 's', 's*', 't', 't*', 'i', 'u3', 'cnot')
 
         #   Prüfe, ob das eingegebene Gatter in dem Tupel der möglichen Gatter vorkommt.
         #   Falls nein, wird eine Fehlermeldung ausgegeben und das Programm abgebrochen
         if gate not in valid_gates:
             raise argparse.ArgumentError(self, 'Invalid gate: {s!r}'.format(s=gate))
 
-        #   Gates that change 1 qubit and need only one argument:
+        #   Gates that change 1 qubit, need only one argument:
         #   Tupel mit allen möglichen Parametern, die für Gatter stehen, welche auf ein einzelnes Qubit angewendet
         #   werden und daher nur einen Index-Parameter benötigen
-        gates_1_qb = ('x', 'h', 'z', 'm', 'custm', 'y', 's', 's*', 't', 't*')
+        gates_1_qb = ('x', 'h', 'z', 'm', 'custm', 'y', 's', 's*', 't', 't*', 'i')
 
         #   Falls das aktuelle Gatter in dieser Liste vorkommt, sollte es nur einen Index haben:
         if gate in gates_1_qb:
@@ -161,13 +128,12 @@ class ValidateGate(argparse.Action):
             #   dort lediglich 1 Index gespeichert.
             list_of_indizes = list_of_arguments
 
-        #   Gates that needs one index and one argument (gate change 1 Qubits and need 1 additional parameter):
-        #   Tupel mit allen möglichen Parametern, die für Gatter stehen, welche auf zwei Qubits angewendet
-        #   werden und daher zwei Index-Parameter benötigen.
-        gates_2_arg = ('r_phi', 'hu')
+
+        #   Gates that needs one index and one parameter (gate change 1 Qubits and need 1 additional parameter):
+        gates_1_1 = ('r_phi', 'hu')
 
         #   Falls das aktuelle Gatter in dieser Liste vorkommt, sollte es nur einen Index haben:
-        if gate in gates_2_arg:
+        if gate in gates_1_1:
 
             #   Fehlermelduung, wenn mehr Indizes/Argumente eingegeben wurden
             if len(list_of_arguments) != 2:
@@ -199,6 +165,85 @@ class ValidateGate(argparse.Action):
             #   Nach der Prüfung wird der eine Index und der eine Parameter jeweils der Liste hinzugefügt
             list_of_indizes = [list_of_arguments[0]]
             list_of_parameters = [list_of_arguments[1]]
+
+        #   Gates that needs one index and three arguments (gate change 1 Qubits and need 3 additional parameters):
+        gates_1_3 = ('u3', 'hu')
+
+        #   Falls das aktuelle Gatter in dieser Liste vorkommt, sollte es nur einen Index haben:
+        if gate in gates_1_3:
+
+            #   Fehlermeldung, wenn mehr Indizes/Argumente eingegeben wurden
+            if len(list_of_arguments) != 4:
+                raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
+                                                   'number of this gate ({s!r}: 4). Example: -g {s} INDEX THETA '
+                                                   'PHI LAMBDA'.format(r=len(list_of_arguments), s=str(gate)))
+
+            #   Versuche die Argumente in Float oder Integer zu konvertieren, sonst gebe eine Fehlermeldung aus.
+            #   Als Eingabe werden ganze Zahlen für Indizes und Fließkommazahlen für Parameter von Gattern erwartet.
+            try:
+                list_of_arguments[0] = int(list_of_arguments[0])
+            except ValueError:
+                raise argparse.ArgumentError(self, 'Value Error: {a!r} can\'t be converted to integer, for index'
+                                                   ' of the qubit an integer was expected.'
+                                                   ''.format(a=list_of_arguments[0]))
+
+            #   Versuche jedes Argument in der Liste, ab dem Index wo die Parameter vom Gatter gepseichert sind,
+            #   in float zu konvertieren.
+            for i, arg in enumerate(list_of_arguments):
+                if i >= 1:
+                    try:
+                        list_of_arguments[i] = float(list_of_arguments[i])
+                    except ValueError:
+                        raise argparse.ArgumentError(self,
+                                                     'Value Error: {a!r} can\'t be converted to float, for index'
+                                                     ' of the qubit an integer and for gate arguments float '
+                                                     'was expected.'.format(a=list_of_arguments[1]))
+
+            #   Falls der Index negativ ist, wird ebenfalls ein Fehler ausgegeben
+            if list_of_arguments[0] < 0:
+                raise argparse.ArgumentError(self, 'Value Error: the index for a qubit must be positive: {a!r}'
+                                             .format(a=list_of_arguments[0]))
+
+            #   Nach der Prüfung wird der eine Index und der eine Parameter jeweils der Liste hinzugefügt
+            list_of_indizes = [list_of_arguments[0]]
+            list_of_parameters = [list_of_arguments[1:]]
+
+        #   Gates that change 2 qubit, need 2 indizes:
+        #   Tupel mit allen möglichen Parametern, die für Gatter stehen, welche auf ein einzelnes Qubit angewendet
+        #   werden und daher nur einen Index-Parameter benötigen
+        gates_2_0 = ('cnot', 'xxxx')
+
+        #   Falls das aktuelle Gatter in dieser Liste vorkommt, sollte es nur einen Index haben:
+        if gate in gates_2_0:
+
+            #   Gehe die Liste der Indizes nacheinander durch. i ist der Index des aktuellen Elements in der Liste,
+            #   x das Element selber
+            for i, x in enumerate(list_of_arguments):
+
+                #   Fehlermeldung, wenn mehr Indizes eingegeben wurden
+                if len(list_of_arguments) != 2:
+                    raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
+                                                       'number of this gate ({s!r}: 2). Example: -g {s} INDEX_CONTROL '
+                                                       'INDEX_TARGET'.format(r=len(list_of_arguments), s=gate))
+
+                #   Versuche das aktuelle Element x in Integer zu konvertieren, sonst gebe eine Fehlermeldung aus
+                #   Als Eingabe werden ganze Zahlen erwartet.
+                try:
+                    list_of_arguments[i] = int(x)
+                except ValueError:
+                    raise argparse.ArgumentError(self, 'Value Error: {a!r} can\'t be converted to integer, for index'
+                                                       ' of the qubit an integer was expected.'.format(a=x))
+
+                #   Falls die Zahl negativ ist, wird ebenfalls ein Fehler ausgegeben
+                if list_of_arguments[i] < 0:
+                    raise argparse.ArgumentError(self, 'Value Error: the index for a qubit must be positive: {a!r}'
+                                                 .format(a=list_of_arguments[i]))
+
+            #   Nach der Prüfung wird der Liste der Indizes die Elemente der Liste der Argumente hinzugefügt. Jetzt ist
+            #   dort lediglich 1 Index gespeichert.
+            list_of_indizes = list_of_arguments
+
+
 
         #   Ein neues Element wird aus dem geprüften Gatter und der Liste der Indizes erstellt. Das Element besteht aus
         #   der bezeichnung für das Gatter, einer Liste mit Indizes der Qubits, auf die das Gatter angewendet wird,
@@ -254,6 +299,7 @@ class CheckFilePath(argparse.Action):
 
         #   Zeile für Zeile werden die Parameter eingelesen und in der Liste oben angehängt
         for cmd in list_of_cmds:
+
             #   rstrip() entfernt Leerzeichen und Zeilenumbrüche am Ende eines Strings
             #   split() trennt String nach den Leerzeichen --> Aus Parameter mit Argumenten pro Zeile / Element in
             #   der Liste wird Liste mit neuen Elementen für jedes Argument
@@ -266,9 +312,10 @@ class CheckFilePath(argparse.Action):
 
 class ValidatePrint(argparse.Action):
     """
-    Klasse mit einer benutzerdefinierten Argparse Akion, um zu Prüfen, ob die Eingabe für print gültig ist.
+    Klasse mit einer benutzerdefinierten Argparse Akion. Prüfen, ob die Eingabe für print gültig ist, erfolgt schon
+    vorher mit choice={...}.
     Außerdem wird der Print Befehl der Liste aller Operationen hinzugefügt.
-    -g {STATE, GATES}
+    -p {state_vec, states, gates}
     """
 
     def __call__(self, parser, namespace, values, option_string=None):
@@ -295,10 +342,28 @@ class ValidatePrint(argparse.Action):
 
 
 def exit_interactiv_in(q_sim, args):
+    """
+    Funktion die ausgeführt wird, um den interaktiven Eingabemodus zu beenden. Sie ändert einfach die Variable in
+    welcher der aktuelle Zustand gespeichert ist.
+
+    :param q_sim: Objekt indem die Variable ist
+    :param args: args wird hier nicht benötigt, allerdings muss der Parameter vohanden sein, da der Parser je nach
+        Befehl verschiedene Funktionen, aber mit dem selben Aufbau aufruft (Siehe args.function)
+    :return:
+    """
     q_sim.interactive_input = False
 
 
 def cmd_line_parser(q_sim, cmd_in):
+    """
+    Funktion für den Befehl-Parser. Sie wird direkt beim Programmstart mit den übergebenen Argumenten aufgerufen, oder
+    iin der Schleife, wenn der interaktive Eingabemodus aktiviert ist.
+
+    :param q_sim: Objekt, aus der Klasse QuantumSimulation um die Simulation zu steuern und in dem Memberfunktionen zur
+        Speicherung und Verarbeitung der eingelesenen Argumente vorhanden sind.
+    :param cmd_in: Eingegebene Argumente des Befehls.
+    :return:
+    """
     #   Parser-Objekt erstellen
     parser = argparse.ArgumentParser(description='Simulation of Quantum Algorithm. Commands to get parameters for '
                                                  'simulation from file or from comand line interface. \nExample:\n'
@@ -306,6 +371,7 @@ def cmd_line_parser(q_sim, cmd_in):
                                                  '-g r_phi 0 1.570796327 -p gates -g m 0',
                                      epilog='by Lukas Lepper')
 
+    #   Je nach Befehl wird function benötigt ToDo default auf cli?
     parser.set_defaults(function=None)
 
     #   Subparser-Objekt erstellen
@@ -313,7 +379,6 @@ def cmd_line_parser(q_sim, cmd_in):
                                        description='Read parameters of the quantum circuit from file or from command '
                                                    'line interface input',
                                        dest='subparser_name')
-    # required=True)
 
     #   Gruppe aus nicht kompatiblen Parametern: Verbose-Level einstellen oder quite, um Ausgabe auf Ergebnisse zu
     #   beschränken
@@ -338,16 +403,6 @@ def cmd_line_parser(q_sim, cmd_in):
                                  default=Base.getnqubits(),
                                  help='Set number of qubits. Initialize new qubits with 0.'
                                       'Index for inizializing or for the gates have to be in range of this number.')
-
-    #   2: Argument um Qubits zu initialisieren
-    # parser_from_cli.add_argument('--init_qubit', '-i',
-    #                             dest='arg_phi_in',
-    #                             action=ValidateInitialization,
-    #                             type=int,
-    #                             nargs=2,
-    #                             metavar=('INDEX', 'STATE'),
-    #                             help='Initialize qubit INDEX with STATE = {0|1}.'
-    #                             )
 
     #   2: Argument um Qubits zu initialisieren
     parser_from_cli.add_argument('--initial_state', '-i',
@@ -496,15 +551,6 @@ def process_cli(qsim_obj, args):
     #   1: Setzte die Anzahl der Qubits
     qsim_obj.process_n_qubits(args.n_qubits)
 
-#   Alte Initilisierung -i 0 1
-    #   Falls eine Initialisierung der Qubits eingegeben wurde, wird im phi_in Vektor das entsprechende Element
-    #   auf 0 oder 1 gesetzt.
-    #if args.arg_phi_in:
-     #   for element in args.arg_phi_in:
-      #      index, value = element
-            #   2
-       #     qsim_obj.initialize_qubits(index, value)
-
     if args.index_in_vec:
         q_sim.index_of_basis_state = args.index_in_vec
 
@@ -512,6 +558,7 @@ def process_cli(qsim_obj, args):
     #   die Funktion process_operation() der Liste aller Operationen hinzugefügt
     if args.list_of_operations:
         for operation in args.list_of_operations:
+
             #   process_operation() fügt die Operation der Liste aller Operationen hinzu
             qsim_obj.process_operation(operation)
 

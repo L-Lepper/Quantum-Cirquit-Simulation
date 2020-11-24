@@ -1,8 +1,8 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 19.10.2020
+#   Author: Lukas Lepper, 24.11.2020
 #   Betreuer: Martin Hardieck
 #   Dateiname: DDNode.py
-#   Version: 0.5
+#   Version: 0.6
 
 
 import numpy as np
@@ -35,6 +35,7 @@ class DDNode(Base):
 
     def call_upstream(self, str_in):
         """
+        ToDo: Funktion überarbeiten, diese Variante ist immer noch nicht so übersichtlich
         Die Funktion wird anstatt __str__ verwendet, damit sie besser rekursiv aufgerufen werden kann. Zusammen mit der
         print-Funktion in DDEdge, wird für jede neue Ebene, die ausgabe weiter eingerückt, sodass die Baumstrucktur
         besser erkennbar wird. Das ist bei einer höheren Anzahl nicht mehr so übersichtlich!
@@ -93,9 +94,9 @@ class DDNode(Base):
         #   werden und noch auf diesen Knoten zeigen. Dadurch wird dieser nicht durch die Garbage Collection entfernt
         #   und das DD nicht abgeschnitten, der Teilbaum ist über diese Kanten weiter erreichbar, auch wenn er nicht
         #   mehr in der Liste aller Knoten und Kanten vorkommt.
-        #if not any(self.list_incoming_edges):
-         #   raise Exception('Error by deleting node of decision diagram: List of incoming edges have to be empty\n'
-          #                  'or edge have to point on an other node to avoid edges without target node.')
+        if any(self.list_incoming_edges):
+            raise Exception('Error by deleting node of decision diagram: List of incoming edges have to be empty\n'
+                            'or edge have to point on an other node to avoid edges without target node.')
 
         #   Jede ausgehende Kante des Knotens wird gelöscht, damit alle Nachfolger aus den jeweiligen Listen
         #   herausgenommen werden (rekursives Aufrufen von delete_node() )
@@ -173,11 +174,21 @@ class DDNode(Base):
             except ValueError:
                 continue
 
+        #   Knoten wird wegen break oben nur einmal gefunden. Er kommt eigentlich auch nicht öfter vor, so ist das
+        #   Programm ein bisschen schneller
         if n != 1:
             raise Exception('Error by deleting node in list of all nodes:', self,
                             '\nNode have to exists exactly once, but fund', n, ' times.')
 
     def delete_edge_in_incoming_list(self, edge_in):
+        """
+        Die Funktion entfernt eine Kante aus der Liste der eingehenden Kanten von diesem Knoten. Dazu wird der aktuelle
+        Knoten in der Liste aller Knoten gesucht, um den Knoten dort zu verändern. Das soll Probleme vermeiden, wenn
+        Objekt-Weitergabe doch keine Reeferenz ist. Programm bricht mit Fehler ab, wenn Kante nicht gefunden wurde.
+
+        :param edge_in: Kante, die aus der Liste der eingehenden Kanten entfernt werden soll.
+        :return:
+        """
 
         #   suche diesen Knoten in der Liste aller Knoten, und aktualisiere dort die Liste der eingehenden Kanten
         for index_layer, layer in enumerate(self.dd_obj.list_of_all_nodes):

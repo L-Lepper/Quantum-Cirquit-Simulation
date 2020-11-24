@@ -1,8 +1,8 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 25.08.2020
+#   Author: Lukas Lepper, 24.11.2020
 #   Betreuer: Martin Hardieck
 #   Dateiname: Operation.py
-#   Version: 0.3
+#   Version: 0.6
 
 
 import numpy as np
@@ -11,9 +11,10 @@ from Base import Base
 
 class Operation(Base):
     """
-    Diese Klasse enhält die Quantenschaltung in Form einer Operation_List: Reihenfolge in der Gatter angewendet werden.
-    Ein Element ist eine Liste mit Gatter und betreffenden Qbits.
-    Die Funktion add_operation_to_list fügt weitere Elemente der Lliste hinzu.
+    Diese Klasse enhält die Quantenschaltung in Form einer Liste mit allen Operationen (seriell): Reihenfolge in der
+    Gatter angewendet werden. Ein Element kann eine Liste mit Gatter und betreffenden Qbits sein, aber auch andere
+    Befehle wie print state_vec, um an einer bestimmten Stelle den aktuellen Zustand auszugeben.
+    Die Funktion add_operation_to_list fügt weitere Elemente der Liste hinzu.
     """
 
     def __init__(self):

@@ -1,8 +1,8 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 25.08.2020
+#   Author: Lukas Lepper, 24.24.2020
 #   Betreuer: Martin Hardieck
 #   Dateiname: QGate.py
-#   Version: 0.3
+#   Version: 0.6
 
 
 import numpy as np
@@ -19,7 +19,7 @@ class QGate(QMatrix):
         """
         Default-Konstruktor: Speichert welches Qubits betrachtet wird
 
-        :param list_affected_qubits: Index des zu verändernden Qubits
+        :param list_affected_qubits: Liste der Indizes der zu verändernden Qubits
         """
 
         self.list_affected_qubits = list_affected_qubits

@@ -1,7 +1,7 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 11.11.2020
+#   Author: Lukas Lepper, 24.11.2020
 #   Betreuer: Martin Hardieck
-#   Dateiname: PauliY.py
+#   Dateiname: G_U3ThetaPhiLamda.py
 #   Version: 0.6
 
 
@@ -10,9 +10,9 @@ import cmath
 from QGate import QGate
 
 
-class GateRphi(QGate):
+class GU3ThetaPhiLamda(QGate):
     """
-    Klasse für das R_phi Gatter. Speichert den Typ und erweitert die Matrix dieses Gatters auf Größe des
+    Klasse für das U_3(Theta, Phi, Lamda) Gatter. Speichert den Typ und erweitert die Matrix dieses Gatters auf Größe des
     Zustandsvektors.
     """
 
@@ -30,10 +30,10 @@ class GateRphi(QGate):
         super().__init__(list_affected_qubits)
 
         #   Bezeichnung des Gatters
-        self.type = 'r_phi'
+        self.type = 'u3'
 
         #   Spezifische Matrix des Gatters
-        self.general_matrix = np.array([[1, 0], [0, cmath.exp(list_of_parameters[0] * 1j)]], dtype=complex)
+        self.general_matrix = np.array([[cmath.cos(list_of_parameters[0][0] / 2), -1 * cmath.exp(list_of_parameters[0][2] * 1j) * cmath.sin(list_of_parameters[0][0] / 2)], [cmath.exp(list_of_parameters[0][1] * 1j) * cmath.sin(list_of_parameters[0][0] / 2), cmath.exp((list_of_parameters[0][2] + list_of_parameters[0][1]) * 1j) * cmath.cos(list_of_parameters[0][0] / 2)]])
 
         #   Die Matrix wird auf die Größe der Quantenschaltung erweitert
         self.general_matrix = self.expandmatrix(self.getnqubits(), max(list_affected_qubits))

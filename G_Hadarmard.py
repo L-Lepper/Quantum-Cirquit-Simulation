@@ -1,17 +1,18 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 11.11.2020
+#   Author: Lukas Lepper, 24.11.2020
 #   Betreuer: Martin Hardieck
-#   Dateiname: PauliY.py
+#   Dateiname: G_Hadamard.py
 #   Version: 0.6
 
 
 import numpy as np
+import cmath
 from QGate import QGate
 
 
-class PauliY(QGate):
+class HadamardH(QGate):
     """
-    Klasse für das Pauli-Y Gatter. Speichert den Typ und erweitert die Matrix dieses Gatters auf Größe des
+    Klasse für das Hadarmard Gatter. Speichert den Typ und erweitert die Matrix dieses Gatters auf Größe des
     Zustandsvektors.
     """
 
@@ -23,14 +24,10 @@ class PauliY(QGate):
         :param list_affected_qubits: Index des Qubits, auf welches das Gatter angewendet wird
         """
 
-        #   list_affected_qubits wird in der Elternklasse in qsim_obj.list_affected_qubits gespeichert
         super().__init__(list_affected_qubits)
-
-        #   Bezeichnung des Gatters
-        self.type = 'y'
-
-        #   Spezifische Matrix des Gatters
-        self.general_matrix = np.array([[0, -1j], [1j, 0]], dtype=complex)
-
-        #   Die Matrix wird auf die Größe der Quantenschaltung erweitert
+        #   Typ und spezifische Matrix des Hadarmard Gatters
+        self.type = 'h'
+        self.general_matrix = np.array([[1 / cmath.sqrt(2), 1 / cmath.sqrt(2)], [1 / cmath.sqrt(2),
+                                                                                 -1 / cmath.sqrt(2)]], dtype=complex)
+        #   Erweitere die Matrix auf die Anzahl der Qubits
         self.general_matrix = self.expandmatrix(self.getnqubits(), list_affected_qubits[0])

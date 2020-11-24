@@ -1,8 +1,8 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 21.10.2020
+#   Author: Lukas Lepper, 24.11.2020
 #   Betreuer: Martin Hardieck
 #   Dateiname: QuantumSimulation.py
-#   Version: 0.5
+#   Version: 0.6
 
 
 #   Importiere wie in der main oben beschrieben, alle Klassen auf der untersten Ebene. Durch Objekte in diesen Klassen
@@ -10,12 +10,15 @@
 from Base import Base
 from Operation import Operation
 from QState import QState
-from PauliX import PauliX
-from PauliZ import PauliZ
-from HadarmardH import HadamardH
+from G_PauliX import PauliX
+from G_PauliZ import PauliZ
+from G_Hadarmard import HadamardH
 from Measurement import Measurement
-from PauliY import PauliY
-from GateRphi import GateRphi
+from G_PauliY import PauliY
+from G_Rphi import GateRphi
+from G_Identity import GIdentity
+from G_U3ThetaPhiLamda import GU3ThetaPhiLamda
+from G_CNOT import G_CNOT
 import cmath
 
 #   wird nur für den custm Zustandsvektor benötigt
@@ -39,9 +42,6 @@ class QuantumSimulation(Base):
         self.qstate_obj = QState()
         self.operation_obj = Operation()
         self.qgate_obj = None
-
-        #   alte Initialisierung
-        #self.phi_in = []
 
         #   Initialzustand = Basiszustand ist standardmäßig 000.. --> Index 0 im Vektor
         self.index_of_basis_state = 0
@@ -93,6 +93,12 @@ class QuantumSimulation(Base):
                     self.qgate_obj = GateRphi(list_affected_qubits, [cmath.pi/4])
                 elif operation[0] == 't*':
                     self.qgate_obj = GateRphi(list_affected_qubits, [cmath.pi/4])
+                elif operation[0] == 'i':
+                    self.qgate_obj = GIdentity(list_affected_qubits)
+                elif operation[0] == 'u3':
+                    self.qgate_obj = GU3ThetaPhiLamda(list_affected_qubits, list_of_parameters)
+                elif operation[0] == 'cnot':
+                    self.qgate_obj = G_CNOT(list_affected_qubits)
                 elif operation[0] == 'm':
 
                     #   Erstelle Objekt für die Messung, dabei wird auch ein Objekt für das Entscheidungsdiagramm
@@ -130,6 +136,17 @@ class QuantumSimulation(Base):
                         #self.qstate_obj.general_matrix = np.array([0.080396894, 0.037517934, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0.143565882, 0.066997412, 0j, 0j, 0j, 0j, 0j, 0j, 0.777808047, 0j, 0.601700565, 0j, 0j, 0j, 0j, 0j])
                         #qsim_obj.qstate_obj.general_matrix = np.array([1, 1, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 1, 1, 0j, 0j, 0j, 0j, 0j, 0j, 1, 0j, 1, 0j, 0j, 0j, 0j, 0j])
                         self.qstate_obj.general_matrix = np.array([0, 0, 0.00752268163518088, 0, 0, 0, 0, 0, 0, 0, 0.306489370178815, 0.353641580975556, 0, 0, 0, 0, 0, 0, 0.286171213985822, 0.330197554599025, 0, 0, 0, 0, 0, 0.523233828563029, 0, 0.391028839851374, 0.283219972790003, 0.288323035362795, 0, 0])
+                    elif self.getnqubits() == 4:
+                        self.qstate_obj.general_matrix = np.array([0, 0.350723877, 0, 0.350723877, 0, 0.344408624, 0.344408624, 0, 0, 0.363103585, 0, 0.356154234, 0, 0.358337265, 0.360076766, 0])
+                    elif self.getnqubits() == 6:
+                        #   1
+                        #self.qstate_obj.general_matrix = np.array([0.0812610073560534, 0.162522014712107, 0.237532175348464, 0.118766087674232, 0.162522014712107, 0.0812610073560534, 0.118766087674232, 0.237532175348464, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.12640601144275, 0.2528120228855, 0.369494494986499, 0.18474724749325, 0.2528120228855, 0.12640601144275, 0.18474724749325, 0.369494494986499, 0, 0, 0, 0, 0.540196630097221, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+                        #   2
+                        self.qstate_obj.general_matrix = np.array([0.0967127694558382, 0.193425538911676, 0.28269886456322, 0.14134943228161, 0.193425538911676, 0.0967127694558382, 0.14134943228161, 0.28269886456322, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0967127694558382, 0.193425538911676, 0.28269886456322, 0.14134943228161, 0.193425538911676, 0.0967127694558382, 0.14134943228161, 0.28269886456322, 0, 0, 0, 0, 0.642914896667491, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
+                        #   3
+                        #self.qstate_obj.general_matrix = np.array([0.20135869720078, 0.256274705528265, 0.321047433299145, 0.42806324439886, 0.31119071385575, 0.237969369419103, 0.401309291623931, 0.107015811099715, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0366106722183236, 0.0549160083274853, 0.240785574974359, 0.0267539527749288, 0.109832016654971, 0.0915266805458089, 0.21403162219943, 0.267539527749287, 0, 0, 0, 0, 0.283938420180097, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
                     else:
                         self.qstate_obj.general_matrix = np.zeros(Base.getnqubits())
                         self.qstate_obj.general_matrix[0] = 1
@@ -191,10 +208,6 @@ class QuantumSimulation(Base):
 
             #   Anzahl an Qubits wird gespeichert
             self.set_n_qubits(n_qubits)
-
-            #   Wird für alte Initialisierung benötigt:
-            #   In der Liste phi_in wird für jedes neue Qubit eine 0 hinzugefügt.
-            #self.phi_in += (Base.getnqubits() - len(self.phi_in)) * [0]
 
         elif n_qubits != Base.getnqubits():
             print('Due to the previous setting the number of qubits is', Base.getnqubits(),
@@ -284,7 +297,7 @@ class QuantumSimulation(Base):
         else:
             print(self.operation_obj.list_of_operations)
 
-    #   7 ToDo: Möglichkeit als Vektor auszugeben
+    #   7
     def print_actual_states(self, as_vector):
         if Base.get_verbose() >= 0:
             print('\n---------------\t Output actual state: \t---------------\n')

@@ -1,8 +1,8 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 21.10.2020
+#   Author: Lukas Lepper, 24.11.2020
 #   Betreuer: Martin Hardieck
 #   Dateiname: Measurement.py
-#   Version: 0.5
+#   Version: 0.6
 
 import cmath
 import random
@@ -55,9 +55,14 @@ class Measurement(QGate):
         if Base.get_verbose() >= 2:
             print('Decision Diagram before measurement\n', self.state_dd_object)
 
+        #   Rekusrives aufrufen des Entscheidungsdiagramms von unten nach oben, um Fehler im Aufbau zu erkennen
+        #   ToDo: Ausgabe sollte irgendwie besser gemacht werden, so ist es sehr unübersichtlich
+        if Base.get_verbose() >= 4:
+            #   Für jeden Knoten der letzten Ebene ( 0/1 ) müssen die eingehenden Kanten aufgerufen werden
             for node in self.state_dd_object.list_of_all_nodes[Base.getnqubits()]:
                 print(node.call_upstream(''))
 
+        #   Messung: Für jeden Knoten auf der Ebene, auf der gemessen wird
         p_0 = 0
         p_1 = 0
         for node in self.state_dd_object.list_of_all_nodes[self.qubit_to_measure]:
@@ -174,32 +179,49 @@ class Measurement(QGate):
                 node.list_outgoing_edges[1] = edge_measured_to_1
 
         #   Lösche den abgeschnittenen Baum, falls node_to_delete Knoten gespeichert hat
+        #   Indizes der Knoten in der Liste aller Knoten, um sicherzugehen, dass die gewünschten Knoten angesprochen
+        #   werden können
         if any(list_inidzes_of_nodes_to_delete):
 
             list_nodes = []
             n = 0
-            #   Ein Element besteht immer aus den beiden Inizes für die Ebene und den Knoten in der Ebene, diese werden
+            #   Ein Element besteht immer aus den beiden Indizes für die Ebene und den Knoten in der Ebene, diese werden
             #   direkt getrennt gespeichert
             for i, j in list_inidzes_of_nodes_to_delete:
+
+                #   Jetzt wird der gemerkte Knoten in einer Liste gespeichert, ich war mit nicht sicher ob es auch
+                #   funktioniert hätte, wenn die Knoten schon in einer Funktion in der Liste gespeichert wurden.
                 list_nodes += [self.state_dd_object.list_of_all_nodes[i][j]]
+
+            #   Die einzelnen Knoten in der eben erstellten Liste, werden in der mehrdimensionalen Liste aller Knoten
+            #   gesucht. Da die Knoten gelöscht werden, ändern sich nämlich die weiter oben gespeicherten Indizes,
+            #   sodass man mit ihnen nicht mehr arbeiten kann.
             for node_del in list_nodes:
                 for i, layer_of_nodes in enumerate(self.state_dd_object.list_of_all_nodes):
+
+                    #   Wird der Knoten in der aktuellen Ebene gefunden, wird er gelöscht
                     try:
                         j = layer_of_nodes.index(node_del)
                         self.state_dd_object.list_of_all_nodes[i][j].delete_node()
                         n += 1
 
+                        #   Beende die Schleife, da der Knoten nur einmal vorkommt
+                        break
+
+                    #   Ansonsten wird in der nächsten Ebene weiter gesucht
                     except ValueError:
                         continue
+
+                #   Falls der Knoten nicht gefunden wurde (oder falls er mehmals gefunden wurde und Schleife nicht durch
+                #   break beendet wird)
                 if n != 1:
                     if Base.get_verbose() >= 0:
                         print('Error, Node after measurement was not deleted.')
                 n = 0
 
         #   Möglicherweise kann jetzt das Entscheidungsdiagramm noch mal zusammengefasst werden
-        #   ToDo: Vielleicht lohnt sich der aufwand nicht
-        #   ToDo: Fehler in der Zusammenfassung (Kanten und Wert im Knoten ist gleich, aber nicht der gesamte nachfogende Ast)
-        #qsim_obj.state_dd_object.merge_dd_step7()
+        #   ToDo: Vielleicht lohnt sich der Aufwand nicht
+        self.state_dd_object.merge_dd_step7()
 
         #   Für jede Kante wird die Anzahl berechnet, wie häufig sie in den Ästen vorkommt
         #   Dieser Wert muss jetzt aktualisiert werden, da das DD verändert wurde
@@ -228,14 +250,13 @@ class Measurement(QGate):
             else:
 
                 print('Qubit', self.qubit_to_measure, 'was measured to 1.')
+
         #   Ausgabe bei --quiet
         else:
             if p_0 >= random_value:
-
                 print(str([self.qubit_to_measure, 0]))
 
             else:
-
                 print(str([self.qubit_to_measure, 1]))
 
         #   Ausgabe der Summe aus den gadrierten Beträgen der Elemente aus dem Zustandsvektor
@@ -312,11 +333,12 @@ class Measurement(QGate):
             #   einfach in der nächsten Ebene weiter gesucht werden kann.
             try:
                 j = level.index(edge_pull_to_zero.target_node)
+
+                #   Index wird gespeichert, andem sich der Knoten befindet
+                index += [i, j]
+
             except ValueError:
                 continue
-
-            #   Index wird gespeichert, andem sich der Knoten befindet
-            index += [i, j]
 
         #   Es wird geprüft, das für i und j jeweils nur ein Element gefunden wurde. Der Knoten sollte genau
         #   einmal in der Liste vorkommen.
@@ -402,14 +424,19 @@ class Measurement(QGate):
                     try:
                         index_of_node = layer.index(edge.source_node)
 
+                        #   Die Funktion wird neu rekusiv aufgerufen, mit dem Index des Knotens in der Liste und
+                        #   der Liste, in der die gefundenen Knoten gespeichert werden (Indizes) um sie später zu
+                        #   löschen
                         self.process_special_case(index_of_layer, index_of_node, list_inidzes_of_nodes_to_delete)
+                        break
 
                     except ValueError:
                         continue
 
-            #   Tritt am Quellknoten der Spezialfall nicht auf, endet die Rekursion und die aktuelle Kante wird in der
-            #   Liste der ausgehenden Kanten der Quellknotens gesucht. Diese wird auf 0 geändert, die andere bleibende
-            #   Kante des Quellknotens wird mit ihrer bedingten Wahrscheinlichkeit neu normiert.
+            #   Tritt am Quellknoten der Spezialfall nicht auf, endet die Rekursion (kein neuer Aufruf dieser Funktion)
+            #   und die aktuelle Kante wird in der Liste der ausgehenden Kanten der Quellknotens gesucht. Diese wird
+            #   auf 0 geändert, die andere bleibende Kante des Quellknotens wird mit ihrer bedingten Wahrscheinlichkeit
+            #   neu normiert.
             else:
 
                 # Suche den Quellknoten der eingehenden Kanten des übergebenen Knotens in der Liste aller Knoten
@@ -420,7 +447,7 @@ class Measurement(QGate):
 
                         #   wurde der Knoten gefunden, wird folgender Code ausgeführt und die Indizes zeigen auf diesen
                         #   Knoten.
-                        #   Normiere die Kante die nicht auf 0 geht mit der Wurzel aus der bedingten Wahrscheinlichkeit.
+                        #   Normiere die Kante die nicht auf 0 geht, mit der Wurzel aus der bedingten Wahrscheinlichkeit
                         value_for_normalization = cmath.sqrt(self.state_dd_object.list_of_all_nodes[index_k][index_l].
                                                              list_outgoing_edges[index_edge_not_to_del_node].
                                                              conditional_probability)
@@ -484,6 +511,7 @@ class Measurement(QGate):
                                     self.state_dd_object.list_of_all_nodes[index_m][index_n].list_incoming_edges, [
                                         self.state_dd_object.list_of_all_nodes[index_k][index_l].list_outgoing_edges[
                                             index_edge_to_del_node]])
+                                break
 
                             except ValueError:
                                 continue
@@ -491,9 +519,13 @@ class Measurement(QGate):
                         #   Falls der zu löschende Knoten mehrere eingehende Kanten hat, wird nur die aktuelle Kante
                         #   entfernt
                         if np.size(self.state_dd_object.list_of_all_nodes[index_o][index_p].list_incoming_edges) != 1:
+
+                            #   Suche den index der aktuellen Kante in der Liste der ausgehenden Kanten des zu
+                            #   löschenden Knotens
                             index_in_incoming_list = np.where(
                                 self.state_dd_object.list_of_all_nodes[index_o][index_p].list_incoming_edges == edge)
 
+                            #   Lösche diese Kante in der Liste der eingehenden Kanten
                             self.state_dd_object.list_of_all_nodes[index_o][index_p].list_incoming_edges = \
                                 np.delete(self.state_dd_object.list_of_all_nodes[index_o][index_p].list_incoming_edges,
                                           index_in_incoming_list)
@@ -504,6 +536,8 @@ class Measurement(QGate):
                         else:
                             self.state_dd_object.list_of_all_nodes[index_o][index_p].list_incoming_edges = np.array([])
                             list_inidzes_of_nodes_to_delete += [[index_o, index_p]]
+
+                        break
 
                     except ValueError:
                         continue

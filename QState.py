@@ -1,8 +1,8 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
-#   Author: Lukas Lepper, 19.10.2020
+#   Author: Lukas Lepper, 24.11.2020
 #   Betreuer: Martin Hardieck
 #   Dateiname: QState.py
-#   Version: 0.5
+#   Version: 0.6
 
 
 import numpy as np
@@ -25,7 +25,6 @@ class QState(QMatrix):
         """
         Ausgabe alle möglichen Zustände und zugehörigen Wahrscheinlichkeiten im Ausgabestring.
         ( print(QState-Obj) möglich)
-        ToDo: Möglichkeit als Vektor auszugeben
 
         :return return_str: Ausgabestring
         """
@@ -33,11 +32,15 @@ class QState(QMatrix):
         return_str = ''
         return_list = []
         index = 0
+        sum_entries = 0
 
         #   Ausgabe für jeden einzelnen Wert ungleich 0, im Zustandsvektor
         for value in self.general_matrix:
 
-            if round(abs(value), 6) != 0.:  #ToDo Genauigkeit?
+            if round(abs(value), 13) != 0.:  #ToDo Genauigkeit?
+
+                #   Summiere den Betrag der Einträge zum quadrat, für die Geamtwahrscheinlichkeit (muss 100% sein)
+                sum_entries += pow(abs(value), 2)
 
                 #   Umwandlung des Indexes in ein Bitmuster (3 --> 0011)
                 diracnotation = self.getdiracnotation(index, self.getnqubits())
@@ -55,11 +58,18 @@ class QState(QMatrix):
 
             index += 1
 
+        #   Ist das Vebose-Level größer gleich 0, wird ein Text mit den Zuständen ausgegeben.
         if Base.get_verbose() >= 0:
+
+            #   Ausgabe der Summe aus den gadrierten Beträgen der Elemente aus dem Zustandsvektor
+            #   Damit wird die Normiertheit gepfüft, diese Summe muss 1 ergeben
+            if Base.get_verbose() >= 1:
+                return_str += '\nCheck normalization: {a}% == 100%'.format(a=round(sum_entries*100, 13))  # ToDo: Genauigkeit
 
             #   rstrip() entfernt den letzten Zeilenumbruch, der durch for-Schleife zu viel ist
             return return_str.rstrip()
 
+        #   Bei --quite wird nur ein Vektor ausgegeben.
         else:
             return str(return_list)
 
