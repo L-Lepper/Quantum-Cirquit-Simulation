@@ -15,6 +15,8 @@ class Base:
     __nqubits = 0
     #   Ist das Verbose-Level 0, ist der Debug-Modus deaktiviert
     __debug_verbose_level = 0
+    #   ToDo Genauigkeit
+    __accuracy = 4
 
     def __init__(self):
         pass
@@ -43,3 +45,13 @@ class Base:
     @staticmethod
     def get_verbose():
         return Base.__debug_verbose_level
+
+    #   Lege die Genauigkeit für die eingegebenen Parameter und die Ausgabe der Wahrscheinlichkeiten fest
+    @staticmethod
+    def set_accuracy(accuracy):
+        Base.__accuracy = accuracy
+
+    #   get Genauigkeit
+    @staticmethod
+    def get_accuracy():
+        return Base.__accuracy

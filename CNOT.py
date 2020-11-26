@@ -9,7 +9,7 @@ import numpy as np
 from QGate import QGate
 
 
-class G_CNOT(QGate):
+class CNOT(QGate):
     """
     Klasse für das CNOT Gatter. Speichert den Typ und erweitert die Matrix dieses Gatters auf Größe des
     Zustandsvektors.
@@ -24,8 +24,6 @@ class G_CNOT(QGate):
         """
 
         #   list_affected_qubits wird in der Elternklasse in qsim_obj.list_affected_qubits gespeichert
-        #   Gebe nur das erste Element für die Liste der zu verändernden Qubits zurück, da das Gatter nur auf ein Qubit
-        #   angewendet wird. Das zweite Element stellt den Parameter Phi da, für dieses Gatter
         super().__init__(list_affected_qubits)
 
         #   Bezeichnung des Gatters

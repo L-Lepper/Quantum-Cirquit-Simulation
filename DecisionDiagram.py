@@ -592,6 +592,7 @@ class DecisionDiagram(Base):
                 compared_node = self.list_of_all_nodes[i][k]
 
                 #   Runde den in den Knoten gespeicherten Wert, die miteinander verglichen werden sollen
+                #   ToDo Genauigkeit
                 round_sv_1 = round(reference_node.saved_value_on_node, 6)
                 round_sv_2 = round(compared_node.saved_value_on_node, 6)
 

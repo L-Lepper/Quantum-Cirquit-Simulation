@@ -86,7 +86,8 @@ class ValidateGate(argparse.Action):
 
         #   Tupel mit allen möglichen Parametern, die für Gatter stehen, welche auf ein einzelnes Qubit angewendet
         #   werden und daher nur einen Index-Parameter benötigen
-        valid_gates = ('x', 'h', 'z', 'm', 'custm', 'r_phi', 'y', 's', 's*', 't', 't*', 'i', 'u3', 'cnot')
+        valid_gates = ('x', 'h', 'z', 'm', 'custm', 'r_phi', 'y', 's', 's*', 't', 't*', 'i', 'u3', 'cnot', 'toffoli',
+                       'fredkin', 'cswap', 'deutsch')
 
         #   Prüfe, ob das eingegebene Gatter in dem Tupel der möglichen Gatter vorkommt.
         #   Falls nein, wird eine Fehlermeldung ausgegeben und das Programm abgebrochen
@@ -239,10 +240,94 @@ class ValidateGate(argparse.Action):
                     raise argparse.ArgumentError(self, 'Value Error: the index for a qubit must be positive: {a!r}'
                                                  .format(a=list_of_arguments[i]))
 
-            #   Nach der Prüfung wird der Liste der Indizes die Elemente der Liste der Argumente hinzugefügt. Jetzt ist
-            #   dort lediglich 1 Index gespeichert.
+            #   Nach der Prüfung wird der Liste der Indizes die Elemente der Liste der Argumente hinzugefügt.
             list_of_indizes = list_of_arguments
 
+        #   Gates that change 3 qubit, need 3 indizes:
+        #   Tupel mit allen möglichen Parametern, die für Gatter stehen, welche auf ein einzelnes Qubit angewendet
+        #   werden und daher nur einen Index-Parameter benötigen
+        gates_3_0 = ('toffoli', 'fredkin', 'cswap')
+
+        #   Falls das aktuelle Gatter in dieser Liste vorkommt, sollte es nur einen Index haben:
+        if gate in gates_3_0:
+
+            #   Gehe die Liste der Indizes nacheinander durch. i ist der Index des aktuellen Elements in der Liste,
+            #   x das Element selber
+            for i, x in enumerate(list_of_arguments):
+
+                #   Fehlermeldung, wenn mehr Indizes eingegeben wurden
+                if len(list_of_arguments) != 3:
+                    if gate == 'toffoli':
+                        raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required'
+                                                           ' number of this gate ({s!r}: 3). Example: -g {s} '
+                                                           'INDEX_CONTROL_1 INDEX_CONTROL_2 INDEX_TARGET'
+                                                     .format(r=len(list_of_arguments), s=gate))
+                    if gate == 'fredkin' or gate == 'cswap':
+                        raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required'
+                                                           ' number of this gate ({s!r}: 3). Example: -g {s} '
+                                                           'INDEX_CONTROL INDEX_TARGET_1 INDEX_TARGET_2'
+                                                     .format(r=len(list_of_arguments), s=gate))
+                    raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required'
+                                                       ' number of this gate ({s!r}: 3). Example: forgotten to '
+                                                       'implement'.format(r=len(list_of_arguments), s=gate))
+
+                #   Versuche das aktuelle Element x in Integer zu konvertieren, sonst gebe eine Fehlermeldung aus
+                #   Als Eingabe werden ganze Zahlen erwartet.
+                try:
+                    list_of_arguments[i] = int(x)
+                except ValueError:
+                    raise argparse.ArgumentError(self, 'Value Error: {a!r} can\'t be converted to integer, for index'
+                                                       ' of the qubit an integer was expected.'.format(a=x))
+
+                #   Falls die Zahl negativ ist, wird ebenfalls ein Fehler ausgegeben
+                if list_of_arguments[i] < 0:
+                    raise argparse.ArgumentError(self, 'Value Error: the index for a qubit must be positive: {a!r}'
+                                                 .format(a=list_of_arguments[i]))
+
+            #   Nach der Prüfung wird der Liste der Indizes die Elemente der Liste der Argumente hinzugefügt.
+            list_of_indizes = list_of_arguments
+
+        #   Gates that needs 3 indices and one parameter (gate change 3 Qubits and need 1 additional parameter):
+        gates_3_1 = ('deutsch', 'yyyy')
+
+        #   Falls das aktuelle Gatter in dieser Liste vorkommt, sollte es nur einen Index haben:
+        if gate in gates_3_1:
+
+            #   Fehlermelduung, wenn mehr Indizes/Argumente eingegeben wurden
+            if len(list_of_arguments) != 4:
+                raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
+                                                   'number of this gate ({s!r}: 4). Example: -g {s} INDEX_CONTROL_1'
+                                                   ' INDEX_CONTROL_2 INDEX_TARGET PARAM_THETA'
+                                             .format(r=len(list_of_arguments), s=str(gate)))
+
+            #   Gehe die Liste der Indizes nacheinander durch. i ist der Index des aktuellen Elements in der Liste,
+            #   x das Element selber
+            for i, x in enumerate(list_of_arguments[0:3]):
+
+                #   Versuche die Argumente in Float oder Integer zu konvertieren, sonst gebe eine Fehlermeldung aus.
+                #   Als Eingabe werden ganze Zahlen für Indizes und Fließkommazahlen für Parameter von Gattern erwartet.
+                try:
+                    list_of_arguments[i] = int(list_of_arguments[i])
+                except ValueError:
+                    raise argparse.ArgumentError(self, 'Value Error: {a!r} can\'t be converted to integer, for index'
+                                                       ' of the qubit an integer was expected.'
+                                                       ''.format(a=list_of_arguments[i]))
+
+                #   Falls der Index negativ ist, wird ebenfalls ein Fehler ausgegeben
+                if list_of_arguments[i] < 0:
+                    raise argparse.ArgumentError(self, 'Value Error: the index for a qubit must be positive: {a!r}'
+                                                 .format(a=list_of_arguments[i]))
+
+            try:
+                list_of_arguments[3] = float(list_of_arguments[3])
+            except ValueError:
+                raise argparse.ArgumentError(self, 'Value Error: {a!r} can\'t be converted to float, for index'
+                                                   ' of the qubit an integer and for gate arguments float '
+                                                   'was expected.'.format(a=list_of_arguments[3]))
+
+            #   Nach der Prüfung wird der eine Index und der eine Parameter jeweils der Liste hinzugefügt
+            list_of_indizes = list_of_arguments[0:3]
+            list_of_parameters = [list_of_arguments[3]]
 
 
         #   Ein neues Element wird aus dem geprüften Gatter und der Liste der Indizes erstellt. Das Element besteht aus
@@ -304,6 +389,8 @@ class CheckFilePath(argparse.Action):
             #   split() trennt String nach den Leerzeichen --> Aus Parameter mit Argumenten pro Zeile / Element in
             #   der Liste wird Liste mit neuen Elementen für jedes Argument
             args_list_from_file += cmd.rstrip().split()
+
+        #parser.parse_args(args_list_from_file, namespace)
 
         #   Speichere die neue Liste mit den eingelesenen Parametern am selben Ort, wo vorher der Dateipfad
         #   übergeben wurde
@@ -372,7 +459,7 @@ def cmd_line_parser(q_sim, cmd_in):
                                      epilog='by Lukas Lepper')
 
     #   Je nach Befehl wird function benötigt ToDo default auf cli?
-    parser.set_defaults(function=None)
+    parser.set_defaults(function=process_cli)
 
     #   Subparser-Objekt erstellen
     subparsers = parser.add_subparsers(title='sub-commands',
@@ -382,22 +469,28 @@ def cmd_line_parser(q_sim, cmd_in):
 
     #   Gruppe aus nicht kompatiblen Parametern: Verbose-Level einstellen oder quite, um Ausgabe auf Ergebnisse zu
     #   beschränken
-    verbose_groupe = parser.add_mutually_exclusive_group()
+    verbose_group = parser.add_mutually_exclusive_group()
+
+    #file_or_cli_group = parser.add_mutually_exclusive_group()
+
+    #file_group = file_or_cli_group.add_argument_group(title='Title', description='hi')
+    #cli_group = file_or_cli_group.add_argument_group(title='2t', description='ak')
 
     #   Teilbefehl, der den Schaltungsaufbau aus der Eingabe ausliest
-    parser_from_cli = subparsers.add_parser('cli',
-                                            description='Input parameters from commandline interface. '
-                                                        'Example: cli -n 3 -i 101 -g h 0 -g r_phi 1 3.14159 -g m 0 -p gates',
-                                            help='Input parameters from commandline interface')
+    #parse_from_cli = subparsers.add_parser('cli',
+     #                                       description='Input parameters from commandline interface. '
+      #                                                  'Example: cli -n 3 -i 101 -g h 0 -g r_phi 1 3.14159 -g m 0 -p '
+       #                                                 'gates',
+        #                                    help='Input parameters from commandline interface')
 
     #   im Argumlent_Objekt des Parser wird an der Stelle function 'process_cli' gespeichert. Damit wird später
     #   der Funktionsaufruf args.function(q_sim, args) zu process_cli(q_sim, args), wenn der Teilbefehl cli aufgerufen
     #   wurde.
-    parser_from_cli.set_defaults(function=process_cli)
+    #parse_from_cli.set_defaults(function=process_cli)
 
     # Argumente für den Teilbefehl cli
     #   1: positional Argument für die Anzahl der Qubits
-    parser_from_cli.add_argument('--n_qubits', '-n',
+    parser.add_argument('--n_qubits', '-n',
                                  action='store',
                                  type=int,
                                  default=Base.getnqubits(),
@@ -405,7 +498,7 @@ def cmd_line_parser(q_sim, cmd_in):
                                       'Index for inizializing or for the gates have to be in range of this number.')
 
     #   2: Argument um Qubits zu initialisieren
-    parser_from_cli.add_argument('--initial_state', '-i',
+    parser.add_argument('--initial_state', '-i',
                                  dest='index_in_vec',
                                  action=ValidateInitialization,
                                  metavar='STATE',
@@ -413,7 +506,7 @@ def cmd_line_parser(q_sim, cmd_in):
                                       '(from left: q_0 to the right: q_n).')
 
     #   3: Argument um Gatter einzulesen
-    parser_from_cli.add_argument('--gate', '-g',
+    parser.add_argument('--gate', '-g',
                                  dest='list_of_operations',
                                  action=ValidateGate,
                                  nargs='+',
@@ -424,14 +517,14 @@ def cmd_line_parser(q_sim, cmd_in):
 
     #   7: Argument um die Liste der Gatter oder den aktuellen Zustand auszugeben (Wird auch in der Liste der
     #   Operationen gespeichert)
-    parser_from_cli.add_argument('--print', '-p',
+    parser.add_argument('--print', '-p',
                                  dest='list_of_operations',
                                  choices=['states', 'state_vec', 'init_state', 'gates'],
                                  action=ValidatePrint,
                                  help='Print the state vector or the list of gates')
 
     #   Teilbefehl, der den Schaltungsaufbau aus einer Datei ausliest
-    parser_from_file = subparsers.add_parser('file',
+    parse_from_file = subparsers.add_parser('file',
                                              description='Read simulation parameters from file. One argument per line, '
                                                          'syntax is the cli command. Example: -v 1 file '
                                                          r'C:\Users\Lukas\Documents\test.txt'
@@ -441,11 +534,11 @@ def cmd_line_parser(q_sim, cmd_in):
     #   im Argumlent_Objekt des Parser wird an der Stelle function 'process_file' gespeichert. Damit wird
     #   später der Funktionsaufruf args.function(q_sim, args) zu process_file(q_sim, args), wenn der Teilbefehl
     #   file aufgerufen wurde.
-    parser_from_file.set_defaults(function=process_file)
+    parse_from_file.set_defaults(function=process_file)
 
     # Argumente für den Teilbefehl file
     #   4: Argument um Datei einzulesen
-    parser_from_file.add_argument('file',
+    parse_from_file.add_argument('file',
                                   default=[],
                                   action=CheckFilePath,
                                   metavar='FILEPATH',
@@ -454,7 +547,7 @@ def cmd_line_parser(q_sim, cmd_in):
 
     # Argumente, die im Elternbefehl vorkommen (In der Syntax vor den Teilbefhelen: -v 2 -c file c:/user...
     #   5: Argument um das Verbose-Level festzulegen
-    verbose_groupe.add_argument('--verbose_level', '-v',
+    verbose_group.add_argument('--verbose_level', '-v',
                                 dest='verbose_level',
                                 type=int,
                                 action='store',
@@ -463,7 +556,7 @@ def cmd_line_parser(q_sim, cmd_in):
                                 )
 
     #   6: Argument um die Ausgabe auf die Ergebnisse einzuschränken
-    verbose_groupe.add_argument('--quiet', '-q',
+    verbose_group.add_argument('--quiet', '-q',
                                 dest='quiet',
                                 action='store_true',
                                 help='Print only results.')
@@ -479,6 +572,15 @@ def cmd_line_parser(q_sim, cmd_in):
                         action='store_true',
                         help='Activates the input of different commands one after the other, which are applied to the '
                              'same state vector. Then -n and -i have no effect.')
+
+    parser.add_argument('--accuracy', '-a',
+                        dest='accuracy',
+                        metavar='ACCURACY',
+                        type=int,
+                        default=4,
+                        action='store',
+                        help='Define the accuracy of the output. Accuracy of the parameters entered have to be some'
+                             ' digits higher.')
 
     #   Teilbefehl, der die interaktive Eingabe deaktiviert
     parser_exit = subparsers.add_parser('exit',
@@ -508,6 +610,8 @@ def cmd_line_parser(q_sim, cmd_in):
         Base.set_verbose_level(-1)
     else:
         Base.set_verbose_level(args.verbose_level)
+
+    Base.set_accuracy(args.accuracy)
 
     #   Die Simulation wird gestartet wenn der cli-Befehl geparst wurde, aber nicht wenn der file oder exit Befehl
     #   abgearbeitet wurde. Letztendlich werden nur mit dem cli-Befehl die Parameter eingelesen, file ruft mit den

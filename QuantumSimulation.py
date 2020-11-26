@@ -18,7 +18,10 @@ from G_PauliY import PauliY
 from G_Rphi import GateRphi
 from G_Identity import GIdentity
 from G_U3ThetaPhiLamda import GU3ThetaPhiLamda
-from G_CNOT import G_CNOT
+from CNOT import CNOT
+from G_Toffoli import Toffoli
+from G_Fredkin import Fredkin
+from G_Deutsch import Deutsch
 import cmath
 
 #   wird nur für den custm Zustandsvektor benötigt
@@ -98,7 +101,13 @@ class QuantumSimulation(Base):
                 elif operation[0] == 'u3':
                     self.qgate_obj = GU3ThetaPhiLamda(list_affected_qubits, list_of_parameters)
                 elif operation[0] == 'cnot':
-                    self.qgate_obj = G_CNOT(list_affected_qubits)
+                    self.qgate_obj = CNOT(list_affected_qubits)
+                elif operation[0] == 'toffoli':
+                    self.qgate_obj = Toffoli(list_affected_qubits)
+                elif operation[0] == 'fredkin' or operation[0] == 'cswap':
+                    self.qgate_obj = Fredkin(list_affected_qubits)
+                elif operation[0] == 'deutsch':
+                    self.qgate_obj = Deutsch(list_affected_qubits, list_of_parameters)
                 elif operation[0] == 'm':
 
                     #   Erstelle Objekt für die Messung, dabei wird auch ein Objekt für das Entscheidungsdiagramm

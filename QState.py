@@ -46,7 +46,7 @@ class QState(QMatrix):
                 diracnotation = self.getdiracnotation(index, self.getnqubits())
 
                 #   Berechnung der Wahrscheinlichkeit in % ToDo: Genauigkeit?
-                probability = round(pow(abs(value), 2) * 100, 6)
+                probability = round(pow(abs(value), 2) * 100, self.get_accuracy())
 
                 #   Für die Ausgabe wird dem Ausgabestring für jeden Zustand eine neue Zeile Text hinzugefügt
                 if Base.get_verbose() >= 0:
@@ -64,7 +64,8 @@ class QState(QMatrix):
             #   Ausgabe der Summe aus den gadrierten Beträgen der Elemente aus dem Zustandsvektor
             #   Damit wird die Normiertheit gepfüft, diese Summe muss 1 ergeben
             if Base.get_verbose() >= 1:
-                return_str += '\nCheck normalization: {a}% == 100%'.format(a=round(sum_entries*100, 13))  # ToDo: Genauigkeit
+                return_str += '\nCheck normalization: {a}% == 100%'.format(a=round(sum_entries*100, self.get_accuracy()))
+                # ToDo: Genauigkeit
 
             #   rstrip() entfernt den letzten Zeilenumbruch, der durch for-Schleife zu viel ist
             return return_str.rstrip()
