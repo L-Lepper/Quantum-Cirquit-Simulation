@@ -1,7 +1,7 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
 #   Author: Lukas Lepper, 30.11.2020
 #   Betreuer: Martin Hardieck
-#   Dateiname: G_Icing.py
+#   Dateiname: G_Ising.py
 #   Version: 0.6
 
 
@@ -10,10 +10,10 @@ import math
 from QGate import QGate
 
 
-class IcingGate(QGate):
+class IsingGate(QGate):
     """
-    Klasse für das Icing Gatter (XX, YY oder ZZ). Speichert den Typ und erweitert die Matrix dieses Gatters auf Größe des
-    Zustandsvektors.
+    Klasse für das Ising Gatter (XX, YY oder ZZ). Speichert den Typ und erweitert die Matrix dieses Gatters auf Größe
+    des Zustandsvektors.
     """
 
     def __init__(self, list_affected_qubits, list_of_parameters, int_in):

@@ -30,7 +30,7 @@ from G_negRotationX import negRotationX
 from G_negRotationY import negRotationY
 from G_controlledRphi import CRphi
 from G_controlledUgate import CUgate
-from G_Icing import IcingGate
+from G_Ising import IsingGate
 from G_RotationZ import RotationZ
 import cmath
 
@@ -170,11 +170,11 @@ class QuantumSimulation(Base):
                     self.qgate_obj = CUgate(list_affected_qubits, qb1_gate_obj)
 
                 elif operation[0] == 'xx':
-                    self.qgate_obj = IcingGate(list_affected_qubits, list_of_parameters, 0)
+                    self.qgate_obj = IsingGate(list_affected_qubits, list_of_parameters, 0)
                 elif operation[0] == 'yy':
-                    self.qgate_obj = IcingGate(list_affected_qubits, list_of_parameters, 1)
+                    self.qgate_obj = IsingGate(list_affected_qubits, list_of_parameters, 1)
                 elif operation[0] == 'zz':
-                    self.qgate_obj = IcingGate(list_affected_qubits, list_of_parameters, 2)
+                    self.qgate_obj = IsingGate(list_affected_qubits, list_of_parameters, 2)
                 elif operation[0] == 'rz':
                     self.qgate_obj = RotationZ(list_affected_qubits, [cmath.pi/2])
                 elif operation[0] == 'neg_rz':
