@@ -1,7 +1,7 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
 #   Author: Lukas Lepper, 24.11.2020
 #   Betreuer: Martin Hardieck
-#   Dateiname: GU3_theta_phi_lamda.py
+#   Dateiname: G_CNOT.py
 #   Version: 0.6
 
 

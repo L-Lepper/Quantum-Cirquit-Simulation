@@ -37,7 +37,7 @@ class QState(QMatrix):
         #   Ausgabe für jeden einzelnen Wert ungleich 0, im Zustandsvektor
         for value in self.general_matrix:
 
-            if round(abs(value), 13) != 0.:  #ToDo Genauigkeit?
+            if round(abs(value), Base.get_vec_zero_decimal_places()) != 0.:  #ToDo Genauigkeit?
 
                 #   Summiere den Betrag der Einträge zum quadrat, für die Geamtwahrscheinlichkeit (muss 100% sein)
                 sum_entries += pow(abs(value), 2)

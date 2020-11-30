@@ -18,14 +18,39 @@ from G_PauliY import PauliY
 from G_Rphi import GateRphi
 from G_Identity import GIdentity
 from G_U3ThetaPhiLamda import GU3ThetaPhiLamda
-from CNOT import CNOT
+from G_CNOT import CNOT
 from G_Toffoli import Toffoli
 from G_Fredkin import Fredkin
 from G_Deutsch import Deutsch
+from G_SWAP import Swap
+from G_sqrt_SWAP import sqrtSwap
+from G_RotationX import RotationX
+from G_RotationY import RotationY
+from G_negRotationX import negRotationX
+from G_negRotationY import negRotationY
+from G_controlledRphi import CRphi
+from G_controlledUgate import CUgate
+from G_Icing import IcingGate
+from G_RotationZ import RotationZ
 import cmath
 
 #   wird nur für den custm Zustandsvektor benötigt
 import numpy as np
+
+
+class DummyGate:
+    """
+    Diese Klasse wird nur für die kontrollierten Gatter cx, cy, und cz benötigt. Da die Objekte PauliX, ... Matrizen
+    haben, die schon beim erstellen auf die Anzahl der Qubits erweitert wird, aber für die Klasse CUgate, in der aus
+    einer allgemeinen 2x2 Matrix ein kontrolliertes Gatter erstellt werden soll, wird ein Dummy-Objekt erzeugt, das die
+    benötigten Informationen gespecihert hat.
+    ToDo: Erweitern der 2x2 Matrizen erst später, sodass Gatter PuliX,... zum erstellen anderer Gatter benutzt werden
+    können.
+    """
+    def __init__(self, type_of_gate, matrix):
+        self.type = type_of_gate
+        self.general_matrix = matrix
+        super().__init__()
 
 
 class QuantumSimulation(Base):
@@ -86,28 +111,75 @@ class QuantumSimulation(Base):
                     self.qgate_obj = HadamardH(list_affected_qubits)
                 elif operation[0] == 'y':
                     self.qgate_obj = PauliY(list_affected_qubits)
-                elif operation[0] == 'r_phi':
+                elif operation[0] == 'r_phi' or operation[0] == 'r':
                     self.qgate_obj = GateRphi(list_affected_qubits, list_of_parameters)
                 elif operation[0] == 's':
                     self.qgate_obj = GateRphi(list_affected_qubits, [cmath.pi/2])
-                elif operation[0] == 's*':
+                elif operation[0] == 'sdg':
                     self.qgate_obj = GateRphi(list_affected_qubits, [-cmath.pi/2])
                 elif operation[0] == 't':
                     self.qgate_obj = GateRphi(list_affected_qubits, [cmath.pi/4])
-                elif operation[0] == 't*':
-                    self.qgate_obj = GateRphi(list_affected_qubits, [cmath.pi/4])
+                elif operation[0] == 'tdg':
+                    self.qgate_obj = GateRphi(list_affected_qubits, [-cmath.pi/4])
                 elif operation[0] == 'i':
                     self.qgate_obj = GIdentity(list_affected_qubits)
                 elif operation[0] == 'u3':
                     self.qgate_obj = GU3ThetaPhiLamda(list_affected_qubits, list_of_parameters)
-                elif operation[0] == 'cnot':
+                elif operation[0] == 'cnot' or operation[0] == 'cn':
                     self.qgate_obj = CNOT(list_affected_qubits)
-                elif operation[0] == 'toffoli':
+                elif operation[0] == 'toffoli' or operation[0] == 'to':
                     self.qgate_obj = Toffoli(list_affected_qubits)
-                elif operation[0] == 'fredkin' or operation[0] == 'cswap':
+                elif operation[0] == 'fredkin' or operation[0] == 'cswap' or operation[0] == 'f':
                     self.qgate_obj = Fredkin(list_affected_qubits)
-                elif operation[0] == 'deutsch':
+                elif operation[0] == 'deutsch' or operation[0] == 'd':
                     self.qgate_obj = Deutsch(list_affected_qubits, list_of_parameters)
+                elif operation[0] == 'swap' or operation[0] == 'sw':
+                    self.qgate_obj = Swap(list_affected_qubits)
+                elif operation[0] == 'sqrt_swap' or operation[0] == 'srs':
+                    self.qgate_obj = sqrtSwap(list_affected_qubits)
+                elif operation[0] == 'rx' or operation[0] == 'sqrt_not':
+                    self.qgate_obj = RotationX(list_affected_qubits)
+                elif operation[0] == 'ry':
+                    self.qgate_obj = RotationY(list_affected_qubits)
+                elif operation[0] == 'neg_rx':
+                    self.qgate_obj = negRotationX(list_affected_qubits)
+                elif operation[0] == 'neg_ry':
+                    self.qgate_obj = negRotationY(list_affected_qubits)
+                elif operation[0] == 'u1':
+                    self.qgate_obj = GateRphi(list_affected_qubits, list_of_parameters)
+                elif operation[0] == 'u2':
+                    self.qgate_obj = GU3ThetaPhiLamda(list_affected_qubits, [cmath.pi/2] + list_of_parameters)
+                elif operation[0] == 'cr':
+                    self.qgate_obj = CRphi(list_affected_qubits, list_of_parameters)
+
+                #   kontrolliertes x, y, oder z Gatter. Da zurzeit die Klassen PauliX PaulyY, ... die Matrizen auf die
+                #   Anzahl an Qubits erweitern, können diese Obekte nicht zur erstellung des Kontrollierten Gatters
+                #   genutzt werden, da die spezifische 2x2 Matrix benötigt wird.
+                elif operation[0] == 'cx' or operation[0] == 'cy' or operation[0] == 'cz':
+                    qb1_gate_obj = None
+
+                    if operation[0] == 'cx':
+                        qb1_gate_obj = DummyGate('x', np.array([[0, 1], [1, 0]], dtype=complex))
+
+                    elif operation[0] == 'cy':
+                        qb1_gate_obj = DummyGate('y', np.array([[0, -1j], [1j, 0]], dtype=complex))
+
+                    elif operation[0] == 'cz':
+                        qb1_gate_obj = DummyGate('z', np.array([[1, 0], [0, -1]], dtype=complex))
+
+                    self.qgate_obj = CUgate(list_affected_qubits, qb1_gate_obj)
+
+                elif operation[0] == 'xx':
+                    self.qgate_obj = IcingGate(list_affected_qubits, list_of_parameters, 0)
+                elif operation[0] == 'yy':
+                    self.qgate_obj = IcingGate(list_affected_qubits, list_of_parameters, 1)
+                elif operation[0] == 'zz':
+                    self.qgate_obj = IcingGate(list_affected_qubits, list_of_parameters, 2)
+                elif operation[0] == 'rz':
+                    self.qgate_obj = RotationZ(list_affected_qubits, [cmath.pi/2])
+                elif operation[0] == 'neg_rz':
+                    self.qgate_obj = RotationZ(list_affected_qubits, [-cmath.pi/2])
+
                 elif operation[0] == 'm':
 
                     #   Erstelle Objekt für die Messung, dabei wird auch ein Objekt für das Entscheidungsdiagramm
@@ -142,20 +214,29 @@ class QuantumSimulation(Base):
                     #   Falls die Anzahl an Qubits, der Anzahl aus dem gespeicherten Vektor entspricht, wird dieser
                     #   verwendet
                     if Base.getnqubits() == 5:
+                        #   1
                         #self.qstate_obj.general_matrix = np.array([0.080396894, 0.037517934, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0.143565882, 0.066997412, 0j, 0j, 0j, 0j, 0j, 0j, 0.777808047, 0j, 0.601700565, 0j, 0j, 0j, 0j, 0j])
-                        #qsim_obj.qstate_obj.general_matrix = np.array([1, 1, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 1, 1, 0j, 0j, 0j, 0j, 0j, 0j, 1, 0j, 1, 0j, 0j, 0j, 0j, 0j])
+                        #   2
+                        #self.qstate_obj.general_matrix = np.array([1, 1, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 0j, 1, 1, 0j, 0j, 0j, 0j, 0j, 0j, 1, 0j, 1, 0j, 0j, 0j, 0j, 0j])
+                        #   3
                         self.qstate_obj.general_matrix = np.array([0, 0, 0.00752268163518088, 0, 0, 0, 0, 0, 0, 0, 0.306489370178815, 0.353641580975556, 0, 0, 0, 0, 0, 0, 0.286171213985822, 0.330197554599025, 0, 0, 0, 0, 0, 0.523233828563029, 0, 0.391028839851374, 0.283219972790003, 0.288323035362795, 0, 0])
+
                     elif self.getnqubits() == 4:
-                        self.qstate_obj.general_matrix = np.array([0, 0.350723877, 0, 0.350723877, 0, 0.344408624, 0.344408624, 0, 0, 0.363103585, 0, 0.356154234, 0, 0.358337265, 0.360076766, 0])
+                        #   1
+                        self.qstate_obj.general_matrix = np.array([-0.366378927704102+0.535476894336764j, -0.253646949948994+0j, 0+0j, 0.591842883214319-0.0281829944387771j, 0.140914972193885+0.0281829944387771j, 0.0563659888775542+0.0845489833163312j, 0.0845489833163312+0.140914972193885j, -0.0563659888775542+0.0845489833163312j, 0.0845489833163312-0.140914972193885j, -0.0563659888775542-0.0845489833163312j, 0.0281829944387771-0.0563659888775542j, 0.0563659888775542+0.0563659888775542j, 0.0845489833163312-0.140914972193885j, -0.0563659888775542-0.0845489833163312j, 0.0281829944387771-0.0563659888775542j, 0.0563659888775542+0.0563659888775542j])
+                        #   2
+                        #self.qstate_obj.general_matrix = np.array([0, 0.350723877, 0, 0.350723877, 0, 0.344408624, 0.344408624, 0, 0, 0.363103585, 0, 0.356154234, 0, 0.358337265, 0.360076766, 0])
+
                     elif self.getnqubits() == 6:
                         #   1
-                        #self.qstate_obj.general_matrix = np.array([0.0812610073560534, 0.162522014712107, 0.237532175348464, 0.118766087674232, 0.162522014712107, 0.0812610073560534, 0.118766087674232, 0.237532175348464, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.12640601144275, 0.2528120228855, 0.369494494986499, 0.18474724749325, 0.2528120228855, 0.12640601144275, 0.18474724749325, 0.369494494986499, 0, 0, 0, 0, 0.540196630097221, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+                        self.qstate_obj.general_matrix = np.array([0.0812610073560534, 0.162522014712107, 0.237532175348464, 0.118766087674232, 0.162522014712107, 0.0812610073560534, 0.118766087674232, 0.237532175348464, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.12640601144275, 0.2528120228855, 0.369494494986499, 0.18474724749325, 0.2528120228855, 0.12640601144275, 0.18474724749325, 0.369494494986499, 0, 0, 0, 0, 0.540196630097221, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
                         #   2
-                        self.qstate_obj.general_matrix = np.array([0.0967127694558382, 0.193425538911676, 0.28269886456322, 0.14134943228161, 0.193425538911676, 0.0967127694558382, 0.14134943228161, 0.28269886456322, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0967127694558382, 0.193425538911676, 0.28269886456322, 0.14134943228161, 0.193425538911676, 0.0967127694558382, 0.14134943228161, 0.28269886456322, 0, 0, 0, 0, 0.642914896667491, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+                        #self.qstate_obj.general_matrix = np.array([0.0967127694558382, 0.193425538911676, 0.28269886456322, 0.14134943228161, 0.193425538911676, 0.0967127694558382, 0.14134943228161, 0.28269886456322, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0967127694558382, 0.193425538911676, 0.28269886456322, 0.14134943228161, 0.193425538911676, 0.0967127694558382, 0.14134943228161, 0.28269886456322, 0, 0, 0, 0, 0.642914896667491, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
 
                         #   3
                         #self.qstate_obj.general_matrix = np.array([0.20135869720078, 0.256274705528265, 0.321047433299145, 0.42806324439886, 0.31119071385575, 0.237969369419103, 0.401309291623931, 0.107015811099715, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0.0366106722183236, 0.0549160083274853, 0.240785574974359, 0.0267539527749288, 0.109832016654971, 0.0915266805458089, 0.21403162219943, 0.267539527749287, 0, 0, 0, 0, 0.283938420180097, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
+
                     else:
                         self.qstate_obj.general_matrix = np.zeros(Base.getnqubits())
                         self.qstate_obj.general_matrix[0] = 1
@@ -169,7 +250,7 @@ class QuantumSimulation(Base):
                 #   Fehler: Operation wird als gültige Eingabe erkannt, ist oben aber nicht aufgeführt
                 else:
                     raise Exception('Error: The following operation was not recognized as Error in '
-                                    'QuantumSimulation.py: cmd_input_for_qsim(),\n'
+                                    'main.py: cmd_line_parser(),\n'
                                     'but is not implemented in QuantumSimulation.py: calculate():', operation)
 
                 #   Multiplikation führt Simulation aus: Neuer Zustandsvektor nachdem Gatter angewendet wurde

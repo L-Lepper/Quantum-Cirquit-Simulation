@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Diagram>
+  <ID>Python</ID>
+  <OriginalElement />
+  <nodes>
+    <node x="427.5" y="1034.0">QState.QState</node>
+    <node x="321.5" y="676.0">QMatrix.QMatrix</node>
+    <node x="1322.5" y="467.0">DDEdge.DDEdge</node>
+    <node x="138.5" y="1056.0">QGate.QGate</node>
+    <node x="1188.0" y="0.0">Base.Base</node>
+    <node x="0.0" y="1227.0">Measurement.Measurement</node>
+    <node x="1973.5" y="676.0">Operation.Operation</node>
+    <node x="1641.5" y="544.0">QuantumSimulation.QuantumSimulation</node>
+    <node x="921.5" y="555.0">DDNode.DDNode</node>
+    <node x="504.49999999999994" y="511.0">DecisionDiagram.DecisionDiagram</node>
+  </nodes>
+  <notes />
+  <edges>
+    <edge source="QState.QState" target="QMatrix.QMatrix">
+      <point x="0.0" y="-71.5" />
+      <point x="533.0" y="1009.0" />
+      <point x="443.75" y="1009.0" />
+      <point x="40.75" y="49.5" />
+    </edge>
+    <edge source="DDEdge.DDEdge" target="Base.Base">
+      <point x="0.0" y="-258.5" />
+      <point x="1472.0" y="447.0" />
+      <point x="1309.3333333333333" y="447.0" />
+      <point x="17.333333333333258" y="203.5" />
+    </edge>
+    <edge source="Operation.Operation" target="Base.Base">
+      <point x="0.0" y="-49.5" />
+      <point x="2114.0" y="427.0" />
+      <point x="1378.6666666666667" y="427.0" />
+      <point x="86.66666666666674" y="203.5" />
+    </edge>
+    <edge source="QuantumSimulation.QuantumSimulation" target="Base.Base">
+      <point x="0.0" y="-181.5" />
+      <point x="1797.5" y="437.0" />
+      <point x="1344.0" y="437.0" />
+      <point x="52.0" y="203.5" />
+    </edge>
+    <edge source="DecisionDiagram.DecisionDiagram" target="Base.Base">
+      <point x="0.0" y="-214.5" />
+      <point x="703.0" y="437.0" />
+      <point x="1240.0" y="437.0" />
+      <point x="-52.0" y="203.5" />
+    </edge>
+    <edge source="QMatrix.QMatrix" target="Base.Base">
+      <point x="0.0" y="-49.5" />
+      <point x="403.0" y="427.0" />
+      <point x="1205.3333333333333" y="427.0" />
+      <point x="-86.66666666666674" y="203.5" />
+    </edge>
+    <edge source="Measurement.Measurement" target="QGate.QGate">
+      <point x="0.0" y="-93.5" />
+      <point x="0.0" y="49.5" />
+    </edge>
+    <edge source="QGate.QGate" target="QMatrix.QMatrix">
+      <point x="0.0" y="-49.5" />
+      <point x="273.0" y="1009.0" />
+      <point x="362.25" y="1009.0" />
+      <point x="-40.75" y="49.5" />
+    </edge>
+    <edge source="DDNode.DDNode" target="Base.Base">
+      <point x="0.0" y="-170.5" />
+      <point x="1112.0" y="447.0" />
+      <point x="1274.6666666666667" y="447.0" />
+      <point x="-17.333333333333258" y="203.5" />
+    </edge>
+  </edges>
+  <settings layout="Hierarchic Group" zoom="1.0" x="1127.5" y="707.0" />
+  <SelectedNodes />
+  <Categories>
+    <Category>Methods</Category>
+    <Category>Inner Classes</Category>
+    <Category>Fields</Category>
+  </Categories>
+</Diagram>
+

@@ -33,7 +33,7 @@ class GU3ThetaPhiLamda(QGate):
         self.type = 'u3'
 
         #   Spezifische Matrix des Gatters
-        self.general_matrix = np.array([[cmath.cos(list_of_parameters[0][0] / 2), -1 * cmath.exp(list_of_parameters[0][2] * 1j) * cmath.sin(list_of_parameters[0][0] / 2)], [cmath.exp(list_of_parameters[0][1] * 1j) * cmath.sin(list_of_parameters[0][0] / 2), cmath.exp((list_of_parameters[0][2] + list_of_parameters[0][1]) * 1j) * cmath.cos(list_of_parameters[0][0] / 2)]])
+        self.general_matrix = np.array([[cmath.cos(list_of_parameters[0] / 2), -1 * cmath.exp(list_of_parameters[2] * 1j) * cmath.sin(list_of_parameters[0] / 2)], [cmath.exp(list_of_parameters[1] * 1j) * cmath.sin(list_of_parameters[0] / 2), cmath.exp((list_of_parameters[2] + list_of_parameters[1]) * 1j) * cmath.cos(list_of_parameters[0] / 2)]])
 
         #   Die Matrix wird auf die Größe der Quantenschaltung erweitert
         self.general_matrix = self.expandmatrix(self.getnqubits(), max(list_affected_qubits))

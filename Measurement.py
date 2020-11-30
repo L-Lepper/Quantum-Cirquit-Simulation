@@ -114,8 +114,9 @@ class Measurement(QGate):
                 #   der rechten Kante 0 ist und 1 gemessen wurde(rechte Kante). Also das eine Kante mit
                 #   Wahrscheinlichkeit 0 gemessen wurde. In den anderen Fällen, kann normal weiter gemacht werden.
                 #   ToDo: Genauigkeit
-                if round(edge.conditional_probability, 13) == 0 and i == 0 and p_0 >= random_value \
-                        or round(edge.conditional_probability, 13) == 0 and i == 1 and p_0 < random_value:
+                dec_places = Base.get_dd_zero_decimal_places()
+                if round(edge.conditional_probability, dec_places) == 0 and i == 0 and p_0 >= random_value \
+                        or round(edge.conditional_probability, dec_places) == 0 and i == 1 and p_0 < random_value:
                     is_special_case = True
 
             #   Falls der Spezialfall eingetreten ist wird der Knoten und darüberliegende Knoten gelöscht, wenn sie
@@ -410,7 +411,8 @@ class Measurement(QGate):
                 #   der aktuellen Kante 0 ist und diese Kante die bleibende ist, die nicht auf 0 geändert werden
                 #   soll (Da der nachfolgende Baum der anderen Kante durch den Spezialfall wegggefallen ist)
                 #   ToDo: Genauigkeit
-                if round(outgoing_edge.conditional_probability, 13) == 0 and i == index_edge_not_to_del_node:
+                dec_places = Base.get_dd_zero_decimal_places()
+                if round(outgoing_edge.conditional_probability, dec_places) == 0 and i == index_edge_not_to_del_node:
                     is_special_case = True
 
             #   Falls der Spezialfall eingetretenist, wird dieser Quellknoten in der Liste aller Knoten gesucht und die

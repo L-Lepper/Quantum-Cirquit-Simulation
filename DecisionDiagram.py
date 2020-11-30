@@ -532,14 +532,6 @@ class DecisionDiagram(Base):
         :return:
         """
 
-        #   Für jeden Knoten in der übergebenen Liste, werden nacheinander die Index-Paare ausgelesen
-        #for i, j in list_indices_of_nodes:
-
-            #   Der Erste Knoten ist der Referenz-Knoten, mit dem die anderen Knoten der Liste
-         #   for k in range(j + 1, len(self.list_of_all_nodes[i])):
-          #      reference_node = self.list_of_all_nodes[i][j]
-           #     compared_node = self.list_of_all_nodes[i][k]
-
         #   Falls die Funktion für die nächste Ebene mit den Quellknoten der zuvor Zusammengefassten Knoten
         #   aufgerufen wird, kann passieren dass die Quellknoten identisch sind. Der Knoten soll übersprungen werden,
         #   da sonst zwei Elemente in list_indices_of_nodes auf den selben Knoten zeigen und somit dieser Knoten
@@ -591,24 +583,13 @@ class DecisionDiagram(Base):
                 reference_node = self.list_of_all_nodes[i][j]
                 compared_node = self.list_of_all_nodes[i][k]
 
+                #   ToDo Genauigkeit
+                dec_pl = Base.get_compare_decimal_places()
+
                 #   Runde den in den Knoten gespeicherten Wert, die miteinander verglichen werden sollen
                 #   ToDo Genauigkeit
-                round_sv_1 = round(reference_node.saved_value_on_node, 6)
-                round_sv_2 = round(compared_node.saved_value_on_node, 6)
-
-                #   Runde den Real- und Imaginärteil der linken ausgehenden Kante beider Knoten (0-Kante)
-                #   und bilde wieder eine komplexe Zahl
-                #round_ew_1 = (round(reference_node.list_outgoing_edges[0].edge_weight.real, 6)
-                 #             + round(reference_node.list_outgoing_edges[0].edge_weight.imag, 6) * 1j)
-                #round_ew_2 = (round(compared_node.list_outgoing_edges[0].edge_weight.real, 6)
-                 #             + round(compared_node.list_outgoing_edges[0].edge_weight.imag, 6) * 1j)
-
-                #   Runde den Real- und Imaginärteil der rechten ausgehenden Kante beider Knoten (1-Kante)
-                #   und bilde wieder eine komplexe Zahl
-                #round_ew_3 = (round(reference_node.list_outgoing_edges[1].edge_weight.real, 6)
-                 #             + round(reference_node.list_outgoing_edges[1].edge_weight.imag, 6) * 1j)
-                #round_ew_4 = (round(compared_node.list_outgoing_edges[1].edge_weight.real, 6)
-                 #             + round(compared_node.list_outgoing_edges[1].edge_weight.imag, 6) * 1j)
+                round_sv_1 = round(reference_node.saved_value_on_node, dec_pl)
+                round_sv_2 = round(compared_node.saved_value_on_node, dec_pl)
 
                 #   In der Liste unique_value sind aus jeder ausgehenden Kante Werte aus den Kantengewichten berechnet.
                 #   Um zu prüfen ob zwei Kanten identisch sind, müssen also die zwei Werte aus der Liste verglichen
@@ -618,24 +599,24 @@ class DecisionDiagram(Base):
                 #   wieder eine komplexe Zahl erzeugt, die weiter unten verglichen wird.
                 #   ToDo: Genauigkeit prüfen
                 #   Linker Ast:
-                round_uv_1 = (round(reference_node.list_outgoing_edges[0].unique_value[0].real, 6)
-                              + round(reference_node.list_outgoing_edges[0].unique_value[0].imag, 6) * 1j)
-                round_uv_2 = (round(reference_node.list_outgoing_edges[0].unique_value[1].real, 6)
-                              + round(reference_node.list_outgoing_edges[0].unique_value[0].imag, 6) * 1j)
-                round_uv_3 = (round(reference_node.list_outgoing_edges[1].unique_value[0].real, 6)
-                              + round(reference_node.list_outgoing_edges[1].unique_value[0].imag, 6) * 1j)
-                round_uv_4 = (round(reference_node.list_outgoing_edges[1].unique_value[1].real, 6)
-                              + round(reference_node.list_outgoing_edges[1].unique_value[0].imag, 6) * 1j)
+                round_uv_1 = (round(reference_node.list_outgoing_edges[0].unique_value[0].real, dec_pl)
+                              + round(reference_node.list_outgoing_edges[0].unique_value[0].imag, dec_pl) * 1j)
+                round_uv_2 = (round(reference_node.list_outgoing_edges[0].unique_value[1].real, dec_pl)
+                              + round(reference_node.list_outgoing_edges[0].unique_value[0].imag, dec_pl) * 1j)
+                round_uv_3 = (round(reference_node.list_outgoing_edges[1].unique_value[0].real, dec_pl)
+                              + round(reference_node.list_outgoing_edges[1].unique_value[0].imag, dec_pl) * 1j)
+                round_uv_4 = (round(reference_node.list_outgoing_edges[1].unique_value[1].real, dec_pl)
+                              + round(reference_node.list_outgoing_edges[1].unique_value[0].imag, dec_pl) * 1j)
 
                 #   Rechter Ast
-                round_uv_a = (round(compared_node.list_outgoing_edges[0].unique_value[0].real, 6)
-                              + round(compared_node.list_outgoing_edges[0].edge_weight.imag, 6) * 1j)
-                round_uv_b = (round(compared_node.list_outgoing_edges[0].unique_value[1].real, 6)
-                              + round(compared_node.list_outgoing_edges[0].edge_weight.imag, 6) * 1j)
-                round_uv_c = (round(compared_node.list_outgoing_edges[1].unique_value[0].real, 6)
-                              + round(compared_node.list_outgoing_edges[1].edge_weight.imag, 6) * 1j)
-                round_uv_d = (round(compared_node.list_outgoing_edges[1].unique_value[1].real, 6)
-                              + round(compared_node.list_outgoing_edges[1].edge_weight.imag, 6) * 1j)
+                round_uv_a = (round(compared_node.list_outgoing_edges[0].unique_value[0].real, dec_pl)
+                              + round(compared_node.list_outgoing_edges[0].edge_weight.imag, dec_pl) * 1j)
+                round_uv_b = (round(compared_node.list_outgoing_edges[0].unique_value[1].real, dec_pl)
+                              + round(compared_node.list_outgoing_edges[0].edge_weight.imag, dec_pl) * 1j)
+                round_uv_c = (round(compared_node.list_outgoing_edges[1].unique_value[0].real, dec_pl)
+                              + round(compared_node.list_outgoing_edges[1].edge_weight.imag, dec_pl) * 1j)
+                round_uv_d = (round(compared_node.list_outgoing_edges[1].unique_value[1].real, dec_pl)
+                              + round(compared_node.list_outgoing_edges[1].edge_weight.imag, dec_pl) * 1j)
 
                 #   Sind die 4 Werte der Kanten und Wert in den Knoten identisch, können die beiden Knoten zusammen-
                 #   gefasst werden.
@@ -679,72 +660,6 @@ class DecisionDiagram(Base):
                     #   Rekursiver Funktionsaufruf mit der neuen Liste der Knoten: Es wird geprüft, ob den Pfad entlang
                     #   nach oben weitere Knoten zusammengefasst werden können.
                     self.merge_nodes_from_list(new_list_of_indices, list_nodes_to_del)
-
-    """
-    def leer(self):
-        list_nodes_to_del = []
-
-        for j, l in list_indices_of_nodes:
-            operating_node = self.list_of_all_nodes[j][l]
-
-            for k in range(j + 1, len(list_indices_of_nodes)):
-
-                #   Runde den in den Knoten gespeicherten Wert des Knotens j und des Knotens k,
-                #   die miteinander verglichen werden sollen
-                round_sv_1 = round(operating_node.saved_value_on_node, 6)
-                round_sv_2 = round(self.list_of_all_nodes[i][k].saved_value_on_node, 6)
-
-                #   Runde den Real- und Imaginärteil der linken ausgehenden Kante beider Knoten (0-Kante)
-                #   und bilde wieder eine komplexe Zahl
-                round_ew_1 = (round(operating_node.list_outgoing_edges[0].edge_weight.real, 6)
-                              + round(operating_node.list_outgoing_edges[0].edge_weight.imag, 6) * 1j)
-                round_ew_2 = (round(self.list_of_all_nodes[i][k].list_outgoing_edges[0].edge_weight.real, 6)
-                              + round(self.list_of_all_nodes[i][k].list_outgoing_edges[0].edge_weight.imag, 6) * 1j)
-
-                #   Runde den Real- und Imaginärteil der rechten ausgehenden Kante beider Knoten (1-Kante)
-                #   und bilde wieder eine komplexe Zahl
-                round_ew_3 = (round(operating_node.list_outgoing_edges[1].edge_weight.real, 6)
-                              + round(operating_node.list_outgoing_edges[1].edge_weight.imag, 6) * 1j)
-                round_ew_4 = (round(self.list_of_all_nodes[i][k].list_outgoing_edges[1].edge_weight.real, 6)
-                              + round(self.list_of_all_nodes[i][k].list_outgoing_edges[1].edge_weight.imag, 6) * 1j)
-
-                #   Sind ausgehende Kanten und Wert in den Knoten identisch, kann der Knoten zusammengefasst werden
-                if round_sv_1 == round_sv_2 and round_ew_1 == round_ew_2 and round_ew_3 == round_ew_4:
-
-                    new_list_of_indices = []
-
-                    #   Der Knoten j soll gelöscht werden, ändere den Zielknoten aller eingehenden Kanten
-                    #   des Knoten j auf den Knoten k.
-                    for edge in operating_node.list_incoming_edges:
-                        edge.target_node = self.list_of_all_nodes[i][k]
-
-                    for edge in self.list_of_all_nodes[i][k].list_incoming_edges:
-                        index_l_new = self.list_of_all_nodes[i - 1].index(edge.source_node)
-                        new_list_of_indices += [[i - 1, index_l_new]]
-
-                    #   Die eingehenden Kanten des Knotens j werden dem Knoten k hinzugefügt
-                    #   (Vorgehen des Zusammenfassens)
-                    self.list_of_all_nodes[i][k].list_incoming_edges \
-                        = np.append(self.list_of_all_nodes[i][k].list_incoming_edges,
-                                    operating_node.list_incoming_edges)
-
-                    #   Der Liste mit den Indizes werden die Indizes der Ebene und des Knotens gespeichert, um
-                    #   diesen Knoten später zu löschen. Wird nicht sofort gelöscht, damit die Indizes gültig
-                    #   bleiben.
-                    operating_node.list_incoming_edges = np.array([])
-                    list_nodes_to_del += [operating_node]
-
-        #   Die Knoten an den in der Liste gespeicherten Indizes werden gelöscht
-        for node in list_nodes_to_del:
-
-            #   delete_node() verlangt, dass die eingehenden Kanten bereits umgeleitet wurden, dh. sie zeigen nicht
-            #   mehr auf den Knoten, der gelöscht wird, oder die Liste muss leer sein.
-            #   Da in der Schleife oben in der untersten Ebene angefangen wurde Knoten zusammenzufassen, sind alle
-            #   Knoten die in der Liste der zu löschenden Knoten stehen, ohne eingehende Kanten, die auf den
-            #   jeweiligen Knoten zeigen.
-            node.delete_node()
-            if Base.get_verbose() >= 3:
-                print('Deleting node in step 7 - Merging nodes')"""
 
     def merge_dd_step7(self):
         """
@@ -808,69 +723,6 @@ class DecisionDiagram(Base):
         #   Gebe die Anzahl der gelöschten Knoten aus
         if Base.get_verbose() >= 3:
             print('Deleting {a} node(s) in step 7 - Merging nodes'.format(a=count))
-
-        #   Wird nicht mehr benötigt, da es mit einer neuen Funktion jetzt anders Funktioniert
-        """
-        #   Liste, in der die Indizes aller Knoten gespeichert werden, die anschließend gelöscht werden sollen
-        list_nodes_to_del = []
-
-        #   Fasse Knoten mit den selben gespeicherten Werten zusammen, wenn die ausgehenden Kanten die selben
-        #   Kantengewichte haben. Dazu muss in der untersten Ebene begonnen werden.
-        for i in range(Base.getnqubits() - 1, 0, -1):
-            for j, operating_node in enumerate(self.list_of_all_nodes[i]):
-                for k in range(j + 1, len(self.list_of_all_nodes[i])):
-
-                    #   Runde den in den Knoten gespeicherten Wert des Knotens j und des Knotens k,
-                    #   die miteinander verglichen werden sollen
-                    round_sv_1 = round(operating_node.saved_value_on_node, 6)
-                    round_sv_2 = round(self.list_of_all_nodes[i][k].saved_value_on_node, 6)
-
-                    #   Runde den Real- und Imaginärteil der linken ausgehenden Kante beider Knoten (0-Kante)
-                    #   und bilde wieder eine komplexe Zahl
-                    round_ew_1 = (round(operating_node.list_outgoing_edges[0].unique_value.real, 6)
-                                  + round(operating_node.list_outgoing_edges[0].unique_value.imag, 6) * 1j)
-                    round_ew_2 = (round(self.list_of_all_nodes[i][k].list_outgoing_edges[0].unique_value.real, 6)
-                                  + round(self.list_of_all_nodes[i][k].list_outgoing_edges[0].unique_value.imag, 6) * 1j)
-
-                    #   Runde den Real- und Imaginärteil der rechten ausgehenden Kante beider Knoten (1-Kante)
-                    #   und bilde wieder eine komplexe Zahl
-                    round_ew_3 = (round(operating_node.list_outgoing_edges[1].unique_value.real, 6)
-                                  + round(operating_node.list_outgoing_edges[1].unique_value.imag, 6) * 1j)
-                    round_ew_4 = (round(self.list_of_all_nodes[i][k].list_outgoing_edges[1].unique_value.real, 6)
-                                  + round(self.list_of_all_nodes[i][k].list_outgoing_edges[1].unique_value.imag, 6) * 1j)
-
-                    #   Sind ausgehende Kanten und Wert in den Knoten identisch, kann der Knoten zusammengefasst werden
-                    if round_sv_1 == round_sv_2 and round_ew_1 == round_ew_2 and round_ew_3 == round_ew_4:
-
-                        #   Der Knoten k soll gelöscht werden, ändere den Zielknoten aller eingehenden Kanten
-                        #   des Knoten k auf den Knoten j.
-                        for edge in self.list_of_all_nodes[i][k].list_incoming_edges:
-                            edge.target_node = operating_node
-
-                        #   Die eingehenden Kanten des Knotens k werden dem Knoten j hinzugefügt
-                        #   (Vorgehen des Zusammenfassens)
-                        operating_node.list_incoming_edges \
-                            = np.append(operating_node.list_incoming_edges,
-                                        self.list_of_all_nodes[i][k].list_incoming_edges)
-
-                        #   Der Liste mit den Indizes werden die Indizes der Ebene und des Knotens gespeichert, um
-                        #   diesen Knoten später zu löschen. Wird nicht sofort gelöscht, damit die Indizes gültig
-                        #   bleiben.
-                        self.list_of_all_nodes[i][k].list_incoming_edges = np.array([])
-                        list_nodes_to_del += [self.list_of_all_nodes[i][k]]
-
-            #   Die Knoten an den in der Liste gespeicherten Indizes werden gelöscht
-            for node in list_nodes_to_del:
-
-                #   delete_node() verlangt, dass die eingehenden Kanten bereits umgeleitet wurden, dh. sie zeigen nicht
-                #   mehr auf den Knoten, der gelöscht wird, oder die Liste muss leer sein.
-                #   Da in der Schleife oben in der untersten Ebene angefangen wurde Knoten zusammenzufassen, sind alle
-                #   Knoten die in der Liste der zu löschenden Knoten stehen, ohne eingehende Kanten, die auf den
-                #   jeweiligen Knoten zeigen.
-                node.delete_node()
-                if Base.get_verbose() >= 3:
-                    print('Deleting node in step 7 - Merging nodes')
-            list_nodes_to_del = [] """
 
     def delete_edge_list_of_all_edges(self, edge_in):
         """
