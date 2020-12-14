@@ -12,26 +12,30 @@ import math
 
 class RotationY(QGate):
     """
-    Klasse für das RY Gatter. 90°-Rotation um die Y-Achse. Speichert den Typ und erweitert die Matrix dieses Gatters
+    Klasse für das RY Gatter. Rotation um die Y-Achse. Speichert den Typ und erweitert die Matrix dieses Gatters
     auf Größe des Zustandsvektors.
     """
 
-    def __init__(self, list_affected_qubits):
+    def __init__(self, list_affected_qubits, list_of_parameters):
         """
         Konstruktor erstellt Matrix in der Größe der Quantenschaltung (Anzahl der Qubits), die das Gatter auf ein
         bestimmtes Qubit beschreibt.
 
         :param list_affected_qubits: Index des Qubits, auf welches das Gatter angewendet wird
+        :param list_of_parameters: Liste der Parameter, hier nur der Winkel Theta.
         """
 
         #   list_affected_qubits wird in der Elternklasse in qsim_obj.list_affected_qubits gespeichert
         super().__init__(list_affected_qubits)
+        theta = list_of_parameters[0]
 
         #   Bezeichnung des Gatters
         self.type = 'ry'
 
         #   Spezifische Matrix des Gatters
-        self.general_matrix = 1/math.sqrt(2) * np.array([[1, -1], [1, 1]], dtype=complex)
+        self.general_matrix = np.array(
+            [[math.cos(theta / 2), -math.sin(theta / 2)], [math.sin(theta / 2), math.cos(theta / 2)]],
+            dtype=complex)
 
         #   Die Matrix wird auf die Größe der Quantenschaltung erweitert
         self.general_matrix = self.expandmatrix(self.getnqubits(), list_affected_qubits[0])

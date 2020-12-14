@@ -15,7 +15,7 @@ from G_PauliZ import PauliZ
 from G_Hadarmard import HadamardH
 from Measurement import Measurement
 from G_PauliY import PauliY
-from G_Rphi import GateRphi
+from G_PhaseShift import GatePhase
 from G_Identity import GIdentity
 from G_U3ThetaPhiLamda import GU3ThetaPhiLamda
 from G_CNOT import CNOT
@@ -26,12 +26,11 @@ from G_SWAP import Swap
 from G_sqrt_SWAP import sqrtSwap
 from G_RotationX import RotationX
 from G_RotationY import RotationY
-from G_negRotationX import negRotationX
-from G_negRotationY import negRotationY
 from G_controlledRphi import CRphi
 from G_controlledUgate import CUgate
 from G_Ising import IsingGate
 from G_RotationZ import RotationZ
+from G_Rotation import Rotation
 import cmath
 
 #   wird nur für den custm Zustandsvektor benötigt
@@ -111,21 +110,21 @@ class QuantumSimulation(Base):
                     self.qgate_obj = HadamardH(list_affected_qubits)
                 elif operation[0] == 'y':
                     self.qgate_obj = PauliY(list_affected_qubits)
-                elif operation[0] == 'r_phi' or operation[0] == 'r':
-                    self.qgate_obj = GateRphi(list_affected_qubits, list_of_parameters)
+                elif operation[0] == 'p':
+                    self.qgate_obj = GatePhase(list_affected_qubits, list_of_parameters)
                 elif operation[0] == 's':
-                    self.qgate_obj = GateRphi(list_affected_qubits, [cmath.pi/2])
+                    self.qgate_obj = GatePhase(list_affected_qubits, [cmath.pi / 2])
                 elif operation[0] == 'sdg':
-                    self.qgate_obj = GateRphi(list_affected_qubits, [-cmath.pi/2])
+                    self.qgate_obj = GatePhase(list_affected_qubits, [-cmath.pi / 2])
                 elif operation[0] == 't':
-                    self.qgate_obj = GateRphi(list_affected_qubits, [cmath.pi/4])
+                    self.qgate_obj = GatePhase(list_affected_qubits, [cmath.pi / 4])
                 elif operation[0] == 'tdg':
-                    self.qgate_obj = GateRphi(list_affected_qubits, [-cmath.pi/4])
+                    self.qgate_obj = GatePhase(list_affected_qubits, [-cmath.pi / 4])
                 elif operation[0] == 'i':
                     self.qgate_obj = GIdentity(list_affected_qubits)
                 elif operation[0] == 'u3':
                     self.qgate_obj = GU3ThetaPhiLamda(list_affected_qubits, list_of_parameters)
-                elif operation[0] == 'cnot' or operation[0] == 'cn':
+                elif operation[0] == 'cnot' or operation[0] == 'cx':
                     self.qgate_obj = CNOT(list_affected_qubits)
                 elif operation[0] == 'toffoli' or operation[0] == 'to':
                     self.qgate_obj = Toffoli(list_affected_qubits)
@@ -137,16 +136,14 @@ class QuantumSimulation(Base):
                     self.qgate_obj = Swap(list_affected_qubits)
                 elif operation[0] == 'sqrt_swap' or operation[0] == 'srs':
                     self.qgate_obj = sqrtSwap(list_affected_qubits)
-                elif operation[0] == 'rx' or operation[0] == 'sqrt_not':
-                    self.qgate_obj = RotationX(list_affected_qubits)
+                elif operation[0] == 'sqrt_not':
+                    self.qgate_obj = RotationX(list_affected_qubits, [cmath.pi / 2])
+                elif operation[0] == 'rx':
+                    self.qgate_obj = RotationX(list_affected_qubits, list_of_parameters)
                 elif operation[0] == 'ry':
-                    self.qgate_obj = RotationY(list_affected_qubits)
-                elif operation[0] == 'neg_rx':
-                    self.qgate_obj = negRotationX(list_affected_qubits)
-                elif operation[0] == 'neg_ry':
-                    self.qgate_obj = negRotationY(list_affected_qubits)
+                    self.qgate_obj = RotationY(list_affected_qubits, list_of_parameters)
                 elif operation[0] == 'u1':
-                    self.qgate_obj = GateRphi(list_affected_qubits, list_of_parameters)
+                    self.qgate_obj = GatePhase(list_affected_qubits, list_of_parameters)
                 elif operation[0] == 'u2':
                     self.qgate_obj = GU3ThetaPhiLamda(list_affected_qubits, [cmath.pi/2] + list_of_parameters)
                 elif operation[0] == 'cr':
@@ -176,9 +173,9 @@ class QuantumSimulation(Base):
                 elif operation[0] == 'zz':
                     self.qgate_obj = IsingGate(list_affected_qubits, list_of_parameters, 2)
                 elif operation[0] == 'rz':
-                    self.qgate_obj = RotationZ(list_affected_qubits, [cmath.pi/2])
-                elif operation[0] == 'neg_rz':
-                    self.qgate_obj = RotationZ(list_affected_qubits, [-cmath.pi/2])
+                    self.qgate_obj = RotationZ(list_affected_qubits, list_of_parameters)
+                elif operation[0] == 'r':
+                    self.qgate_obj = Rotation(list_affected_qubits, list_of_parameters)
 
                 elif operation[0] == 'm':
 

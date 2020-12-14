@@ -87,10 +87,10 @@ class ValidateGate(argparse.Action):
 
         #   Tupel mit allen möglichen Parametern, die für Gatter stehen, welche auf ein einzelnes Qubit angewendet
         #   werden und daher nur einen Index-Parameter benötigen
-        valid_gates = ('x', 'h', 'z', 'm', 'custm', 'r_phi', 'r', 'y', 's', 'sdg', 't', 'tdg', 'i', 'u3', 'cnot', 'cn',
+        valid_gates = ('x', 'h', 'z', 'm', 'custm', 'p', 'y', 's', 'sdg', 't', 'tdg', 'i', 'u3', 'cnot', 'cx',
                        'toffoli', 'to', 'fredkin', 'f', 'cswap', 'csw', 'deutsch', 'd', 'swap', 'sw', 'sqrt_swap', 'srs'
-                       , 'rx', 'sqrt_not', 'ry', 'neg_rx', 'neg_ry', 'u2', 'u1', 'cr', 'cx', 'cy', 'cz', 'xx', 'yy',
-                       'zz', 'rz', 'neg_rz')
+                       , 'rx', 'sqrt_not', 'ry', 'u2', 'u1', 'cr', 'cx', 'cy', 'cz', 'xx', 'yy',
+                       'zz', 'rz', 'r')
 
         #   Prüfe, ob das eingegebene Gatter in dem Tupel der möglichen Gatter vorkommt.
         #   Falls nein, wird eine Fehlermeldung ausgegeben und das Programm abgebrochen
@@ -100,8 +100,7 @@ class ValidateGate(argparse.Action):
         #   Gates that change 1 qubit, need only one argument:
         #   Tupel mit allen möglichen Parametern, die für Gatter stehen, welche auf ein einzelnes Qubit angewendet
         #   werden und daher nur einen Index-Parameter benötigen
-        gates_1_qb = ('x', 'h', 'z', 'm', 'custm', 'y', 's', 'sdg', 't', 'tdg', 'i', 'rx', 'sqrt_not', 'ry', 'neg_rx',
-                      'neg_ry', 'rz', 'neg_rz')
+        gates_1_qb = ('x', 'h', 'z', 'm', 'custm', 'y', 's', 'sdg', 't', 'tdg', 'i', 'sqrt_not')
 
         #   Falls das aktuelle Gatter in dieser Liste vorkommt, sollte es nur einen Index haben:
         if gate in gates_1_qb:
@@ -134,16 +133,33 @@ class ValidateGate(argparse.Action):
             list_of_indizes = list_of_arguments
 
         #   Gates that needs one index and one parameter (gate change 1 Qubits and need 1 additional parameter):
-        gates_1_1 = ('r_phi', 'r', 'u1')
+        gates_1_1 = ('p', 'u1', 'rx', 'ry', 'rz')
 
         #   Falls das aktuelle Gatter in dieser Liste vorkommt, sollte es nur einen Index haben:
         if gate in gates_1_1:
 
             #   Fehlermelduung, wenn mehr Indizes/Argumente eingegeben wurden
             if len(list_of_arguments) != 2:
-                raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
-                                                   'number of this gate ({s!r}: 2). Example: -g {s} INDEX PARAM'
-                                             .format(r=len(list_of_arguments), s=str(gate)))
+                if gate == 'p':
+                    raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
+                                                       'number of this gate ({s!r}: 2). Example: -g {s} INDEX PHI'
+                                                 .format(r=len(list_of_arguments), s=str(gate)))
+                elif gate == 'u1':
+                    raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
+                                                       'number of this gate ({s!r}: 2). Example: -g {s} INDEX LAMBDA'
+                                                 .format(r=len(list_of_arguments), s=str(gate)))
+                elif gate == 'rx' or gate == 'ry':
+                    raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
+                                                       'number of this gate ({s!r}: 2). Example: -g {s} INDEX THETA'
+                                                 .format(r=len(list_of_arguments), s=str(gate)))
+                elif gate == 'rz':
+                    raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
+                                                       'number of this gate ({s!r}: 2). Example: -g {s} INDEX PHI'
+                                                 .format(r=len(list_of_arguments), s=str(gate)))
+                else:
+                    raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
+                                                       'number of this gate ({s!r}: 2). Example: -g {s} INDEX PARAM'
+                                                 .format(r=len(list_of_arguments), s=str(gate)))
 
             #   Versuche die Argumente in Float oder Integer zu konvertieren, sonst gebe eine Fehlermeldung aus.
             #   Als Eingabe werden ganze Zahlen für Indizes und Fließkommazahlen für Parameter von Gattern erwartet.
@@ -202,7 +218,7 @@ class ValidateGate(argparse.Action):
                         raise argparse.ArgumentError(self,
                                                      'Value Error: {a!r} can\'t be converted to float, for index'
                                                      ' of the qubit an integer and for gate arguments float '
-                                                     'was expected.'.format(a=list_of_arguments[1]))
+                                                     'was expected.'.format(a=list_of_arguments[i]))
 
             #   Falls der Index negativ ist, wird ebenfalls ein Fehler ausgegeben
             if list_of_arguments[0] < 0:
@@ -216,7 +232,7 @@ class ValidateGate(argparse.Action):
         #   Gates that change 2 qubit, need 2 indizes:
         #   Tupel mit allen möglichen Parametern, die für Gatter stehen, welche auf ein einzelnes Qubit angewendet
         #   werden und daher nur einen Index-Parameter benötigen
-        gates_2_0 = ('cnot', 'cn', 'swap', 'sw', 'sqrt_swap', 'srs', 'cx', 'cy', 'cz')
+        gates_2_0 = ('cnot', 'cx', 'swap', 'sw', 'sqrt_swap', 'srs', 'cx', 'cy', 'cz')
 
         #   Falls das aktuelle Gatter in dieser Liste vorkommt, sollte es nur einen Index haben:
         if gate in gates_2_0:
@@ -341,17 +357,23 @@ class ValidateGate(argparse.Action):
             list_of_parameters = [list_of_arguments[3]]
 
         #   Gates that needs one index and 2 parameters (gate change 1 Qubits and need 2 additional parameter):
-        gates_1_2 = ('u2', 'XXXXXX')
+        gates_1_2 = ('u2', 'r')
 
         #   Falls das aktuelle Gatter in dieser Liste vorkommt, sollte es nur einen Index haben:
         if gate in gates_1_2:
 
             #   Fehlermelduung, wenn mehr Indizes/Argumente eingegeben wurden
             if len(list_of_arguments) != 3:
-                raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
-                                                   'number of this gate ({s!r}: 3). Example: -g {s} INDEX PARAM_PHI'
-                                                   ' PARAM_LAMBDA'
-                                             .format(r=len(list_of_arguments), s=str(gate)))
+                if gate == 'u2':
+                    raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
+                                                       'number of this gate ({s!r}: 3). Example: -g {s} INDEX PARAM_PHI'
+                                                       ' PARAM_LAMBDA'
+                                                 .format(r=len(list_of_arguments), s=str(gate)))
+                else:  # gate == 'r':
+                    raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
+                                                       'number of this gate ({s!r}: 3). Example: -g {s} INDEX THETA'
+                                                       ' PHI'
+                                                 .format(r=len(list_of_arguments), s=str(gate)))
 
             #   Versuche die Argumente in Float oder Integer zu konvertieren, sonst gebe eine Fehlermeldung aus.
             #   Als Eingabe werden ganze Zahlen für Indizes und Fließkommazahlen für Parameter von Gattern erwartet.
@@ -372,7 +394,7 @@ class ValidateGate(argparse.Action):
                         raise argparse.ArgumentError(self,
                                                      'Value Error: {a!r} can\'t be converted to float, for index'
                                                      ' of the qubit an integer and for gate arguments float '
-                                                     'was expected.'.format(a=list_of_arguments[1]))
+                                                     'was expected.'.format(a=list_of_arguments[i]))
 
             #   Falls der Index negativ ist, wird ebenfalls ein Fehler ausgegeben
             if list_of_arguments[0] < 0:

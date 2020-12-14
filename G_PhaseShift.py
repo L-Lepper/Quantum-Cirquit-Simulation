@@ -1,7 +1,7 @@
 #   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
 #   Author: Lukas Lepper, 24.11.2020
 #   Betreuer: Martin Hardieck
-#   Dateiname: G_Rphi.py
+#   Dateiname: G_PhaseShift.py
 #   Version: 0.6
 
 
@@ -10,9 +10,9 @@ import cmath
 from QGate import QGate
 
 
-class GateRphi(QGate):
+class GatePhase(QGate):
     """
-    Klasse für das R_phi Gatter. Speichert den Typ und erweitert die Matrix dieses Gatters auf Größe des
+    Klasse für das PhaseShift Gatter. Speichert den Typ und erweitert die Matrix dieses Gatters auf Größe des
     Zustandsvektors.
     """
 
@@ -30,7 +30,7 @@ class GateRphi(QGate):
         super().__init__(list_affected_qubits)
 
         #   Bezeichnung des Gatters
-        self.type = 'r_phi'
+        self.type = 'p'
 
         #   Spezifische Matrix des Gatters
         self.general_matrix = np.array([[1, 0], [0, cmath.exp(list_of_parameters[0] * 1j)]], dtype=complex)

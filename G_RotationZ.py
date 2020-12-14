@@ -12,7 +12,7 @@ import cmath
 
 class RotationZ(QGate):
     """
-    Klasse für das RZ Gatter. 90°-Rotation des Winkels Theta um die Z-Achse. Speichert den Typ und erweitert die Matrix
+    Klasse für das RZ Gatter. Rotation des Winkels Phi um die Z-Achse. Speichert den Typ und erweitert die Matrix
     dieses Gatters auf Größe des Zustandsvektors.
     """
 
@@ -22,6 +22,7 @@ class RotationZ(QGate):
         bestimmtes Qubit beschreibt.
 
         :param list_affected_qubits: Index des Qubits, auf welches das Gatter angewendet wird
+        :param list_of_parameters: Winkel Phi, um den das Qubits um die Z-Achse gedreht wird.
         """
 
         #   list_affected_qubits wird in der Elternklasse in qsim_obj.list_affected_qubits gespeichert
@@ -30,10 +31,10 @@ class RotationZ(QGate):
         #   Bezeichnung des Gatters
         self.type = 'rz'
 
-        theta = list_of_parameters[0]
+        phi = list_of_parameters[0]
 
         #   Spezifische Matrix des Gatters
-        self.general_matrix = np.array([[cmath.exp(theta * -1j), 0], [0, cmath.exp(theta * 1j)]],
+        self.general_matrix = np.array([[cmath.exp(phi / 2 * -1j), 0], [0, cmath.exp(phi / 2 * 1j)]],
                                        dtype=complex)
 
         #   Die Matrix wird auf die Größe der Quantenschaltung erweitert

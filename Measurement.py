@@ -5,7 +5,7 @@
 #   Version: 0.6
 
 import cmath
-import random
+import os
 import numpy as np
 from Base import Base
 from QGate import QGate
@@ -86,7 +86,12 @@ class Measurement(QGate):
                   '\n')
 
         #   Erzeuge eine Zufallszahl zwischen 0 und 1 mit 6 Nachkommastellen
-        random_value = random.randint(0, 1000000) / 1000000
+        #   8Bits/Byte * 24Bytes = 192Bits --> Die höchste Zahl die vorkommt ist 2^192 - 1 = 6.2771e57
+        #   Anzahl der Nachkommastellen: Anzahl der Ziffern in der größten Zahl von oben --> 58
+        #   Es wid durch die höchste Zahl geteilt, um die Zufallszahl auf den Bereich zu 0-1 normieren.
+        #   https://pythonadventures.wordpress.com/2013/10/04/generate-a-192-bit-random-number/
+        n_bits = 192  # Vielfaches von 8!
+        random_value = int(os.urandom(int(n_bits / 8)).hex(), 16) / (pow(2, n_bits) - 1)
 
         #   Für jeden Knoten auf der Ebene des zu messenden Qubits, wird das Entscheidungsdiagramm durch die
         #   Messung angepasst (Messung 0 oder 1)
