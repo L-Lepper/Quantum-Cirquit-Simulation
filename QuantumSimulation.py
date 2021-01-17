@@ -1,6 +1,6 @@
-#   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
+#   Projektarbeit "Recherche und Tool zur Simulation von Quantenschaltungen im Bereich Quantencomputing"
 #   Author: Lukas Lepper, 24.11.2020
-#   Betreuer: Martin Hardieck
+#   Betreuer: Dipl.-Ing. Martin Hardieck
 #   Dateiname: QuantumSimulation.py
 #   Version: 0.6
 
@@ -31,6 +31,7 @@ from G_controlledUgate import CUgate
 from G_Ising import IsingGate
 from G_RotationZ import RotationZ
 from G_Rotation import Rotation
+from G_CRotation import CRotation
 import cmath
 
 #   wird nur für den custm Zustandsvektor benötigt
@@ -142,11 +143,13 @@ class QuantumSimulation(Base):
                     self.qgate_obj = RotationX(list_affected_qubits, list_of_parameters)
                 elif operation[0] == 'ry':
                     self.qgate_obj = RotationY(list_affected_qubits, list_of_parameters)
+                elif operation[0] == 'cr':
+                    self.qgate_obj = CRotation(list_affected_qubits, list_of_parameters)
                 elif operation[0] == 'u1':
                     self.qgate_obj = GatePhase(list_affected_qubits, list_of_parameters)
                 elif operation[0] == 'u2':
                     self.qgate_obj = GU3ThetaPhiLamda(list_affected_qubits, [cmath.pi/2] + list_of_parameters)
-                elif operation[0] == 'cr':
+                elif operation[0] == 'cp':
                     self.qgate_obj = CRphi(list_affected_qubits, list_of_parameters)
 
                 #   kontrolliertes x, y, oder z Gatter. Da zurzeit die Klassen PauliX PaulyY, ... die Matrizen auf die
@@ -353,7 +356,7 @@ class QuantumSimulation(Base):
         else:
             if Base.get_verbose() >= 0:
                 print('\nSimulation was not started, the number of qubits is 0 or the list of operations is empty. '
-                      'Type clii -h for help.\n')
+                      'Type -h for help.\n')
 
     #   7
     def print_list_of_operations(self):

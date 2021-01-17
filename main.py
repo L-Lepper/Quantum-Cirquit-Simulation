@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-#   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
+#   Projektarbeit "Recherche und Tool zur Simulation von Quantenschaltungen im Bereich Quantencomputing"
 #   Author: Lukas Lepper, 24.11.2020
-#   Betreuer: Martin Hardieck
+#   Betreuer: Dipl.-Ing. Martin Hardieck
 #   Dateiname: main.py
 #   Version: 0.6
 
@@ -89,8 +89,8 @@ class ValidateGate(argparse.Action):
         #   werden und daher nur einen Index-Parameter benötigen
         valid_gates = ('x', 'h', 'z', 'm', 'custm', 'p', 'y', 's', 'sdg', 't', 'tdg', 'i', 'u3', 'cnot', 'cx',
                        'toffoli', 'to', 'fredkin', 'f', 'cswap', 'csw', 'deutsch', 'd', 'swap', 'sw', 'sqrt_swap', 'srs'
-                       , 'rx', 'sqrt_not', 'ry', 'u2', 'u1', 'cr', 'cx', 'cy', 'cz', 'xx', 'yy',
-                       'zz', 'rz', 'r')
+                       , 'rx', 'sqrt_not', 'ry', 'u2', 'u1', 'cp', 'cx', 'cy', 'cz', 'xx', 'yy',
+                       'zz', 'rz', 'r', 'cr')
 
         #   Prüfe, ob das eingegebene Gatter in dem Tupel der möglichen Gatter vorkommt.
         #   Falls nein, wird eine Fehlermeldung ausgegeben und das Programm abgebrochen
@@ -142,19 +142,19 @@ class ValidateGate(argparse.Action):
             if len(list_of_arguments) != 2:
                 if gate == 'p':
                     raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
-                                                       'number of this gate ({s!r}: 2). Example: -g {s} INDEX PHI'
+                                                       'number of this gate ({s!r}: 2). Example: -g {s} INDEX PARAM_PHI'
                                                  .format(r=len(list_of_arguments), s=str(gate)))
                 elif gate == 'u1':
                     raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
-                                                       'number of this gate ({s!r}: 2). Example: -g {s} INDEX LAMBDA'
+                                                       'number of this gate ({s!r}: 2). Example: -g {s} INDEX PARAM_LAMBDA'
                                                  .format(r=len(list_of_arguments), s=str(gate)))
                 elif gate == 'rx' or gate == 'ry':
                     raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
-                                                       'number of this gate ({s!r}: 2). Example: -g {s} INDEX THETA'
+                                                       'number of this gate ({s!r}: 2). Example: -g {s} INDEX PARAM_THETA'
                                                  .format(r=len(list_of_arguments), s=str(gate)))
                 elif gate == 'rz':
                     raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
-                                                       'number of this gate ({s!r}: 2). Example: -g {s} INDEX PHI'
+                                                       'number of this gate ({s!r}: 2). Example: -g {s} INDEX PARAM_PHI'
                                                  .format(r=len(list_of_arguments), s=str(gate)))
                 else:
                     raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
@@ -406,14 +406,14 @@ class ValidateGate(argparse.Action):
             list_of_parameters = list_of_arguments[1:]
 
         #   Gates that needs 2 indices and one parameter (gate change 2 Qubits and need 1 additional parameter):
-        gates_2_1 = ('cr', 'xx', 'yy', 'zz')
+        gates_2_1 = ('cp', 'xx', 'yy', 'zz')
 
         #   Falls das aktuelle Gatter in dieser Liste vorkommt, sollte es zwei Indizes haben:
         if gate in gates_2_1:
 
             #   Fehlermelduung, wenn mehr Indizes/Argumente eingegeben wurden
             if len(list_of_arguments) != 3:
-                if gate == 'cr':
+                if gate == 'cp':
                     raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
                                                        'number of this gate ({s!r}: 3). Example: -g {s} INDEX_CONTROL'
                                                        ' INDEX_TARGET PARAM_PHI'
@@ -452,6 +452,57 @@ class ValidateGate(argparse.Action):
             #   Nach der Prüfung wird der eine Index und der eine Parameter jeweils der Liste hinzugefügt
             list_of_indizes = list_of_arguments[0:2]
             list_of_parameters = [list_of_arguments[2]]
+
+        #   Gates that needs 2 indices and 2 parameter (gate change 2 Qubits and need 2 additional parameters):
+        gates_2_2 = ('cr', 'ccccccc')
+
+        #   Falls das aktuelle Gatter in dieser Liste vorkommt, sollte es zwei Indizes haben:
+        if gate in gates_2_2:
+
+            #   Fehlermelduung, wenn mehr Indizes/Argumente eingegeben wurden
+            if len(list_of_arguments) != 4:
+                if gate == 'cr':
+                    raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
+                                                       'number of this gate ({s!r}: 4). Example: -g {s} INDEX_CONTROL'
+                                                       ' INDEX_TARGET PARAM_THETA PARAM_PHI'
+                                                 .format(r=len(list_of_arguments), s=str(gate)))
+                else:
+                    raise argparse.ArgumentError(self, 'The number of arguments ({r!r}) does not match the required '
+                                                       'number of this gate ({s!r}: 4). Example: Not implemented'
+                                                 .format(r=len(list_of_arguments), s=str(gate)))
+
+            #   Gehe die Liste der Indizes nacheinander durch. i ist der Index des aktuellen Elements in der Liste,
+            #   x das Element selber
+            for i, x in enumerate(list_of_arguments[0:2]):
+
+                #   Versuche die Argumente in Float oder Integer zu konvertieren, sonst gebe eine Fehlermeldung aus.
+                #   Als Eingabe werden ganze Zahlen für Indizes und Fließkommazahlen für Parameter von Gattern erwartet.
+                try:
+                    list_of_arguments[i] = int(list_of_arguments[i])
+                except ValueError:
+                    raise argparse.ArgumentError(self, 'Value Error: {a!r} can\'t be converted to integer, for index'
+                                                       ' of the qubit an integer was expected.'
+                                                       ''.format(a=list_of_arguments[i]))
+
+                #   Falls der Index negativ ist, wird ebenfalls ein Fehler ausgegeben
+                if list_of_arguments[i] < 0:
+                    raise argparse.ArgumentError(self, 'Value Error: the index for a qubit must be positive: {a!r}'
+                                                 .format(a=list_of_arguments[i]))
+
+            #   Gehe die Liste der Indizes nacheinander durch. i ist der Index des aktuellen Elements in der Liste,
+            #   x das Element selber
+            for i, x in enumerate(list_of_arguments[2:4]):
+                try:
+                    list_of_arguments[i+2] = float(list_of_arguments[i+2])
+                except ValueError:
+                    raise argparse.ArgumentError(self, 'Value Error: {a!r} can\'t be converted to float, for index'
+                                                       ' of the qubit an integer and for gate arguments float '
+                                                       'was expected.'.format(a=list_of_arguments[i]))
+
+
+            #   Nach der Prüfung wird der eine Index und der eine Parameter jeweils der Liste hinzugefügt
+            list_of_indizes = list_of_arguments[0:2]
+            list_of_parameters = list_of_arguments[2:4]
 
         #   Ein neues Element wird aus dem geprüften Gatter und der Liste der Indizes erstellt. Das Element besteht aus
         #   der bezeichnung für das Gatter, einer Liste mit Indizes der Qubits, auf die das Gatter angewendet wird,

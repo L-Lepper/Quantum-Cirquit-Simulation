@@ -1,12 +1,13 @@
-#   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
+#   Projektarbeit "Recherche und Tool zur Simulation von Quantenschaltungen im Bereich Quantencomputing"
 #   Author: Lukas Lepper, 30.11.2020
-#   Betreuer: Martin Hardieck
+#   Betreuer: Dipl.-Ing. Martin Hardieck
 #   Dateiname: G_Ising.py
-#   Version: 0.6
+#   Version: 1.0
 
 
 import numpy as np
 import math
+import cmath
 from QGate import QGate
 
 
@@ -60,7 +61,7 @@ class IsingGate(QGate):
             if int_in == 0:  # (XX)
 
                 #   Werte auf der Diagonalen
-                self.general_matrix[i][i] = math.cos(phi)
+                self.general_matrix[i][i] = cmath.cos(phi/2)
 
                 #   Für Qubit 1 und 2 werden die Zustände getauscht, wenn diese unterschiedlich sind.
                 #   Wenn beide Zustände gleich sind, werden sie invertiert. Das neue Bitmuster in eine ganze Zahl
@@ -78,11 +79,11 @@ class IsingGate(QGate):
                     #   n_qubits - 1, da 3,2,1,0 gezählt werden soll und nicht 4,3,2,1
                     j += int(x) * int(pow(2, n_qubits - index - 1))
 
-                self.general_matrix[i][j] = -1j * math.sin(phi)
+                self.general_matrix[i][j] = -1j * cmath.sin(phi/2)
 
             elif int_in == 1:  # (yy)
                 #   Werte auf der Diagonalen
-                self.general_matrix[i][i] = math.cos(phi)
+                self.general_matrix[i][i] = cmath.cos(phi/2)
 
                 #   Für Qubit 1 und 2 werden die Zustände getauscht, wenn diese unterschiedlich sind.
                 #   Wenn beide Zustände gleich sind, werden sie invertiert. Das neue Bitmuster in eine ganze Zahl
@@ -97,7 +98,7 @@ class IsingGate(QGate):
                         j += int(x) * int(pow(2, n_qubits - index - 1))
 
                     #   Sind beide Zustände unterschiedlich, ist der Eintrag -sin(phi) j
-                    self.general_matrix[i][j] = -1j * math.sin(phi)
+                    self.general_matrix[i][j] = -1j * cmath.sin(phi)
 
                 #   Sind die Zustände gleich, ist der Eintrag sin(phi) j
                 else:
@@ -112,12 +113,12 @@ class IsingGate(QGate):
                         #   n_qubits - 1, da 3,2,1,0 gezählt werden soll und nicht 4,3,2,1
                         j += int(x) * int(pow(2, n_qubits - index - 1))
 
-                    self.general_matrix[i][j] = 1j * math.sin(phi)
+                    self.general_matrix[i][j] = 1j * cmath.sin(phi/2)
 
             else:  # (zz)
                 #   Es befinden sich nur Einträge auf der Diagonalen der Matrix. Sind beide Zustände des Qubits 1 und 2
                 #   identisch, wird cos(phi) gespeichert, sonst -cos(phi)
                 if bit_pattern[q_index_1] == bit_pattern[q_index_2]:
-                    self.general_matrix[i][i] = math.cos(phi)
+                    self.general_matrix[i][i] = cmath.exp(-1j*phi / 2)
                 else:
-                    self.general_matrix[i][i] = -math.cos(phi)
+                    self.general_matrix[i][i] = cmath.exp(1j*phi/ 2)

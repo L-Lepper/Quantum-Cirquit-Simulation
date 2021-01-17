@@ -1,0 +1,273 @@
+from qiskit import *
+from qiskit import Aer
+import math
+
+#   Quantenschaltung mit 3 Qubits erstellen (ACHTUNG hier sind die Qubits anders sortiert)
+circ = QuantumCircuit(3)
+
+#   Aufbau der Grundschaltung
+circ.h(2)
+circ.r(7*math.pi/8, math.pi/8, 2)
+circ.cx(2, 1)
+circ.toffoli(2, 1, 0)
+
+#   Gatter für den Test
+circ.x(2)
+
+#   Die Schaltung wird im Simulator für Zustandsvektoren simuliert
+backend = Aer.get_backend('statevector_simulator')
+job = execute(circ, backend)
+result = job.result()
+
+#   Ausgabe des Zustandvektors
+outputstate = result.get_statevector(circ, decimals=4)
+print(outputstate)
+
+Ergebnis
+/home/lukas/anaconda3/envs/Qiskit-Verifikation/bin/python /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.40334827-0.64072886j]
+
+Process finished with exit code 0
+
+I
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.40334827-0.64072886j]
+
+X
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[ 0.        +0.j          0.        +0.j          0.        +0.j
+  0.40334827-0.64072886j -0.12744889-0.64072886j  0.        +0.j
+  0.        +0.j          0.        +0.j        ]
+
+
+CNOT
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.40334827-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j        ]
+
+Y
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[ 0.        -0.j          0.        -0.j          0.        -0.j
+ -0.64072886-0.40334827j  0.64072886-0.12744889j  0.        +0.j
+  0.        +0.j          0.        +0.j        ]
+
+
+
+cy circ.cy(2, 1)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        -0.j         -0.64072886-0.40334827j
+  0.        +0.j          0.        +0.j        ]
+
+
+z
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j         -0.        +0.j         -0.        +0.j
+ -0.        +0.j         -0.40334827+0.64072886j]
+
+circ.cz(1, 2)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+ -0.        +0.j         -0.40334827+0.64072886j]
+
+
+
+circ.h(1)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.09011998-0.45306372j  0.        +0.j         -0.09011998-0.45306372j
+  0.        +0.j          0.        +0.j          0.2852103 -0.45306372j
+  0.        +0.j         -0.2852103 +0.45306372j]
+
+
+
+
+
+
+
+
+circ.p(math.pi/6, 1)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.66967428-0.35321333j]
+
+
+
+
+
+
+circ.cp(math.pi/6, 2, 1)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.66967428-0.35321333j]
+
+
+
+circ.s(2)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j         -0.        +0.j         -0.        +0.j
+ -0.        +0.j          0.64072886+0.40334827j]
+
+
+
+
+circ.sdg(2)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        -0.j          0.        -0.j
+  0.        -0.j         -0.64072886-0.40334827j]
+
+
+circ.t(2)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.73827402-0.16785342j]
+
+
+
+circ.tdg(2)
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j         -0.16785342-0.73827402j]
+
+
+circ.u1(math.pi / 6, 2)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+/home/lukas/PycharmProjects/Qiskit-Verifikation/main.py:15: DeprecationWarning: The QuantumCircuit.u1 method is deprecated as of 0.16.0. It will be removed no earlier than 3 months after the release date. You should use the QuantumCircuit.p method instead, which acts identically.
+  circ.u1(math.pi / 6, 2)
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.66967428-0.35321333j]
+
+
+
+circ.u2(math.pi/6, math.pi*7/6, 2)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+/home/lukas/PycharmProjects/Qiskit-Verifikation/main.py:15: DeprecationWarning: The QuantumCircuit.u2 method is deprecated as of 0.16.0. It will be removed no earlier than 3 months after the release date. You can use the general 1-qubit gate QuantumCircuit.u instead: u2(φ,λ) = u(π/2, φ, λ). Alternatively, you can decompose it interms of QuantumCircuit.p and QuantumCircuit.sx: u2(φ,λ) = p(π/2+φ) sx p(π/2+λ) (1 pulse on hardware).
+  circ.u2(math.pi/6, math.pi*7/6, 2)
+[-0.09011998-0.45306372j  0.        +0.j          0.        +0.j
+  0.47353123-0.24975954j  0.14848567-0.43742468j  0.        +0.j
+  0.        +0.j         -0.53496984-0.0204675j ]
+
+
+circ.u3(math.pi/5, math.pi/6, math.pi*7/6, 2)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+/home/lukas/PycharmProjects/Qiskit-Verifikation/main.py:15: DeprecationWarning: The QuantumCircuit.u3 method is deprecated as of 0.16.0. It will be removed no earlier than 3 months after the release date. You should use QuantumCircuit.u instead, which acts identically. Alternatively, you can decompose u3 in terms of QuantumCircuit.p and QuantumCircuit.sx: u3(ϴ,φ,λ) = p(φ+π) sx p(ϴ+π) sx p(λ) (2 pulses on hardware).
+  circ.u3(math.pi/5, math.pi/6, math.pi*7/6, 2)
+[-0.1212111 -0.60936936j  0.        +0.j          0.        +0.j
+  0.20694073-0.10914892j  0.06489062-0.1911616j   0.        +0.j
+  0.        +0.j         -0.71953285-0.02752873j]
+
+
+
+circ.toffoli(1, 2, 0)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.40334827-0.64072886j  0.        +0.j        ]
+
+
+
+circ.fredkin(1, 2, 0)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.40334827-0.64072886j]
+
+deutsch---------------
+
+circ.swap(1, 0)
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.40334827-0.64072886j]
+
+
+sqrt_swap = circ.iswap(1, 0), nein iswap hat wie swap aber statt 1ein außerhalb der Diagonale j!
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-1.27448895e-01-6.40728862e-01j  3.92333275e-17+0.00000000e+00j
+  0.00000000e+00+0.00000000e+00j  0.00000000e+00+0.00000000e+00j
+  0.00000000e+00+0.00000000e+00j  0.00000000e+00+0.00000000e+00j
+  1.22500054e-16-1.66533454e-16j  4.03348274e-01-6.40728862e-01j]
+
+
+
+---------------------------------
+
+
+
+circ.rx(math.pi/6, 2)
+[-0.12310618-0.61889656j  0.        +0.j          0.        +0.j
+ -0.16583283-0.10439422j -0.16583283+0.0329862j   0.        +0.j
+  0.        +0.j          0.38960451-0.61889656j]
+
+
+circ.ry(math.pi/6, 2)
+
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12310618-0.61889656j  0.        +0.j          0.        +0.j
+ -0.10439422+0.16583283j -0.0329862 -0.16583283j  0.        +0.j
+  0.        +0.j          0.38960451-0.61889656j]
+
+
+circ.rz(math.pi/6, 2)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.28893901-0.58591035j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.55543735-0.51450234j]
+
+
+r
+circ.r(math.pi/6, math.pi*7/6, 2)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12310618-0.61889656j  0.        +0.j          0.        +0.j
+  0.19581255+0.00749163j  0.16010855+0.05434953j  0.        +0.j
+  0.        +0.j          0.38960451-0.61889656j]
+
+
+
+-------------------cr
+
+
+rxx anders als wikipedia xx
+circ.rxx(math.pi/6, 0, 2)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12310618-0.61889656j  0.        +0.j         -0.16583283-0.10439422j
+  0.        +0.j          0.        +0.j         -0.16583283+0.0329862j
+  0.        +0.j          0.38960451-0.61889656j]
+
+
+ryy anders als yy bei wiki
+circ.ryy(math.pi/6, 0, 2)
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.12310618-0.61889656j  0.        +0.j          0.16583283+0.10439422j
+  0.        +0.j          0.        +0.j          0.16583283-0.0329862j
+  0.        +0.j          0.38960451-0.61889656j]
+
+
+
+
+rzz anders als bei wiki
+circ.rzz(math.pi/6, 0, 2)
+
+(Qiskit-Verifikation) lukas@lukas-VirtualBox:~/PycharmProjects/Qiskit-Verifikation$ python3 /home/lukas/PycharmProjects/Qiskit-Verifikation/main.py
+[-0.28893901-0.58591035j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.22377168-0.72329077j]
+
+
+
+Pfad:
+/home/lukas/anaconda3/envs/Qiskit-Verifikation/lib/python3.8/site-packages/qiskit/circuit/library/standard_gates/rzz.py, rzz.py, rxx.py
+
+
+

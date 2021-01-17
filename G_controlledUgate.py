@@ -1,6 +1,6 @@
-#   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
+#   Projektarbeit "Recherche und Tool zur Simulation von Quantenschaltungen im Bereich Quantencomputing"
 #   Author: Lukas Lepper, 30.11.2020
-#   Betreuer: Martin Hardieck
+#   Betreuer: Dipl.-Ing. Martin Hardieck
 #   Dateiname: G_controlledUgate.py
 #   Version: 0.6
 

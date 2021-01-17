@@ -1,0 +1,495 @@
+Grundschaltung
+python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -p state_vec
+
+Ergebniss
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.40334827-0.64072886j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |111) has a probability of 57.3223%.
+
+
+I
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g i 0 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.40334827-0.64072886j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |111) has a probability of 57.3223%.
+
+
+
+X
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g x 0 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[ 0.        +0.j          0.        +0.j          0.        +0.j
+  0.40334827-0.64072886j -0.12744889-0.64072886j  0.        +0.j
+  0.        +0.j          0.        +0.j        ]
+
+---------------  Simulation completed:  ---------------
+
+The state |011) has a probability of 57.3223%.
+The state |100) has a probability of 42.6777%.
+
+cnot ACHTUNG Reihenfolge der Qubits ist vertauscht!
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g cx 1 0 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.40334827-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j        ]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |011) has a probability of 57.3223%.
+
+
+cy
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g cy 0 1 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j         -0.64072886-0.40334827j
+  0.        +0.j          0.        +0.j        ]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |101) has a probability of 57.3223%.
+
+
+
+z
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g z 0 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j         -0.40334827+0.64072886j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |111) has a probability of 57.3223%.
+
+
+cz
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g cz 1 0 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j         -0.40334827+0.64072886j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |111) has a probability of 57.3223%.
+
+
+
+h
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g h 1 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.09011998-0.45306372j  0.        +0.j         -0.09011998-0.45306372j
+  0.        +0.j          0.        +0.j          0.2852103 -0.45306372j
+  0.        +0.j         -0.2852103 +0.45306372j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 21.3388%.
+The state |010) has a probability of 21.3388%.
+The state |101) has a probability of 28.6612%.
+The state |111) has a probability of 28.6612%.
+
+
+p
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g p 1 0.5235987756 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.66967428-0.35321333j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |111) has a probability of 57.3223%.
+
+
+
+cp
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g cp 0 1 0.5235987756 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.66967428-0.35321333j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |111) has a probability of 57.3223%.
+
+
+
+s
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g s 0 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.64072886+0.40334827j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |111) has a probability of 57.3223%.
+
+
+
+sdg
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g sdg 0 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j         -0.64072886-0.40334827j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |111) has a probability of 57.3223%.
+
+
+
+t
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g t 0 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.73827402-0.16785342j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |111) has a probability of 57.3223%.
+
+
+
+tdg
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g tdg 0 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j         -0.16785342-0.73827402j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |111) has a probability of 57.3223%.
+
+
+u1 pi/6
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g u1 0 0.5235987756 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.66967428-0.35321333j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |111) has a probability of 57.3223%.
+
+
+
+u2 pi/6 lambda 7pi/6
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g u2 0 0.5235987756 3.665191429 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.09011998-0.45306372j  0.        +0.j          0.        +0.j
+  0.47353123-0.24975954j  0.14848567-0.43742468j  0.        +0.j
+  0.        +0.j         -0.53496984-0.0204675j ]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 21.3388%.
+The state |011) has a probability of 28.6612%.
+The state |100) has a probability of 21.3388%.
+The state |111) has a probability of 28.6612%.
+
+
+u3 theta pi/5 phi pi/6 lambda 7pi/6
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g u3 0 0.6283185307 0.5235987756 3.665191429 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.1212111 -0.60936936j  0.        +0.j          0.        +0.j
+  0.20694073-0.10914892j  0.06489062-0.1911616j   0.        +0.j
+  0.        +0.j         -0.71953285-0.02752873j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 38.6023%.
+The state |011) has a probability of 5.4738%.
+The state |100) has a probability of 4.0754%.
+The state |111) has a probability of 51.8485%.
+
+
+
+toffoli
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g to 1 0 2 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.40334827-0.64072886j  0.        +0.j        ]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |110) has a probability of 57.3223%.
+
+
+fredkin
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g f 1 0 2 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.40334827-0.64072886j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |111) has a probability of 57.3223%.
+
+
+deutsch-------------------
+
+
+swap
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g swap 1 2 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.40334827-0.64072886j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |111) has a probability of 57.3223%.
+
+
+sqrt_swap
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g sqrt_swap 1 2 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12744889-0.64072886j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.40334827-0.64072886j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |111) has a probability of 57.3223%.
+
+
+----------------------------
+
+
+rx pi/6
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g rx 0 0.5235987756 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12310618-0.61889656j  0.        +0.j          0.        +0.j
+ -0.16583283-0.10439422j -0.16583283+0.0329862j   0.        +0.j
+  0.        +0.j          0.38960451-0.61889656j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 39.8188%.
+The state |011) has a probability of 3.8399%.
+The state |100) has a probability of 2.8589%.
+The state |111) has a probability of 53.4825%.
+
+
+
+ry
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g ry 0 0.5235987756 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12310618-0.61889656j  0.        +0.j          0.        +0.j
+ -0.10439422+0.16583283j -0.0329862 -0.16583283j  0.        +0.j
+  0.        +0.j          0.38960451-0.61889656j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 39.8188%.
+The state |011) has a probability of 3.8399%.
+The state |100) has a probability of 2.8589%.
+The state |111) has a probability of 53.4825%.
+
+
+rz
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g rz 0 0.5235987756 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.28893901-0.58591035j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.55543735-0.51450234j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 42.6777%.
+The state |111) has a probability of 57.3223%.
+
+
+r pi/6 7pi/6
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g r 0 0.5235987756 3.665191429 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.12310618-0.61889656j  0.        +0.j          0.        +0.j
+  0.19581255+0.00749163j  0.16010855+0.05434953j  0.        +0.j
+  0.        +0.j          0.38960451-0.61889656j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 39.8188%.
+The state |011) has a probability of 3.8399%.
+The state |100) has a probability of 2.8589%.
+The state |111) has a probability of 53.4825%.
+
+
+
+
+---------------cr
+
+
+
+xx icing in Wikipedia anderd al in Qiskit rxx
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g xx 2 0 0.5235987756 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.11037398-0.55488747j  0.        +0.j         -0.32036443-0.20167414j
+  0.        +0.j          0.        +0.j         -0.32036443+0.06372445j
+  0.        +0.j          0.34930985-0.55488747j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 32.0083%.
+The state |010) has a probability of 14.3306%.
+The state |101) has a probability of 10.6694%.
+The state |111) has a probability of 42.9917%.
+
+
+
+
+
+yy anders als ryy aus qiskit
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g yy 2 0 0.5235987756 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.11037398-0.55488747j  0.        +0.j          0.32036443+0.20167414j
+  0.        +0.j          0.        +0.j          0.32036443-0.06372445j
+  0.        +0.j          0.34930985-0.55488747j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 32.0083%.
+The state |010) has a probability of 14.3306%.
+The state |101) has a probability of 10.6694%.
+The state |111) has a probability of 42.9917%.
+
+
+zz aus wiki anders als rzz in qiskit
+(venv) C:\Users\lukas\PycharmProjects\QuantumSimulation>python3 C:\Users\lukas\PycharmProjects\Quantum-Cirquit-Simulation\main.py -n 3 -g h 0 -g r 0 2.748893572 0.3926990817 -g cx
+0 1 -g to 0 1 2 -g zz 2 0 0.5235987756 -p state_vec
+
+---------------  Output actual state:   ---------------
+
+[-0.11037398-0.55488747j  0.        +0.j          0.        +0.j
+  0.        +0.j          0.        +0.j          0.        +0.j
+  0.        +0.j          0.34930985-0.55488747j]
+
+---------------  Simulation completed:  ---------------
+
+The state |000) has a probability of 32.0083%.
+The state |111) has a probability of 42.9917%.
+
+
+
+

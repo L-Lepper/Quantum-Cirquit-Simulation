@@ -1,6 +1,6 @@
-#   Projektarbeit Literaturrecherche zu Simulationsalgorithmen für Quantencomputing
+#   Projektarbeit "Recherche und Tool zur Simulation von Quantenschaltungen im Bereich Quantencomputing"
 #   Author: Lukas Lepper, 30.11.2020
-#   Betreuer: Martin Hardieck
+#   Betreuer: Dipl.-Ing. Martin Hardieck
 #   Dateiname: G_controlledRphi.py
 #   Version: 0.6
 
@@ -28,7 +28,7 @@ class CRphi(QGate):
         super().__init__(list_affected_qubits)
 
         #   Bezeichnung des Gatters
-        self.type = 'cr'
+        self.type = 'cp'
 
         #   Werte, die im Konstruktor mehrmals verwendet werden
         n_qubits = self.getnqubits()
